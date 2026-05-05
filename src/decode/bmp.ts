@@ -1,6 +1,6 @@
 import { BinaryReader } from '../io/binary-reader.js';
 import { uncompress } from '../resource/uncompress.js';
-import type { Sprite } from '../types.js';
+import { TRANSPARENT, type Sprite } from '../types.js';
 
 export interface BmpResource { sprites: Sprite[]; }
 
@@ -27,8 +27,10 @@ export function decodeBmp(payload: Uint8Array): BmpResource {
     if (w & 1) throw new Error(`bmp ${i}: odd width ${w}`);
     const indexed = new Uint8Array(w * h);
     for (let p = 0; p < (w * h) / 2; p++) {
-      indexed[p * 2] = (packed[off]! >> 4) & 0x0f;
-      indexed[p * 2 + 1] = packed[off]! & 0x0f;
+      const hi = (packed[off]! >> 4) & 0x0f;
+      const lo = packed[off]! & 0x0f;
+      indexed[p * 2]     = hi === 0 ? TRANSPARENT : hi;
+      indexed[p * 2 + 1] = lo === 0 ? TRANSPARENT : lo;
       off++;
     }
     sprites.push({ width: w, height: h, indexed });
