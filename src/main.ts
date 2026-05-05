@@ -8,6 +8,7 @@ import { makeAdsState, adsTick, adsThreadLayers } from './ads/scheduler.js';
 import { composite } from './gfx/compositor.js';
 import { startLoop } from './engine/loop.js';
 import { pumpTicks } from './engine/clock.js';
+import { islandInit, islandAnimate, islandInitHoliday, randomIslandState } from './island/island.js';
 import { SCREEN_W, SCREEN_H } from './types.js';
 import type { TtmContext } from './ttm/interpreter.js';
 
@@ -22,16 +23,20 @@ const palResRaw = archive.list.find(r => r.type === '.PAL')!;
 const pal = makePalette();
 setPaletteFromVga(pal, decodePal(palResRaw.payload).vga);
 
-let bgIndexed: Uint8Array | null = null;
+// Island background
+const islandState = randomIslandState();
+const islandRt = islandInit(archive, islandState);
+const holidayLayer = islandInitHoliday(archive, islandState);
+let bgAnimTimer = 8;
 
 const ttmCtx: TtmContext = {
   archive,
   palette: pal,
-  setBackground: (idx) => { bgIndexed = idx; },
+  setBackground: () => {}, // island owns the background
   playSample: (n) => console.log('playSample', n),
 };
 
-// Start with the first ADS resource at tag 1
+// Start ADS
 const adsRaw = archive.list.find(r => r.type === '.ADS')!;
 const ads = decodeAds(adsRaw.payload);
 const adsState = makeAdsState(ads, archive, 1);
@@ -41,13 +46,18 @@ const img = ctx.createImageData(SCREEN_W, SCREEN_H);
 startLoop(
   () => {
     const elapsed = pumpTicks();
-    if (elapsed > 0) adsTick(adsState, elapsed, ttmCtx);
+    if (elapsed <= 0) return;
+    // Island wave animation thread (delay=8)
+    bgAnimTimer -= elapsed;
+    while (bgAnimTimer <= 0) { islandAnimate(islandRt); bgAnimTimer += 8; }
+    // ADS scene threads
+    adsTick(adsState, elapsed, ttmCtx);
   },
   () => {
     composite(img, {
-      background: bgIndexed,
+      background: islandRt.bgLayer.indexed,
       ttmThreads: adsThreadLayers(adsState),
-      holiday: null,
+      holiday: holidayLayer,
       palette: pal,
     });
     ctx.putImageData(img, 0, 0);
