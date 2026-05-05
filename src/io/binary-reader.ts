@@ -1,7 +1,7 @@
 export class BinaryReader {
   readonly view: DataView;
   private offset: number;
-  constructor(buf: ArrayBuffer, offset = 0) {
+  constructor(buf: ArrayBuffer | SharedArrayBuffer, offset = 0) {
     this.view = new DataView(buf);
     this.offset = offset;
   }
