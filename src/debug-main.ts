@@ -8,6 +8,10 @@ import { decodeTtm } from './decode/ttm-loader.js';
 import { decodeAds } from './decode/ads-loader.js';
 import { disasmTtm } from './decode/ttm-disasm.js';
 import { makePalette, setPaletteFromVga } from './gfx/palette.js';
+import { makeLayer } from './gfx/layer.js';
+import { drawLine, drawRect, drawCircle } from './gfx/primitives.js';
+import { drawSprite, drawSpriteFlip } from './gfx/sprite.js';
+import { composite } from './gfx/compositor.js';
 import { SCREEN_W, SCREEN_H } from './types.js';
 
 const { map: mapBuf, archive: arcBuf } = await fetchData();
@@ -82,3 +86,22 @@ function renderBmpSheet(payload: Uint8Array): void {
   }
   ctx.putImageData(img, 0, 0);
 }
+
+const demoBtn = document.createElement('button');
+demoBtn.textContent = 'Demo primitives';
+document.querySelector('div')!.appendChild(demoBtn);
+demoBtn.addEventListener('click', () => {
+  const scr = archive.list.find(r => r.type === '.SCR')!;
+  const bmp = archive.list.find(r => r.type === '.BMP')!;
+  const bg = decodeScr(scr.payload).indexed;
+  const sprites = decodeBmp(bmp.payload).sprites;
+  const layer = makeLayer();
+  drawLine(layer, 10, 10, 600, 200, 5);
+  drawRect(layer, 50, 50, 100, 80, 8);
+  drawCircle(layer, 200, 100, 80, 80, 12, 2);
+  drawSprite(layer, sprites[0]!, 300, 200);
+  drawSpriteFlip(layer, sprites[0]!, 400, 200);
+  const img = ctx.createImageData(SCREEN_W, SCREEN_H);
+  composite(img, { background: bg, ttmThreads: [layer], holiday: null, palette: pal });
+  ctx.putImageData(img, 0, 0);
+});
