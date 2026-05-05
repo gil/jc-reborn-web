@@ -20,6 +20,8 @@ const fakeCtx: TtmContext = {
   palette: new Uint8Array(64),
   setBackground: () => {},
   playSample: () => {},
+  dx: 0,
+  dy: 0,
 };
 
 describe('ttmPlay', () => {

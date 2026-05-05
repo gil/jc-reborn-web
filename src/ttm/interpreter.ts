@@ -17,6 +17,8 @@ export interface TtmContext {
   palette: Palette;
   setBackground: (indexed: Uint8Array | null) => void;
   playSample: (n: number) => void;
+  dx: number;  // island x offset applied to all TTM draw coordinates
+  dy: number;  // island y offset applied to all TTM draw coordinates
 }
 
 // When argCount nibble == 0x0f, the opcode takes a null-terminated string, not 15 uint16s.
@@ -113,33 +115,33 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
       case OP.SAVE_IMAGE1:
         saveImage1(t.layer, a[0]!, a[1]!, a[2]!, a[3]!);
         break;
-      case OP.DRAW_PIXEL:
-        putPixel(t.layer, a[0]!, a[1]!, t.fgColor);
-        break;
       case OP.SAVE_ZONE:
         saveZone(t.layer, a[0]!, a[1]!, a[2]!, a[3]!);
         break;
       case OP.RESTORE_ZONE:
         restoreZone(t.layer, a[0]!, a[1]!, a[2]!, a[3]!);
         break;
+      case OP.DRAW_PIXEL:
+        putPixel(t.layer, a[0]! + ctx.dx, a[1]! + ctx.dy, t.fgColor);
+        break;
       case OP.DRAW_LINE:
-        drawLine(t.layer, a[0]!, a[1]!, a[2]!, a[3]!, t.fgColor);
+        drawLine(t.layer, a[0]! + ctx.dx, a[1]! + ctx.dy, a[2]! + ctx.dx, a[3]! + ctx.dy, t.fgColor);
         break;
       case OP.DRAW_RECT:
-        drawRect(t.layer, a[0]!, a[1]!, a[2]!, a[3]!, t.fgColor);
+        drawRect(t.layer, a[0]! + ctx.dx, a[1]! + ctx.dy, a[2]! + ctx.dx, a[3]! + ctx.dy, t.fgColor);
         break;
       case OP.DRAW_CIRCLE:
-        drawCircle(t.layer, a[0]!, a[1]!, a[2]!, a[3]!, t.fgColor, t.bgColor);
+        drawCircle(t.layer, a[0]! + ctx.dx, a[1]! + ctx.dy, a[2]! + ctx.dx, a[3]! + ctx.dy, t.fgColor, t.bgColor);
         break;
       case OP.DRAW_SPRITE: {
         // grDrawSprite(layer, slot, x, y, spriteNo, imageNo) — args[0..3] = x,y,sprNo,imgNo
-        const x = a[0]!, y = a[1]!, sprIdx = a[2]!, imgIdx = a[3]!;
+        const x = a[0]! + ctx.dx, y = a[1]! + ctx.dy, sprIdx = a[2]!, imgIdx = a[3]!;
         const s = t.slot.sprites[imgIdx]?.[sprIdx];
         if (s) drawSprite(t.layer, s, x, y);
         break;
       }
       case OP.DRAW_SPRITE_FLIP: {
-        const x = a[0]!, y = a[1]!, sprIdx = a[2]!, imgIdx = a[3]!;
+        const x = a[0]! + ctx.dx, y = a[1]! + ctx.dy, sprIdx = a[2]!, imgIdx = a[3]!;
         const s = t.slot.sprites[imgIdx]?.[sprIdx];
         if (s) drawSpriteFlip(t.layer, s, x, y);
         break;

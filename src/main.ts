@@ -4,13 +4,14 @@ import { indexArchive } from './resource/resource-archive.js';
 import { decodePal } from './decode/pal.js';
 import { decodeAds } from './decode/ads-loader.js';
 import { makePalette, setPaletteFromVga } from './gfx/palette.js';
-import { makeAdsState, adsTick, adsThreadLayers, adsPlayWalk } from './ads/scheduler.js';
+import { makeAdsState, adsTick, adsThreadLayers } from './ads/scheduler.js';
 import { composite } from './gfx/compositor.js';
 import { startLoop } from './engine/loop.js';
 import { pumpTicks } from './engine/clock.js';
-import { islandInit, islandAnimate, islandInitHoliday, randomIslandState } from './island/island.js';
+import { islandInit, islandInitHoliday, randomIslandState } from './island/island.js';
 import { SCREEN_W, SCREEN_H } from './types.js';
 import type { TtmContext } from './ttm/interpreter.js';
+import { storyInit, storyTick, storyAnimateBg, type GameState } from './story/story.js';
 
 const canvas = document.getElementById('stage') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -23,26 +24,35 @@ const palResRaw = archive.list.find(r => r.type === '.PAL')!;
 const pal = makePalette();
 setPaletteFromVga(pal, decodePal(palResRaw.payload).vga);
 
-// Island background
 const islandState = randomIslandState();
 const islandRt = islandInit(archive, islandState);
 const holidayLayer = islandInitHoliday(archive, islandState);
-let bgAnimTimer = 8;
+
+const adsRaw = archive.list.find(r => r.type === '.ADS')!;
+const adsInitial = decodeAds(adsRaw.payload);
+const adsState = makeAdsState(adsInitial, archive, 1);
 
 const ttmCtx: TtmContext = {
   archive,
   palette: pal,
-  setBackground: () => {}, // island owns the background
+  setBackground: (indexed) => { game.background = indexed; },
   playSample: (n) => console.log('playSample', n),
+  dx: 0,
+  dy: 0,
 };
 
-// Start ADS
-const adsRaw = archive.list.find(r => r.type === '.ADS')!;
-const ads = decodeAds(adsRaw.payload);
-const adsState = makeAdsState(ads, archive, 1);
+const game: GameState = {
+  adsState,
+  islandRt,
+  islandState,
+  holidayLayer,
+  bgAnimTimer: 8,
+  background: islandRt.bgLayer.indexed,
+  ttmCtx,
+  archive,
+};
 
-// Demo walk: Johnny walks from spot A(0) to spot C(2)
-adsPlayWalk(adsState, archive, islandRt.sprites, 0, 5, 2, 5, islandState.xPos, islandState.yPos);
+const storyState = storyInit(archive, game);
 
 const img = ctx.createImageData(SCREEN_W, SCREEN_H);
 
@@ -50,17 +60,15 @@ startLoop(
   () => {
     const elapsed = pumpTicks();
     if (elapsed <= 0) return;
-    // Island wave animation thread (delay=8)
-    bgAnimTimer -= elapsed;
-    while (bgAnimTimer <= 0) { islandAnimate(islandRt); bgAnimTimer += 8; }
-    // ADS scene threads
-    adsTick(adsState, elapsed, ttmCtx);
+    storyAnimateBg(storyState, game, elapsed);
+    storyTick(storyState, game);
+    adsTick(game.adsState, elapsed, game.ttmCtx);
   },
   () => {
     composite(img, {
-      background: islandRt.bgLayer.indexed,
-      ttmThreads: adsThreadLayers(adsState),
-      holiday: holidayLayer,
+      background: game.background,
+      ttmThreads: adsThreadLayers(game.adsState),
+      holiday: game.holidayLayer,
       palette: pal,
     });
     ctx.putImageData(img, 0, 0);
