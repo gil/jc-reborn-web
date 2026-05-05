@@ -4,7 +4,7 @@ import { indexArchive } from './resource/resource-archive.js';
 import { decodePal } from './decode/pal.js';
 import { decodeAds } from './decode/ads-loader.js';
 import { makePalette, setPaletteFromVga } from './gfx/palette.js';
-import { makeAdsState, adsTick, adsThreadLayers } from './ads/scheduler.js';
+import { makeAdsState, adsTick, adsThreadLayers, adsPlayWalk } from './ads/scheduler.js';
 import { composite } from './gfx/compositor.js';
 import { startLoop } from './engine/loop.js';
 import { pumpTicks } from './engine/clock.js';
@@ -40,6 +40,9 @@ const ttmCtx: TtmContext = {
 const adsRaw = archive.list.find(r => r.type === '.ADS')!;
 const ads = decodeAds(adsRaw.payload);
 const adsState = makeAdsState(ads, archive, 1);
+
+// Demo walk: Johnny walks from spot A(0) to spot C(2)
+adsPlayWalk(adsState, archive, islandRt.sprites, 0, 5, 2, 5, islandState.xPos, islandState.yPos);
 
 const img = ctx.createImageData(SCREEN_W, SCREEN_H);
 

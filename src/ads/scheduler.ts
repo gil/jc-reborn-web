@@ -6,12 +6,26 @@ import type { AdsResource } from '../decode/ads-loader.js';
 import type { ParsedArchive } from '../resource/types.js';
 import { decodeTtm } from '../decode/ttm-loader.js';
 import { makeLayer } from '../gfx/layer.js';
+import { decodeBmp } from '../decode/bmp.js';
+import type { Sprite } from '../types.js';
+import { walkInit, walkAnimate, type WalkState } from '../walk/walk.js';
+import type { Layer } from '../types.js';
 
 const MAX_THREADS = 10;
 const OP_ADD_SCENE = 0, OP_STOP_SCENE = 1, OP_NOP = 2;
 
 interface AdsChunk { slot: number; tag: number; offset: number; }
 interface RandOp { type: number; slot: number; tag: number; numPlays: number; weight: number; }
+
+export interface WalkContext {
+  ws: WalkState;
+  layer: Layer;
+  sprites: Sprite[];    // JOHNWALK.BMP sprites
+  bgSprites: Sprite[];  // BACKGRND.BMP sprites (for palm tree occlusion)
+  dx: number;
+  dy: number;
+  timer: number;
+}
 
 export interface AdsState {
   bc: Uint8Array;
@@ -22,6 +36,7 @@ export interface AdsState {
   randOps: RandOp[];
   adsTags: Array<{ id: number; offset: number }>;
   stopRequested: boolean;
+  walkCtx: WalkContext | null;
 }
 
 // ------- byte-reader helpers -------
@@ -113,6 +128,7 @@ export function makeAdsState(ads: AdsResource, archive: ParsedArchive, startTag:
     randOps: [],
     adsTags,
     stopRequested: false,
+    walkCtx: null,
   };
 
   // Play the first chunk of the sequence (kicks off initial scenes)
@@ -358,6 +374,17 @@ function adsPlayTriggeredChunks(state: AdsState, slotNo: number, tag: number): v
 // ------- per-frame tick (browser rAF adaptation of adsPlay loop) -------
 
 export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContext): void {
+  // Walk context: independent timer, runs alongside TTM threads
+  if (state.walkCtx) {
+    const wc = state.walkCtx;
+    wc.timer -= elapsedTicks;
+    if (wc.timer <= 0) {
+      const delay = walkAnimate(wc.ws, wc.layer, wc.sprites, wc.bgSprites, wc.dx, wc.dy);
+      wc.timer = delay;
+      if (delay === 0) state.walkCtx = null;
+    }
+  }
+
   // Decrement all active timers
   for (const t of state.threads) {
     if (t.isRunning) t.timer -= elapsedTicks;
@@ -406,6 +433,29 @@ export function adsActiveThreadCount(state: AdsState): number {
   return state.threads.filter(t => t.isRunning).length;
 }
 
-export function adsThreadLayers(state: AdsState) {
-  return state.threads.map(t => t.isRunning ? t.layer : null);
+export function adsThreadLayers(state: AdsState): (Layer | null)[] {
+  const layers: (Layer | null)[] = state.threads.map(t => t.isRunning ? t.layer : null);
+  if (state.walkCtx) layers.push(state.walkCtx.layer);
+  return layers;
+}
+
+export function adsPlayWalk(
+  state: AdsState,
+  archive: ParsedArchive,
+  bgSprites: Sprite[],
+  fromSpot: number, fromHdg: number,
+  toSpot: number, toHdg: number,
+  dx: number, dy: number,
+): void {
+  const raw = archive.byName.get('JOHNWALK.BMP');
+  if (!raw) { console.warn('JOHNWALK.BMP not found'); return; }
+  const sprites = decodeBmp(raw.payload).sprites;
+  state.walkCtx = {
+    ws: walkInit(fromSpot, fromHdg, toSpot, toHdg),
+    layer: makeLayer(),
+    sprites,
+    bgSprites,
+    dx, dy,
+    timer: 0,
+  };
 }
