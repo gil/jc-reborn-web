@@ -2,14 +2,14 @@ import { fetchData } from './io/fetch-resources.js';
 import { parseMap } from './resource/resource-map.js';
 import { indexArchive } from './resource/resource-archive.js';
 import { decodePal } from './decode/pal.js';
-import { decodeTtm } from './decode/ttm-loader.js';
+import { decodeAds } from './decode/ads-loader.js';
 import { makePalette, setPaletteFromVga } from './gfx/palette.js';
-import { makeThread } from './ttm/thread.js';
-import { ttmPlay, ttmStartScene, type TtmContext } from './ttm/interpreter.js';
+import { makeAdsState, adsTick, adsThreadLayers } from './ads/scheduler.js';
 import { composite } from './gfx/compositor.js';
 import { startLoop } from './engine/loop.js';
 import { pumpTicks } from './engine/clock.js';
 import { SCREEN_W, SCREEN_H } from './types.js';
+import type { TtmContext } from './ttm/interpreter.js';
 
 const canvas = document.getElementById('stage') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -24,11 +24,6 @@ setPaletteFromVga(pal, decodePal(palResRaw.payload).vga);
 
 let bgIndexed: Uint8Array | null = null;
 
-// Play the first available TTM at tag 1 as a smoke test
-const ttmRes = archive.list.find(r => r.type === '.TTM')!;
-const t = makeThread();
-t.slot.ttm = decodeTtm(ttmRes.payload);
-
 const ttmCtx: TtmContext = {
   archive,
   palette: pal,
@@ -36,25 +31,25 @@ const ttmCtx: TtmContext = {
   playSample: (n) => console.log('playSample', n),
 };
 
-try {
-  ttmStartScene(t, 1);
-} catch {
-  // tag 1 may not exist in all TTMs
-  t.isRunning = 2;
-}
+// Start with the first ADS resource at tag 1
+const adsRaw = archive.list.find(r => r.type === '.ADS')!;
+const ads = decodeAds(adsRaw.payload);
+const adsState = makeAdsState(ads, archive, 1);
 
 const img = ctx.createImageData(SCREEN_W, SCREEN_H);
 
 startLoop(
   () => {
     const elapsed = pumpTicks();
-    if (t.isRunning !== 1) return;
-    if (t.timer > elapsed) { t.timer -= elapsed; return; }
-    t.timer = t.delay;
-    ttmPlay(t, ttmCtx);
+    if (elapsed > 0) adsTick(adsState, elapsed, ttmCtx);
   },
   () => {
-    composite(img, { background: bgIndexed, ttmThreads: [t.layer], holiday: null, palette: pal });
+    composite(img, {
+      background: bgIndexed,
+      ttmThreads: adsThreadLayers(adsState),
+      holiday: null,
+      palette: pal,
+    });
     ctx.putImageData(img, 0, 0);
   },
 );

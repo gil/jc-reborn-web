@@ -1,0 +1,31 @@
+export const ADS = {
+  IF_LASTPLAYED_LOCAL: 0x1070,
+  IF_UNKNOWN_1: 0x1330,
+  IF_LASTPLAYED: 0x1350,
+  IF_NOT_RUNNING: 0x1360,
+  IF_IS_RUNNING: 0x1370,
+  AND: 0x1420,
+  OR: 0x1430,
+  PLAY_SCENE: 0x1510,
+  ADD_SCENE_LOCAL: 0x1520,
+  ADD_SCENE: 0x2005,
+  STOP_SCENE: 0x2010,
+  RANDOM_START: 0x3010,
+  NOP: 0x3020,
+  RANDOM_END: 0x30ff,
+  UNKNOWN_6: 0x4000,
+  FADE_OUT: 0xf010,
+  GOSUB_TAG: 0xf200,
+  END: 0xffff,
+  END_IF: 0xfff0,
+} as const;
+
+// Args per opcode (for bytecode scanner)
+export const ADS_ARG_COUNTS: Record<number, number> = {
+  0x1070: 2, 0x1330: 2, 0x1350: 2, 0x1360: 2, 0x1370: 2,
+  0x1420: 0, 0x1430: 0, 0x1510: 0, 0x1520: 5,
+  0x2005: 4, 0x2010: 3, 0x2014: 0,
+  0x3010: 0, 0x3020: 1, 0x30ff: 0,
+  0x4000: 3, 0xf010: 0, 0xf200: 1,
+  0xffff: 0, 0xfff0: 0,
+};
