@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Port the C/SDL2 "Johnny Reborn" screensaver (`~/dev/jc_reborn`) to a browser app under `/Users/gil/dev/jc-reborn-web` rendered with HTML Canvas. Game data files (`RESOURCE.MAP`, `RESOURCE.001`, `sound*.wav`) are served from `/data` and pulled via `fetch()` at runtime.
+**Goal:** Port the C/SDL2 "Johnny Reborn" screensaver (`~/dev/jc_reborn`) to a browser app under `~/dev/jc-reborn-web` rendered with HTML Canvas. Game data files (`RESOURCE.MAP`, `RESOURCE.001`, `sound*.wav`) are served from `/data` and pulled via `fetch()` at runtime.
 
 **Architecture:** 1:1 port of the C engine. Indexed-color (16-entry palette) per-layer `Uint8Array` buffers; primitives write palette indices; final compositor walks layer stack with magenta colorkey, looks up palette → RGBA in a single `ImageData`, `putImageData` to the visible canvas. ADS scheduler drives multiple TTM threads via a 20-ms tick accumulator on `requestAnimationFrame`. Resource archive parsed once from a bulk-fetched `ArrayBuffer`. WebAudio for sound, gated behind a click overlay.
 
@@ -15,6 +15,7 @@
 The original engine is a faithful re-implementation in C of Sierra's 1992 "Johnny Castaway" screensaver, using SDL2 for windowing, surfaces, blits, and timing. Source lives at `~/dev/jc_reborn`. The asset format (RESOURCE.MAP / RESOURCE.001) is the original Sierra Scrantics layout: an index file + a single archive containing TTM (animation bytecode), ADS (scheduler bytecode), BMP (sprite sheets), SCR (background screens), and PAL (palettes). All graphics are 4-bit packed indexed pixels into a 16-color VGA-style palette (channels 0-63 shifted left 2).
 
 **Reference paths in source:**
+
 - Resource archive: `~/dev/jc_reborn/resource.c`, `resource.h`
 - Decompression (RLE method 1, LZW method 2): `~/dev/jc_reborn/uncompress.c`
 - TTM opcode interpreter: `~/dev/jc_reborn/ttm.c` lines 141–470
@@ -26,6 +27,7 @@ The original engine is a faithful re-implementation in C of Sierra's 1992 "Johnn
 - Tick/timing: `~/dev/jc_reborn/events.c`
 
 **Key invariants to preserve (sharp edges):**
+
 - Palette VGA channels stored 0-63; multiply by 4 (`<<2`) → 0-252, NOT 255. The slightly muted look is correct.
 - Magenta `(0xa8, 0x00, 0xa8)` is the transparent color key on every TTM layer.
 - `grRestoreZone` (TTM `0xA064`) clears the **entire** saved-zones layer — its rect args are ignored. Port this as-is.
@@ -44,7 +46,7 @@ The original engine is a faithful re-implementation in C of Sierra's 1992 "Johnn
 ## File Structure
 
 ```
-/Users/gil/dev/jc-reborn-web/
+~/dev/jc-reborn-web/
 ├── index.html
 ├── package.json
 ├── vite.config.ts
@@ -122,7 +124,7 @@ vitest.config.ts                     node env for pure logic, jsdom only where D
 
 ## Pre-flight (one-time per shell session)
 
-- [ ] Run `fnm use` in `/Users/gil/dev/jc-reborn-web` (creates `.nvmrc` first if needed).
+- [ ] Run `fnm use` in `~/dev/jc-reborn-web` (creates `.nvmrc` first if needed).
 - [ ] Run `export GIT_PAGER=cat`.
 - [ ] Run `corepack enable` if pnpm not already on PATH.
 - [ ] Confirm `~/dev/jc_reborn` is readable for source reference (do not modify it).
@@ -132,13 +134,14 @@ vitest.config.ts                     node env for pure logic, jsdom only where D
 ## Task 1: Vite scaffold + 16-color palette test pattern
 
 **Files:**
+
 - Create: `package.json`, `vite.config.ts`, `tsconfig.json`, `index.html`, `.gitignore`, `.nvmrc`
 - Create: `src/main.ts`, `src/types.ts`, `src/gfx/palette.ts`, `src/gfx/layer.ts`
 
 - [ ] **Step 1: Initialize project**
 
 ```bash
-cd /Users/gil/dev/jc-reborn-web
+cd ~/dev/jc-reborn-web
 pnpm init
 pnpm add -D vite typescript @types/node vitest @vitest/ui jsdom
 pnpm pkg set type=module
@@ -170,9 +173,9 @@ pnpm pkg set scripts.test:watch="vitest"
 - [ ] **Step 3: Write `vite.config.ts`**
 
 ```ts
-import { defineConfig } from 'vite';
+import { defineConfig } from "vite";
 export default defineConfig({
-  publicDir: 'public',
+  publicDir: "public",
   server: { port: 5173 },
 });
 ```
@@ -180,12 +183,12 @@ export default defineConfig({
 - [ ] **Step 3b: Write `vitest.config.ts`**
 
 ```ts
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
-    environment: 'node',
-    environmentMatchGlobs: [['src/main.test.ts', 'jsdom']],
-    include: ['src/**/*.test.ts'],
+    environment: "node",
+    environmentMatchGlobs: [["src/main.test.ts", "jsdom"]],
+    include: ["src/**/*.test.ts"],
   },
 });
 ```
@@ -205,10 +208,22 @@ public/data/*
 ```html
 <!doctype html>
 <html>
-  <head><meta charset="utf-8"><title>Johnny Reborn Web</title>
+  <head>
+    <meta charset="utf-8" />
+    <title>Johnny Reborn Web</title>
     <style>
-      html,body{margin:0;background:#000;color:#ccc;font:14px monospace;}
-      #stage{display:block;margin:0 auto;image-rendering:pixelated;}
+      html,
+      body {
+        margin: 0;
+        background: #000;
+        color: #ccc;
+        font: 14px monospace;
+      }
+      #stage {
+        display: block;
+        margin: 0 auto;
+        image-rendering: pixelated;
+      }
     </style>
   </head>
   <body>
@@ -229,11 +244,16 @@ export interface Sprite {
   indexed: Uint8Array; // width*height palette indices
 }
 
-export interface Rect { x: number; y: number; w: number; h: number; }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 export interface Layer {
-  indexed: Uint8Array;       // 640*480 palette indices, 0xFF = transparent
-  clip: Rect;                // current clip rect
+  indexed: Uint8Array; // 640*480 palette indices, 0xFF = transparent
+  clip: Rect; // current clip rect
 }
 
 export const SCREEN_W = 640;
@@ -244,7 +264,7 @@ export const TRANSPARENT = 0xff;
 - [ ] **Step 7: Write `src/gfx/palette.ts`**
 
 ```ts
-import type { Palette } from '../types.js';
+import type { Palette } from "../types.js";
 
 export function makePalette(): Palette {
   return new Uint8Array(16 * 4);
@@ -263,20 +283,24 @@ export function setPaletteFromVga(pal: Palette, vga: Uint8Array): void {
 - [ ] **Step 7b: Write `src/gfx/palette.test.ts`**
 
 ```ts
-import { describe, it, expect } from 'vitest';
-import { makePalette, setPaletteFromVga } from './palette.js';
+import { describe, it, expect } from "vitest";
+import { makePalette, setPaletteFromVga } from "./palette.js";
 
-describe('setPaletteFromVga', () => {
-  it('shifts 6-bit channels left 2 (caps at 252)', () => {
+describe("setPaletteFromVga", () => {
+  it("shifts 6-bit channels left 2 (caps at 252)", () => {
     const vga = new Uint8Array(16 * 3);
-    vga[0] = 63; vga[1] = 32; vga[2] = 0;        // entry 0
-    vga[15 * 3 + 0] = 0; vga[15 * 3 + 1] = 0; vga[15 * 3 + 2] = 63; // entry 15
+    vga[0] = 63;
+    vga[1] = 32;
+    vga[2] = 0; // entry 0
+    vga[15 * 3 + 0] = 0;
+    vga[15 * 3 + 1] = 0;
+    vga[15 * 3 + 2] = 63; // entry 15
     const p = makePalette();
     setPaletteFromVga(p, vga);
-    expect(p[0]).toBe(252);  // 63 << 2
-    expect(p[1]).toBe(128);  // 32 << 2
+    expect(p[0]).toBe(252); // 63 << 2
+    expect(p[1]).toBe(128); // 32 << 2
     expect(p[2]).toBe(0);
-    expect(p[3]).toBe(255);  // alpha
+    expect(p[3]).toBe(255); // alpha
     expect(p[15 * 4 + 2]).toBe(252);
   });
 });
@@ -285,7 +309,13 @@ describe('setPaletteFromVga', () => {
 - [ ] **Step 8: Write `src/gfx/layer.ts`**
 
 ```ts
-import { SCREEN_W, SCREEN_H, TRANSPARENT, type Layer, type Rect } from '../types.js';
+import {
+  SCREEN_W,
+  SCREEN_H,
+  TRANSPARENT,
+  type Layer,
+  type Rect,
+} from "../types.js";
 
 export function makeLayer(): Layer {
   const indexed = new Uint8Array(SCREEN_W * SCREEN_H);
@@ -293,7 +323,9 @@ export function makeLayer(): Layer {
   return { indexed, clip: { x: 0, y: 0, w: SCREEN_W, h: SCREEN_H } };
 }
 
-export function clearLayer(l: Layer): void { l.indexed.fill(TRANSPARENT); }
+export function clearLayer(l: Layer): void {
+  l.indexed.fill(TRANSPARENT);
+}
 
 export function fillRect(l: Layer, r: Rect, color: number): void {
   const x2 = Math.min(r.x + r.w, SCREEN_W);
@@ -309,12 +341,12 @@ export function fillRect(l: Layer, r: Rect, color: number): void {
 - [ ] **Step 9: Write `src/main.ts`** (palette test pattern)
 
 ```ts
-import { SCREEN_W, SCREEN_H } from './types.js';
-import { makePalette, setPaletteFromVga } from './gfx/palette.js';
-import { makeLayer, fillRect } from './gfx/layer.js';
+import { SCREEN_W, SCREEN_H } from "./types.js";
+import { makePalette, setPaletteFromVga } from "./gfx/palette.js";
+import { makeLayer, fillRect } from "./gfx/layer.js";
 
-const canvas = document.getElementById('stage') as HTMLCanvasElement;
-const ctx = canvas.getContext('2d')!;
+const canvas = document.getElementById("stage") as HTMLCanvasElement;
+const ctx = canvas.getContext("2d")!;
 const img = ctx.createImageData(SCREEN_W, SCREEN_H);
 
 // Synthesize a fake VGA palette (16 colors × RGB 0-63)
@@ -378,6 +410,7 @@ git commit -m "scaffold: vite + ts + vitest + 16-color palette test pattern"
 ## Task 2: Resource loader + decompressors
 
 **Files:**
+
 - Create: `src/io/binary-reader.ts`, `src/io/fetch-resources.ts`
 - Create: `src/resource/resource-map.ts`, `src/resource/resource-archive.ts`, `src/resource/uncompress.ts`, `src/resource/types.ts`
 - Modify: `src/main.ts` to log entry list
@@ -392,15 +425,35 @@ export class BinaryReader {
     this.view = new DataView(buf);
     this.offset = offset;
   }
-  get pos(): number { return this.offset; }
-  set pos(v: number) { this.offset = v; }
-  get remaining(): number { return this.view.byteLength - this.offset; }
+  get pos(): number {
+    return this.offset;
+  }
+  set pos(v: number) {
+    this.offset = v;
+  }
+  get remaining(): number {
+    return this.view.byteLength - this.offset;
+  }
 
-  u8(): number { return this.view.getUint8(this.offset++); }
-  u16(): number { const v = this.view.getUint16(this.offset, true); this.offset += 2; return v; }
-  u32(): number { const v = this.view.getUint32(this.offset, true); this.offset += 4; return v; }
+  u8(): number {
+    return this.view.getUint8(this.offset++);
+  }
+  u16(): number {
+    const v = this.view.getUint16(this.offset, true);
+    this.offset += 2;
+    return v;
+  }
+  u32(): number {
+    const v = this.view.getUint32(this.offset, true);
+    this.offset += 4;
+    return v;
+  }
   bytes(n: number): Uint8Array {
-    const out = new Uint8Array(this.view.buffer, this.view.byteOffset + this.offset, n);
+    const out = new Uint8Array(
+      this.view.buffer,
+      this.view.byteOffset + this.offset,
+      n,
+    );
     this.offset += n;
     return new Uint8Array(out); // copy so callers can keep it past pos changes
   }
@@ -409,11 +462,14 @@ export class BinaryReader {
     const raw = this.bytes(n);
     let end = raw.indexOf(0);
     if (end < 0) end = n;
-    return new TextDecoder('latin1').decode(raw.subarray(0, end));
+    return new TextDecoder("latin1").decode(raw.subarray(0, end));
   }
   expect(magic: string): void {
-    const got = new TextDecoder('latin1').decode(this.bytes(magic.length));
-    if (got !== magic) throw new Error(`expected ${magic} got ${got} @${this.offset - magic.length}`);
+    const got = new TextDecoder("latin1").decode(this.bytes(magic.length));
+    if (got !== magic)
+      throw new Error(
+        `expected ${magic} got ${got} @${this.offset - magic.length}`,
+      );
   }
 }
 ```
@@ -421,21 +477,31 @@ export class BinaryReader {
 - [ ] **Step 2: Write `src/io/fetch-resources.ts`**
 
 ```ts
-export async function fetchData(): Promise<{ map: ArrayBuffer; archive: ArrayBuffer }> {
+export async function fetchData(): Promise<{
+  map: ArrayBuffer;
+  archive: ArrayBuffer;
+}> {
   const [mapRes, arcRes] = await Promise.all([
-    fetch('/data/RESOURCE.MAP'),
-    fetch('/data/RESOURCE.001'),
+    fetch("/data/RESOURCE.MAP"),
+    fetch("/data/RESOURCE.001"),
   ]);
   if (!mapRes.ok) throw new Error(`RESOURCE.MAP: ${mapRes.status}`);
   if (!arcRes.ok) throw new Error(`RESOURCE.001: ${arcRes.status}`);
-  return { map: await mapRes.arrayBuffer(), archive: await arcRes.arrayBuffer() };
+  return {
+    map: await mapRes.arrayBuffer(),
+    archive: await arcRes.arrayBuffer(),
+  };
 }
 ```
 
 - [ ] **Step 3: Write `src/resource/types.ts`**
 
 ```ts
-export interface MapEntry { name: string; length: number; offset: number; }
+export interface MapEntry {
+  name: string;
+  length: number;
+  offset: number;
+}
 
 export interface ParsedArchive {
   byName: Map<string, RawResource>;
@@ -443,17 +509,17 @@ export interface ParsedArchive {
 }
 
 export interface RawResource {
-  name: string;            // e.g. "JOHNNY.TTM"
-  type: string;            // ".TTM", ".BMP", etc.
-  payload: Uint8Array;     // raw bytes (post-13-byte name, post-uint32 size header)
+  name: string; // e.g. "JOHNNY.TTM"
+  type: string; // ".TTM", ".BMP", etc.
+  payload: Uint8Array; // raw bytes (post-13-byte name, post-uint32 size header)
 }
 ```
 
 - [ ] **Step 4: Write `src/resource/resource-map.ts`**
 
 ```ts
-import { BinaryReader } from '../io/binary-reader.js';
-import type { MapEntry } from './types.js';
+import { BinaryReader } from "../io/binary-reader.js";
+import type { MapEntry } from "./types.js";
 
 export interface MapFile {
   resFileName: string;
@@ -462,14 +528,14 @@ export interface MapFile {
 
 export function parseMap(buf: ArrayBuffer): MapFile {
   const r = new BinaryReader(buf);
-  r.bytes(6);                          // 6 unknown header bytes
+  r.bytes(6); // 6 unknown header bytes
   const resFileName = r.fixedString(13);
   const numEntries = r.u16();
   const entries: MapEntry[] = [];
   for (let i = 0; i < numEntries; i++) {
     const length = r.u32();
     const offset = r.u32();
-    entries.push({ name: '', length, offset }); // name is read from .001
+    entries.push({ name: "", length, offset }); // name is read from .001
   }
   return { resFileName, entries };
 }
@@ -478,11 +544,14 @@ export function parseMap(buf: ArrayBuffer): MapFile {
 - [ ] **Step 5: Write `src/resource/resource-archive.ts`**
 
 ```ts
-import { BinaryReader } from '../io/binary-reader.js';
-import type { MapFile } from './resource-map.js';
-import type { ParsedArchive, RawResource } from './types.js';
+import { BinaryReader } from "../io/binary-reader.js";
+import type { MapFile } from "./resource-map.js";
+import type { ParsedArchive, RawResource } from "./types.js";
 
-export function indexArchive(map: MapFile, archive: ArrayBuffer): ParsedArchive {
+export function indexArchive(
+  map: MapFile,
+  archive: ArrayBuffer,
+): ParsedArchive {
   const r = new BinaryReader(archive);
   const list: RawResource[] = [];
   const byName = new Map<string, RawResource>();
@@ -503,7 +572,11 @@ export function indexArchive(map: MapFile, archive: ArrayBuffer): ParsedArchive 
 - [ ] **Step 6: Write `src/resource/uncompress.ts`** (port of `~/dev/jc_reborn/uncompress.c`)
 
 ```ts
-export function uncompress(method: number, input: Uint8Array, outSize: number): Uint8Array {
+export function uncompress(
+  method: number,
+  input: Uint8Array,
+  outSize: number,
+): Uint8Array {
   if (method === 1) return uncompressRle(input, outSize);
   if (method === 2) return uncompressLzw(input, outSize);
   throw new Error(`unknown compression method ${method}`);
@@ -511,7 +584,8 @@ export function uncompress(method: number, input: Uint8Array, outSize: number): 
 
 function uncompressRle(input: Uint8Array, outSize: number): Uint8Array {
   const out = new Uint8Array(outSize);
-  let inOff = 0, outOff = 0;
+  let inOff = 0,
+    outOff = 0;
   while (outOff < outSize) {
     const ctrl = input[inOff++]!;
     if ((ctrl & 0x80) === 0x80) {
@@ -563,7 +637,7 @@ function uncompressLzw(input: Uint8Array, outSize: number): Uint8Array {
 
     if (newcode === 256) {
       const nbits3 = nBits << 3;
-      const nskip = (nbits3 - ((bitpos - 1) % nbits3)) - 1;
+      const nskip = nbits3 - ((bitpos - 1) % nbits3) - 1;
       getBits(nskip);
       nBits = 9;
       freeEntry = 256;
@@ -596,7 +670,7 @@ function uncompressLzw(input: Uint8Array, outSize: number): Uint8Array {
       prefix[freeEntry] = oldcode;
       append[freeEntry] = lastbyte & 0xff;
       freeEntry++;
-      if (freeEntry >= (1 << nBits) && nBits < 12) {
+      if (freeEntry >= 1 << nBits && nBits < 12) {
         nBits++;
         bitpos = 0;
       }
@@ -610,26 +684,28 @@ function uncompressLzw(input: Uint8Array, outSize: number): Uint8Array {
 - [ ] **Step 6b: Write `src/resource/uncompress.test.ts`**
 
 ```ts
-import { describe, it, expect } from 'vitest';
-import { uncompress } from './uncompress.js';
+import { describe, it, expect } from "vitest";
+import { uncompress } from "./uncompress.js";
 
-describe('RLE (method 1)', () => {
-  it('expands run: 0x83 0xAA → AA AA AA', () => {
+describe("RLE (method 1)", () => {
+  it("expands run: 0x83 0xAA → AA AA AA", () => {
     const input = new Uint8Array([0x83, 0xaa]);
     expect(Array.from(uncompress(1, input, 3))).toEqual([0xaa, 0xaa, 0xaa]);
   });
-  it('passes literal: 0x03 1 2 3 → 1 2 3', () => {
+  it("passes literal: 0x03 1 2 3 → 1 2 3", () => {
     const input = new Uint8Array([0x03, 0x01, 0x02, 0x03]);
     expect(Array.from(uncompress(1, input, 3))).toEqual([1, 2, 3]);
   });
-  it('mixed: literal then run', () => {
+  it("mixed: literal then run", () => {
     const input = new Uint8Array([0x02, 0xde, 0xad, 0x82, 0xff]);
-    expect(Array.from(uncompress(1, input, 4))).toEqual([0xde, 0xad, 0xff, 0xff]);
+    expect(Array.from(uncompress(1, input, 4))).toEqual([
+      0xde, 0xad, 0xff, 0xff,
+    ]);
   });
 });
 
-describe('LZW (method 2)', () => {
-  it('round-trips a known fixture', () => {
+describe("LZW (method 2)", () => {
+  it("round-trips a known fixture", () => {
     // Use a small LZW-compressed buffer captured by running the C uncompress on a known input,
     // OR — bootstrap: compress a payload via the original C tool, paste the bytes here.
     // Placeholder: implementer captures a real fixture from RESOURCE.001 (e.g., a small BMP) and
@@ -638,8 +714,8 @@ describe('LZW (method 2)', () => {
   });
 });
 
-describe('uncompress dispatch', () => {
-  it('throws on unknown method', () => {
+describe("uncompress dispatch", () => {
+  it("throws on unknown method", () => {
     expect(() => uncompress(99, new Uint8Array(), 0)).toThrow();
   });
 });
@@ -652,15 +728,21 @@ describe('uncompress dispatch', () => {
 Replace existing body with:
 
 ```ts
-import { fetchData } from './io/fetch-resources.js';
-import { parseMap } from './resource/resource-map.js';
-import { indexArchive } from './resource/resource-archive.js';
+import { fetchData } from "./io/fetch-resources.js";
+import { parseMap } from "./resource/resource-map.js";
+import { indexArchive } from "./resource/resource-archive.js";
 
 const { map: mapBuf, archive: arcBuf } = await fetchData();
 const map = parseMap(mapBuf);
 const archive = indexArchive(map, arcBuf);
 console.log(`resFile=${map.resFileName} entries=${map.entries.length}`);
-console.table(archive.list.map(r => ({ name: r.name, type: r.type, size: r.payload.length })));
+console.table(
+  archive.list.map((r) => ({
+    name: r.name,
+    type: r.type,
+    size: r.payload.length,
+  })),
+);
 ```
 
 - [ ] **Step 8: Stage data files**
@@ -702,6 +784,7 @@ git commit -m "feat: resource archive parser + RLE/LZW decompressors with tests"
 ## Task 3: Asset decoders (PAL, SCR, BMP, TTM, ADS)
 
 **Files:**
+
 - Create: `src/decode/pal.ts`, `src/decode/scr.ts`, `src/decode/bmp.ts`, `src/decode/ttm-loader.ts`, `src/decode/ads-loader.ts`, `src/decode/ttm-disasm.ts`
 - Modify: `src/main.ts` to add a debug picker UI
 - Modify: `index.html` to host the picker
@@ -709,17 +792,23 @@ git commit -m "feat: resource archive parser + RLE/LZW decompressors with tests"
 - [ ] **Step 1: Write `src/decode/pal.ts`** (port of `parsePalResource` resource.c:183-219)
 
 ```ts
-import { BinaryReader } from '../io/binary-reader.js';
+import { BinaryReader } from "../io/binary-reader.js";
 
-export interface PalResource { vga: Uint8Array; /* 256 × RGB, channels 0-63 */ }
+export interface PalResource {
+  vga: Uint8Array; /* 256 × RGB, channels 0-63 */
+}
 
 export function decodePal(payload: Uint8Array): PalResource {
   const r = new BinaryReader(payload.buffer, payload.byteOffset);
-  r.expect('PAL:');
-  r.u16();                      // size
-  r.u8(); r.u8();               // unknown
-  r.expect('VGA:');
-  r.u8(); r.u8(); r.u8(); r.u8(); // size header
+  r.expect("PAL:");
+  r.u16(); // size
+  r.u8();
+  r.u8(); // unknown
+  r.expect("VGA:");
+  r.u8();
+  r.u8();
+  r.u8();
+  r.u8(); // size header
   const vga = new Uint8Array(256 * 3);
   for (let i = 0; i < 256; i++) {
     vga[i * 3 + 0] = r.u8();
@@ -733,20 +822,25 @@ export function decodePal(payload: Uint8Array): PalResource {
 - [ ] **Step 2: Write `src/decode/scr.ts`** (port of `parseScrResource` resource.c:222-266)
 
 ```ts
-import { BinaryReader } from '../io/binary-reader.js';
-import { uncompress } from '../resource/uncompress.js';
+import { BinaryReader } from "../io/binary-reader.js";
+import { uncompress } from "../resource/uncompress.js";
 
-export interface ScrResource { width: number; height: number; indexed: Uint8Array; }
+export interface ScrResource {
+  width: number;
+  height: number;
+  indexed: Uint8Array;
+}
 
 export function decodeScr(payload: Uint8Array): ScrResource {
   const r = new BinaryReader(payload.buffer, payload.byteOffset);
-  r.expect('SCR:');
-  r.u16(); r.u16();         // totalSize, flags
-  r.expect('DIM:');
-  r.u32();                  // dimSize
+  r.expect("SCR:");
+  r.u16();
+  r.u16(); // totalSize, flags
+  r.expect("DIM:");
+  r.u32(); // dimSize
   const width = r.u16();
   const height = r.u16();
-  r.expect('BIN:');
+  r.expect("BIN:");
   const compSize = r.u32() - 5;
   const method = r.u8();
   const uncompSize = r.u32();
@@ -765,22 +859,27 @@ export function decodeScr(payload: Uint8Array): ScrResource {
 - [ ] **Step 3: Write `src/decode/bmp.ts`** (port of `parseBmpResource` resource.c:134-180 + `grLoadBmp` graphics.c:568-601)
 
 ```ts
-import { BinaryReader } from '../io/binary-reader.js';
-import { uncompress } from '../resource/uncompress.js';
-import type { Sprite } from '../types.js';
+import { BinaryReader } from "../io/binary-reader.js";
+import { uncompress } from "../resource/uncompress.js";
+import type { Sprite } from "../types.js";
 
-export interface BmpResource { sprites: Sprite[]; }
+export interface BmpResource {
+  sprites: Sprite[];
+}
 
 export function decodeBmp(payload: Uint8Array): BmpResource {
   const r = new BinaryReader(payload.buffer, payload.byteOffset);
-  r.expect('BMP:');
-  r.u16(); r.u16();             // outer width, height (often unused)
-  r.expect('INF:');
-  r.u32();                      // dataSize
+  r.expect("BMP:");
+  r.u16();
+  r.u16(); // outer width, height (often unused)
+  r.expect("INF:");
+  r.u32(); // dataSize
   const numImages = r.u16();
-  const widths: number[] = []; for (let i = 0; i < numImages; i++) widths.push(r.u16());
-  const heights: number[] = []; for (let i = 0; i < numImages; i++) heights.push(r.u16());
-  r.expect('BIN:');
+  const widths: number[] = [];
+  for (let i = 0; i < numImages; i++) widths.push(r.u16());
+  const heights: number[] = [];
+  for (let i = 0; i < numImages; i++) heights.push(r.u16());
+  r.expect("BIN:");
   const compSize = r.u32() - 5;
   const method = r.u8();
   const uncompSize = r.u32();
@@ -790,7 +889,8 @@ export function decodeBmp(payload: Uint8Array): BmpResource {
   const sprites: Sprite[] = [];
   let off = 0;
   for (let i = 0; i < numImages; i++) {
-    const w = widths[i]!, h = heights[i]!;
+    const w = widths[i]!,
+      h = heights[i]!;
     if (w & 1) throw new Error(`bmp ${i}: odd width ${w}`);
     const indexed = new Uint8Array(w * h);
     for (let p = 0; p < (w * h) / 2; p++) {
@@ -807,10 +907,14 @@ export function decodeBmp(payload: Uint8Array): BmpResource {
 - [ ] **Step 4: Write `src/decode/ttm-loader.ts`** (port of `parseTtmResource` resource.c:269-339)
 
 ```ts
-import { BinaryReader } from '../io/binary-reader.js';
-import { uncompress } from '../resource/uncompress.js';
+import { BinaryReader } from "../io/binary-reader.js";
+import { uncompress } from "../resource/uncompress.js";
 
-export interface TtmTag { id: number; description: string; offset: number; }
+export interface TtmTag {
+  id: number;
+  description: string;
+  offset: number;
+}
 export interface TtmResource {
   version: string;
   numPages: number;
@@ -820,13 +924,14 @@ export interface TtmResource {
 
 export function decodeTtm(payload: Uint8Array): TtmResource {
   const r = new BinaryReader(payload.buffer, payload.byteOffset);
-  r.expect('VER:');
-  r.u32();                      // versionSize
-  const version = new TextDecoder('latin1').decode(r.bytes(5));
-  r.expect('PAG:');
+  r.expect("VER:");
+  r.u32(); // versionSize
+  const version = new TextDecoder("latin1").decode(r.bytes(5));
+  r.expect("PAG:");
   const numPages = r.u32();
-  r.u8(); r.u8();
-  r.expect('TT3:');
+  r.u8();
+  r.u8();
+  r.expect("TT3:");
   const compSize = r.u32() - 5;
   const method = r.u8();
   const uncompSize = r.u32();
@@ -834,10 +939,13 @@ export function decodeTtm(payload: Uint8Array): TtmResource {
   const bytecode = uncompress(method, compInput, uncompSize);
   r.pos += compSize;
 
-  r.expect('TTI:');
-  r.u8(); r.u8(); r.u8(); r.u8();
-  r.expect('TAG:');
-  r.u32();                      // tagSize
+  r.expect("TTI:");
+  r.u8();
+  r.u8();
+  r.u8();
+  r.u8();
+  r.expect("TAG:");
+  r.u32(); // tagSize
   const numTags = r.u16();
   const tags: TtmTag[] = [];
   for (let i = 0; i < numTags; i++) {
@@ -854,7 +962,9 @@ function readNulString(r: BinaryReader, max: number): string {
   let end = start;
   const view = new DataView((r as any).view.buffer);
   while (end < start + max && view.getUint8(end) !== 0) end++;
-  const s = new TextDecoder('latin1').decode(new Uint8Array(view.buffer, start, end - start));
+  const s = new TextDecoder("latin1").decode(
+    new Uint8Array(view.buffer, start, end - start),
+  );
   // skip nulls until max
   while (r.pos < start + max) r.u8();
   // some TTMs use variable-length; if first byte was the length, that's handled above by stopping at 0
@@ -869,11 +979,17 @@ function readNulString(r: BinaryReader, max: number): string {
 Port follows the same shape as TTM: VER:, RES: (sub-resource list of `slot+name`), SCR: bytecode (compressed), TAG:. Reference `~/dev/jc_reborn/resource.c:54-131` line-by-line.
 
 ```ts
-import { BinaryReader } from '../io/binary-reader.js';
-import { uncompress } from '../resource/uncompress.js';
+import { BinaryReader } from "../io/binary-reader.js";
+import { uncompress } from "../resource/uncompress.js";
 
-export interface AdsSubResource { slot: number; name: string; }
-export interface AdsTag { id: number; description: string; }
+export interface AdsSubResource {
+  slot: number;
+  name: string;
+}
+export interface AdsTag {
+  id: number;
+  description: string;
+}
 export interface AdsResource {
   version: string;
   subResources: AdsSubResource[];
@@ -883,11 +999,11 @@ export interface AdsResource {
 
 export function decodeAds(payload: Uint8Array): AdsResource {
   const r = new BinaryReader(payload.buffer, payload.byteOffset);
-  r.expect('VER:');
+  r.expect("VER:");
   r.u32();
-  const version = new TextDecoder('latin1').decode(r.bytes(5));
-  r.expect('RES:');
-  r.u32();                            // resSize
+  const version = new TextDecoder("latin1").decode(r.bytes(5));
+  r.expect("RES:");
+  r.u32(); // resSize
   const numRes = r.u16();
   const subResources: AdsSubResource[] = [];
   for (let i = 0; i < numRes; i++) {
@@ -895,7 +1011,7 @@ export function decodeAds(payload: Uint8Array): AdsResource {
     const name = readUntilNul(r);
     subResources.push({ slot, name });
   }
-  r.expect('SCR:');
+  r.expect("SCR:");
   const compSize = r.u32() - 5;
   const method = r.u8();
   const uncompSize = r.u32();
@@ -903,7 +1019,7 @@ export function decodeAds(payload: Uint8Array): AdsResource {
   const bytecode = uncompress(method, compInput, uncompSize);
   r.pos += compSize;
 
-  r.expect('TAG:');
+  r.expect("TAG:");
   r.u32();
   const numTags = r.u16();
   const tags: AdsTag[] = [];
@@ -922,15 +1038,15 @@ function readUntilNul(r: BinaryReader): string {
     if (b === 0) break;
     bytes.push(b);
   }
-  return new TextDecoder('latin1').decode(new Uint8Array(bytes));
+  return new TextDecoder("latin1").decode(new Uint8Array(bytes));
 }
 ```
 
 - [ ] **Step 6: Write `src/decode/ttm-disasm.ts`** (debug helper)
 
 ```ts
-import { BinaryReader } from '../io/binary-reader.js';
-import { TTM_OPCODE_NAMES } from '../ttm/opcodes.js'; // forward ref — will exist in Task 5
+import { BinaryReader } from "../io/binary-reader.js";
+import { TTM_OPCODE_NAMES } from "../ttm/opcodes.js"; // forward ref — will exist in Task 5
 
 export function disasmTtm(bytecode: Uint8Array): string {
   const r = new BinaryReader(bytecode.buffer, bytecode.byteOffset);
@@ -943,8 +1059,8 @@ export function disasmTtm(bytecode: Uint8Array): string {
     const argCount = op & 0x000f;
     const args: number[] = [];
     for (let i = 0; i < argCount; i++) args.push(r.u16());
-    const name = TTM_OPCODE_NAMES[op] ?? '???';
-    let line = `${offset.toString(16).padStart(6, '0')}  ${op.toString(16).padStart(4, '0')} ${name} ${args.join(' ')}`;
+    const name = TTM_OPCODE_NAMES[op] ?? "???";
+    let line = `${offset.toString(16).padStart(6, "0")}  ${op.toString(16).padStart(4, "0")} ${name} ${args.join(" ")}`;
     // Some opcodes carry trailing strings (LOAD_SCREEN/LOAD_IMAGE/LOAD_PALETTE)
     if (op === 0xf01f || op === 0xf02f || op === 0xf05f) {
       const sb: number[] = [];
@@ -955,11 +1071,11 @@ export function disasmTtm(bytecode: Uint8Array): string {
       }
       // pad to even
       if (r.pos & 1) r.u8();
-      line += ` "${new TextDecoder('latin1').decode(new Uint8Array(sb))}"`;
+      line += ` "${new TextDecoder("latin1").decode(new Uint8Array(sb))}"`;
     }
     lines.push(line);
   }
-  return lines.join('\n');
+  return lines.join("\n");
 }
 ```
 
@@ -978,50 +1094,55 @@ Insert before the canvas:
 - [ ] **Step 8: Modify `src/main.ts`** to wire picker
 
 ```ts
-import { fetchData } from './io/fetch-resources.js';
-import { parseMap } from './resource/resource-map.js';
-import { indexArchive } from './resource/resource-archive.js';
-import { decodePal } from './decode/pal.js';
-import { decodeScr } from './decode/scr.js';
-import { decodeBmp } from './decode/bmp.js';
-import { decodeTtm } from './decode/ttm-loader.js';
-import { decodeAds } from './decode/ads-loader.js';
-import { disasmTtm } from './decode/ttm-disasm.js';
-import { makePalette, setPaletteFromVga } from './gfx/palette.js';
-import { SCREEN_W, SCREEN_H } from './types.js';
+import { fetchData } from "./io/fetch-resources.js";
+import { parseMap } from "./resource/resource-map.js";
+import { indexArchive } from "./resource/resource-archive.js";
+import { decodePal } from "./decode/pal.js";
+import { decodeScr } from "./decode/scr.js";
+import { decodeBmp } from "./decode/bmp.js";
+import { decodeTtm } from "./decode/ttm-loader.js";
+import { decodeAds } from "./decode/ads-loader.js";
+import { disasmTtm } from "./decode/ttm-disasm.js";
+import { makePalette, setPaletteFromVga } from "./gfx/palette.js";
+import { SCREEN_W, SCREEN_H } from "./types.js";
 
 const { map: mapBuf, archive: arcBuf } = await fetchData();
 const map = parseMap(mapBuf);
 const archive = indexArchive(map, arcBuf);
 
-const palResRaw = archive.list.find(r => r.type === '.PAL')!;
+const palResRaw = archive.list.find((r) => r.type === ".PAL")!;
 const pal = makePalette();
 setPaletteFromVga(pal, decodePal(palResRaw.payload).vga);
 
-const picker = document.getElementById('picker') as HTMLSelectElement;
+const picker = document.getElementById("picker") as HTMLSelectElement;
 for (const r of archive.list) {
-  const o = document.createElement('option');
-  o.value = r.name; o.textContent = `${r.name} (${r.payload.length} B)`;
+  const o = document.createElement("option");
+  o.value = r.name;
+  o.textContent = `${r.name} (${r.payload.length} B)`;
   picker.appendChild(o);
 }
 
-const canvas = document.getElementById('stage') as HTMLCanvasElement;
-const ctx = canvas.getContext('2d')!;
-const info = document.getElementById('info') as HTMLPreElement;
+const canvas = document.getElementById("stage") as HTMLCanvasElement;
+const ctx = canvas.getContext("2d")!;
+const info = document.getElementById("info") as HTMLPreElement;
 
-document.getElementById('play')!.addEventListener('click', () => render(picker.value));
+document
+  .getElementById("play")!
+  .addEventListener("click", () => render(picker.value));
 
 function render(name: string): void {
   const res = archive.byName.get(name)!;
   info.textContent = `${name} type=${res.type} size=${res.payload.length}`;
   ctx.clearRect(0, 0, SCREEN_W, SCREEN_H);
-  if (res.type === '.SCR') renderScr(res.payload);
-  else if (res.type === '.BMP') renderBmpSheet(res.payload);
-  else if (res.type === '.TTM') info.textContent += '\n\n' + disasmTtm(decodeTtm(res.payload).bytecode);
-  else if (res.type === '.ADS') {
+  if (res.type === ".SCR") renderScr(res.payload);
+  else if (res.type === ".BMP") renderBmpSheet(res.payload);
+  else if (res.type === ".TTM")
+    info.textContent += "\n\n" + disasmTtm(decodeTtm(res.payload).bytecode);
+  else if (res.type === ".ADS") {
     const a = decodeAds(res.payload);
-    info.textContent += `\nsubs=${a.subResources.map(s => s.slot + ':' + s.name).join(',')}\ntags=${a.tags.map(t => t.id + ':' + t.description).join(', ')}`;
-  } else if (res.type === '.PAL') info.textContent += '\n(palette already loaded)';
+    info.textContent += `\nsubs=${a.subResources.map((s) => s.slot + ":" + s.name).join(",")}\ntags=${a.tags.map((t) => t.id + ":" + t.description).join(", ")}`;
+  } else if (res.type === ".PAL")
+    info.textContent += "\n(palette already loaded)";
 }
 
 function renderScr(payload: Uint8Array): void {
@@ -1043,9 +1164,15 @@ function renderScr(payload: Uint8Array): void {
 function renderBmpSheet(payload: Uint8Array): void {
   const bmp = decodeBmp(payload);
   const img = ctx.createImageData(SCREEN_W, SCREEN_H);
-  let cx = 0, cy = 0, rowH = 0;
+  let cx = 0,
+    cy = 0,
+    rowH = 0;
   for (const sp of bmp.sprites) {
-    if (cx + sp.width > SCREEN_W) { cx = 0; cy += rowH; rowH = 0; }
+    if (cx + sp.width > SCREEN_W) {
+      cx = 0;
+      cy += rowH;
+      rowH = 0;
+    }
     if (cy + sp.height > SCREEN_H) break;
     for (let y = 0; y < sp.height; y++) {
       for (let x = 0; x < sp.width; x++) {
@@ -1084,13 +1211,14 @@ git commit -m "feat: PAL/SCR/BMP/TTM/ADS decoders + debug picker UI"
 ## Task 4: Graphics primitives on indexed layers + compositor
 
 **Files:**
+
 - Create: `src/gfx/primitives.ts`, `src/gfx/sprite.ts`, `src/gfx/clip.ts`, `src/gfx/zone.ts`, `src/gfx/compositor.ts`
 - Modify: `src/main.ts` for a primitives demo
 
 - [ ] **Step 1: Write `src/gfx/clip.ts`**
 
 ```ts
-import type { Layer, Rect } from '../types.js';
+import type { Layer, Rect } from "../types.js";
 
 export function setClip(l: Layer, r: Rect): void {
   l.clip = {
@@ -1110,38 +1238,62 @@ export function inClip(l: Layer, x: number, y: number): boolean {
 - [ ] **Step 2: Write `src/gfx/primitives.ts`** (port of graphics.c grPutPixel/grDrawLine/grDrawRect/grDrawCircle)
 
 ```ts
-import { SCREEN_W, type Layer } from '../types.js';
-import { inClip } from './clip.js';
+import { SCREEN_W, type Layer } from "../types.js";
+import { inClip } from "./clip.js";
 
 export function putPixel(l: Layer, x: number, y: number, color: number): void {
   if (!inClip(l, x, y)) return;
   l.indexed[y * SCREEN_W + x] = color;
 }
 
-export function drawLine(l: Layer, x1: number, y1: number, x2: number, y2: number, color: number): void {
+export function drawLine(
+  l: Layer,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  color: number,
+): void {
   // Bresenham — port of graphics.c:295-350
-  let x = x1, y = y1;
-  const dx = Math.abs(x2 - x1), dy = Math.abs(y2 - y1);
+  let x = x1,
+    y = y1;
+  const dx = Math.abs(x2 - x1),
+    dy = Math.abs(y2 - y1);
   const xinc = x2 > x1 ? 1 : -1;
   const yinc = y2 > y1 ? 1 : -1;
   if (dy < dx) {
     let cumul = (dx + 1) >> 1;
     for (let i = 0; i < dx; i++) {
       putPixel(l, x, y, color);
-      x += xinc; cumul += dy;
-      if (cumul > dx) { cumul -= dx; y += yinc; }
+      x += xinc;
+      cumul += dy;
+      if (cumul > dx) {
+        cumul -= dx;
+        y += yinc;
+      }
     }
   } else {
     let cumul = (dy + 1) >> 1;
     for (let i = 0; i < dy; i++) {
       putPixel(l, x, y, color);
-      y += yinc; cumul += dx;
-      if (cumul > dy) { cumul -= dy; x += xinc; }
+      y += yinc;
+      cumul += dx;
+      if (cumul > dy) {
+        cumul -= dy;
+        x += xinc;
+      }
     }
   }
 }
 
-export function drawRect(l: Layer, x: number, y: number, w: number, h: number, color: number): void {
+export function drawRect(
+  l: Layer,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  color: number,
+): void {
   // graphics.c grDrawRect uses SDL_FillRect — filled rectangle, not outline
   for (let yy = y; yy < y + h; yy++) {
     for (let xx = x; xx < x + w; xx++) {
@@ -1151,14 +1303,23 @@ export function drawRect(l: Layer, x: number, y: number, w: number, h: number, c
 }
 
 export function drawCircle(
-  l: Layer, x1: number, y1: number, w: number, h: number, fg: number, bg: number,
+  l: Layer,
+  x1: number,
+  y1: number,
+  w: number,
+  h: number,
+  fg: number,
+  bg: number,
 ): void {
   // graphics.c:369-453 — only even diameters, only true circles
-  if (w !== h || (w & 1)) return;
+  if (w !== h || w & 1) return;
   const r = (w >> 1) - 1;
-  const xc = x1 + r, yc = y1 + r;
+  const xc = x1 + r,
+    yc = y1 + r;
   // bg fill via horizontal lines
-  let x = 0, y = r, d = 1 - r;
+  let x = 0,
+    y = r,
+    d = 1 - r;
   const hline = (xa: number, xb: number, yy: number, c: number) => {
     for (let xx = xa; xx <= xb; xx++) putPixel(l, xx, yy, c);
   };
@@ -1169,11 +1330,16 @@ export function drawCircle(
     hline(xc - y, xc + y + 1, yc - x, bg);
     if (y - x <= 1) break;
     if (d < 0) d += (x << 1) + 3;
-    else { d += ((x - y) << 1) + 5; y--; }
+    else {
+      d += ((x - y) << 1) + 5;
+      y--;
+    }
     x++;
   }
   if (fg !== bg) {
-    x = 0; y = r; d = 1 - r;
+    x = 0;
+    y = r;
+    d = 1 - r;
     while (true) {
       putPixel(l, xc - x, yc + y + 1, fg);
       putPixel(l, xc + x + 1, yc + y + 1, fg);
@@ -1185,7 +1351,10 @@ export function drawCircle(
       putPixel(l, xc + y + 1, yc - x, fg);
       if (y - x <= 1) break;
       if (d < 0) d += (x << 1) + 3;
-      else { d += ((x - y) << 1) + 5; y--; }
+      else {
+        d += ((x - y) << 1) + 5;
+        y--;
+      }
       x++;
     }
   }
@@ -1195,8 +1364,8 @@ export function drawCircle(
 - [ ] **Step 3: Write `src/gfx/sprite.ts`**
 
 ```ts
-import { SCREEN_W, TRANSPARENT, type Layer, type Sprite } from '../types.js';
-import { inClip } from './clip.js';
+import { SCREEN_W, TRANSPARENT, type Layer, type Sprite } from "../types.js";
+import { inClip } from "./clip.js";
 
 // Magenta in the original is colorkey; in our indexed buffers we use 0xff.
 // Sprite indexed pixel value 0xff is treated as transparent.
@@ -1205,20 +1374,27 @@ export function drawSprite(l: Layer, sp: Sprite, dx: number, dy: number): void {
     for (let x = 0; x < sp.width; x++) {
       const idx = sp.indexed[y * sp.width + x]!;
       if (idx === TRANSPARENT) continue;
-      const X = dx + x, Y = dy + y;
+      const X = dx + x,
+        Y = dy + y;
       if (!inClip(l, X, Y)) continue;
       l.indexed[Y * SCREEN_W + X] = idx;
     }
   }
 }
 
-export function drawSpriteFlip(l: Layer, sp: Sprite, dx: number, dy: number): void {
+export function drawSpriteFlip(
+  l: Layer,
+  sp: Sprite,
+  dx: number,
+  dy: number,
+): void {
   // Column-by-column right-to-left (matches graphics.c:472-491)
   for (let i = 0; i < sp.width; i++) {
     for (let y = 0; y < sp.height; y++) {
       const idx = sp.indexed[y * sp.width + i]!;
       if (idx === TRANSPARENT) continue;
-      const X = dx + (sp.width - 1 - i), Y = dy + y;
+      const X = dx + (sp.width - 1 - i),
+        Y = dy + y;
       if (!inClip(l, X, Y)) continue;
       l.indexed[Y * SCREEN_W + X] = idx;
     }
@@ -1231,11 +1407,19 @@ export function drawSpriteFlip(l: Layer, sp: Sprite, dx: number, dy: number): vo
 - [ ] **Step 4: Write `src/gfx/zone.ts`**
 
 ```ts
-import { SCREEN_W, SCREEN_H, TRANSPARENT, type Layer, type Rect } from '../types.js';
+import {
+  SCREEN_W,
+  SCREEN_H,
+  TRANSPARENT,
+  type Layer,
+  type Rect,
+} from "../types.js";
 
 let savedZonesLayer: Uint8Array | null = null;
 
-export function getSavedZonesLayer(): Uint8Array | null { return savedZonesLayer; }
+export function getSavedZonesLayer(): Uint8Array | null {
+  return savedZonesLayer;
+}
 
 function ensureSaved(): Uint8Array {
   if (!savedZonesLayer) {
@@ -1245,13 +1429,20 @@ function ensureSaved(): Uint8Array {
   return savedZonesLayer;
 }
 
-export function copyZoneToBg(srcLayer: Layer, x: number, y: number, w: number, h: number): void {
+export function copyZoneToBg(
+  srcLayer: Layer,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): void {
   const buf = ensureSaved();
   // Original copies w+2 (graphics.c:248 comment: GJIVS6.TTM glitch fix)
   const W = w + 2;
   for (let yy = 0; yy < h; yy++) {
     for (let xx = 0; xx < W; xx++) {
-      const X = x + xx, Y = y + yy;
+      const X = x + xx,
+        Y = y + yy;
       if (X < 0 || X >= SCREEN_W || Y < 0 || Y >= SCREEN_H) continue;
       buf[Y * SCREEN_W + X] = srcLayer.indexed[Y * SCREEN_W + X]!;
     }
@@ -1259,29 +1450,55 @@ export function copyZoneToBg(srcLayer: Layer, x: number, y: number, w: number, h
 }
 
 // graphics.c:272 saveZone is a no-op stub
-export function saveZone(_l: Layer, _x: number, _y: number, _w: number, _h: number): void {}
+export function saveZone(
+  _l: Layer,
+  _x: number,
+  _y: number,
+  _w: number,
+  _h: number,
+): void {}
 
 // graphics.c:279 restoreZone clears the WHOLE saved-zones layer
-export function restoreZone(_l: Layer, _x: number, _y: number, _w: number, _h: number): void {
+export function restoreZone(
+  _l: Layer,
+  _x: number,
+  _y: number,
+  _w: number,
+  _h: number,
+): void {
   savedZonesLayer = null;
 }
 
-export function saveImage1(_l: Layer, _x: number, _y: number, _w: number, _h: number): void {
+export function saveImage1(
+  _l: Layer,
+  _x: number,
+  _y: number,
+  _w: number,
+  _h: number,
+): void {
   // graphics.c:263-269 — commented out in source, stub
 }
 
-export function clearSavedZones(): void { savedZonesLayer = null; }
+export function clearSavedZones(): void {
+  savedZonesLayer = null;
+}
 ```
 
 - [ ] **Step 5: Write `src/gfx/compositor.ts`**
 
 ```ts
-import { SCREEN_W, SCREEN_H, TRANSPARENT, type Layer, type Palette } from '../types.js';
-import { getSavedZonesLayer } from './zone.js';
+import {
+  SCREEN_W,
+  SCREEN_H,
+  TRANSPARENT,
+  type Layer,
+  type Palette,
+} from "../types.js";
+import { getSavedZonesLayer } from "./zone.js";
 
 export interface CompositeInput {
-  background: Uint8Array | null;          // 640*480 indexed, no transparency
-  ttmThreads: (Layer | null)[];           // up to MAX_TTM_THREADS = 10
+  background: Uint8Array | null; // 640*480 indexed, no transparency
+  ttmThreads: (Layer | null)[]; // up to MAX_TTM_THREADS = 10
   holiday: Layer | null;
   palette: Palette;
 }
@@ -1323,17 +1540,17 @@ After the picker logic, add a "Demo primitives" button that loads a known SCR, c
 
 ```ts
 // (append to main.ts)
-import { makeLayer } from './gfx/layer.js';
-import { drawLine, drawRect, drawCircle } from './gfx/primitives.js';
-import { drawSprite, drawSpriteFlip } from './gfx/sprite.js';
-import { composite } from './gfx/compositor.js';
+import { makeLayer } from "./gfx/layer.js";
+import { drawLine, drawRect, drawCircle } from "./gfx/primitives.js";
+import { drawSprite, drawSpriteFlip } from "./gfx/sprite.js";
+import { composite } from "./gfx/compositor.js";
 
-const demoBtn = document.createElement('button');
-demoBtn.textContent = 'Demo primitives';
-document.querySelector('div')!.appendChild(demoBtn);
-demoBtn.addEventListener('click', () => {
-  const scr = archive.list.find(r => r.type === '.SCR')!;
-  const bmp = archive.list.find(r => r.type === '.BMP')!;
+const demoBtn = document.createElement("button");
+demoBtn.textContent = "Demo primitives";
+document.querySelector("div")!.appendChild(demoBtn);
+demoBtn.addEventListener("click", () => {
+  const scr = archive.list.find((r) => r.type === ".SCR")!;
+  const bmp = archive.list.find((r) => r.type === ".BMP")!;
   const bg = decodeScr(scr.payload).indexed;
   const sprites = decodeBmp(bmp.payload).sprites;
   const layer = makeLayer();
@@ -1343,7 +1560,12 @@ demoBtn.addEventListener('click', () => {
   drawSprite(layer, sprites[0]!, 300, 200);
   drawSpriteFlip(layer, sprites[0]!, 400, 200);
   const img = ctx.createImageData(SCREEN_W, SCREEN_H);
-  composite(img, { background: bg, ttmThreads: [layer], holiday: null, palette: pal });
+  composite(img, {
+    background: bg,
+    ttmThreads: [layer],
+    holiday: null,
+    palette: pal,
+  });
   ctx.putImageData(img, 0, 0);
 });
 ```
@@ -1352,28 +1574,28 @@ demoBtn.addEventListener('click', () => {
 
 ```ts
 // primitives.test.ts
-import { describe, it, expect } from 'vitest';
-import { makeLayer } from './layer.js';
-import { putPixel, drawLine, drawRect } from './primitives.js';
-import { SCREEN_W, TRANSPARENT } from '../types.js';
+import { describe, it, expect } from "vitest";
+import { makeLayer } from "./layer.js";
+import { putPixel, drawLine, drawRect } from "./primitives.js";
+import { SCREEN_W, TRANSPARENT } from "../types.js";
 
-describe('putPixel', () => {
-  it('writes color at index, respects clip', () => {
+describe("putPixel", () => {
+  it("writes color at index, respects clip", () => {
     const l = makeLayer();
     putPixel(l, 100, 50, 7);
     expect(l.indexed[50 * SCREEN_W + 100]).toBe(7);
   });
-  it('drops out-of-bounds writes', () => {
+  it("drops out-of-bounds writes", () => {
     const l = makeLayer();
     putPixel(l, -1, 0, 7);
     putPixel(l, 0, -1, 7);
     putPixel(l, 9999, 0, 7);
-    expect(l.indexed.every(v => v === TRANSPARENT)).toBe(true);
+    expect(l.indexed.every((v) => v === TRANSPARENT)).toBe(true);
   });
 });
 
-describe('drawLine', () => {
-  it('horizontal line writes endpoints', () => {
+describe("drawLine", () => {
+  it("horizontal line writes endpoints", () => {
     const l = makeLayer();
     drawLine(l, 10, 5, 20, 5, 3);
     expect(l.indexed[5 * SCREEN_W + 10]).toBe(3);
@@ -1381,8 +1603,8 @@ describe('drawLine', () => {
   });
 });
 
-describe('drawRect', () => {
-  it('fills inclusive-exclusive area', () => {
+describe("drawRect", () => {
+  it("fills inclusive-exclusive area", () => {
     const l = makeLayer();
     drawRect(l, 0, 0, 2, 2, 9);
     expect(l.indexed[0]).toBe(9);
@@ -1396,18 +1618,19 @@ describe('drawRect', () => {
 
 ```ts
 // sprite.test.ts
-import { describe, it, expect } from 'vitest';
-import { makeLayer } from './layer.js';
-import { drawSprite, drawSpriteFlip } from './sprite.js';
-import { SCREEN_W, TRANSPARENT, type Sprite } from '../types.js';
+import { describe, it, expect } from "vitest";
+import { makeLayer } from "./layer.js";
+import { drawSprite, drawSpriteFlip } from "./sprite.js";
+import { SCREEN_W, TRANSPARENT, type Sprite } from "../types.js";
 
 const sp: Sprite = {
-  width: 2, height: 2,
+  width: 2,
+  height: 2,
   indexed: new Uint8Array([1, TRANSPARENT, TRANSPARENT, 2]),
 };
 
-describe('drawSprite', () => {
-  it('honors transparent index', () => {
+describe("drawSprite", () => {
+  it("honors transparent index", () => {
     const l = makeLayer();
     drawSprite(l, sp, 5, 5);
     expect(l.indexed[5 * SCREEN_W + 5]).toBe(1);
@@ -1417,8 +1640,8 @@ describe('drawSprite', () => {
   });
 });
 
-describe('drawSpriteFlip', () => {
-  it('mirrors columns horizontally', () => {
+describe("drawSpriteFlip", () => {
+  it("mirrors columns horizontally", () => {
     const l = makeLayer();
     drawSpriteFlip(l, sp, 0, 0);
     // original: row0 = [1, X], row1 = [X, 2]
@@ -1459,6 +1682,7 @@ git commit -m "feat: indexed graphics primitives + sprite blits + compositor wit
 ## Task 5: TTM interpreter (single thread)
 
 **Files:**
+
 - Create: `src/ttm/opcodes.ts`, `src/ttm/thread.ts`, `src/ttm/bmp-slots.ts`, `src/ttm/interpreter.ts`
 - Create: `src/engine/loop.ts`, `src/engine/clock.ts`
 - Modify: `src/main.ts` to play a single TTM tag in a real loop
@@ -1507,28 +1731,28 @@ export const TTM_OPCODE_NAMES: Record<number, string> = Object.fromEntries(
 - [ ] **Step 2: Write `src/ttm/thread.ts`**
 
 ```ts
-import type { Layer, Sprite } from '../types.js';
-import type { TtmResource } from '../decode/ttm-loader.js';
-import { makeLayer } from '../gfx/layer.js';
+import type { Layer, Sprite } from "../types.js";
+import type { TtmResource } from "../decode/ttm-loader.js";
+import { makeLayer } from "../gfx/layer.js";
 
 export const MAX_BMP_SLOTS = 6;
 export const MAX_SPRITES_PER_BMP = 120;
 
 export interface TtmSlot {
   ttm: TtmResource | null;
-  sprites: (Sprite[])[]; // [bmpSlotIdx][spriteIdx]
+  sprites: Sprite[][]; // [bmpSlotIdx][spriteIdx]
 }
 
 export interface TtmThread {
   slot: TtmSlot;
-  isRunning: 0 | 1 | 2;        // 0=free 1=active 2=expired
+  isRunning: 0 | 1 | 2; // 0=free 1=active 2=expired
   sceneSlot: number;
   sceneTag: number;
   sceneTimer: number;
   sceneIterations: number;
-  ip: number;                  // instruction pointer
-  delay: number;               // frame delay (ticks)
-  timer: number;               // countdown
+  ip: number; // instruction pointer
+  delay: number; // frame delay (ticks)
+  timer: number; // countdown
   nextGotoOffset: number;
   selectedBmpSlot: number;
   fgColor: number;
@@ -1538,11 +1762,22 @@ export interface TtmThread {
 
 export function makeThread(): TtmThread {
   return {
-    slot: { ttm: null, sprites: Array.from({ length: MAX_BMP_SLOTS }, () => []) },
+    slot: {
+      ttm: null,
+      sprites: Array.from({ length: MAX_BMP_SLOTS }, () => []),
+    },
     isRunning: 0,
-    sceneSlot: 0, sceneTag: 0, sceneTimer: 0, sceneIterations: 0,
-    ip: 0, delay: 4, timer: 0, nextGotoOffset: 0,
-    selectedBmpSlot: 0, fgColor: 15, bgColor: 0,
+    sceneSlot: 0,
+    sceneTag: 0,
+    sceneTimer: 0,
+    sceneIterations: 0,
+    ip: 0,
+    delay: 4,
+    timer: 0,
+    nextGotoOffset: 0,
+    selectedBmpSlot: 0,
+    fgColor: 15,
+    bgColor: 0,
     layer: makeLayer(),
   };
 }
@@ -1551,11 +1786,16 @@ export function makeThread(): TtmThread {
 - [ ] **Step 3: Write `src/ttm/bmp-slots.ts`**
 
 ```ts
-import { decodeBmp } from '../decode/bmp.js';
-import type { ParsedArchive } from '../resource/types.js';
-import type { TtmSlot } from './thread.js';
+import { decodeBmp } from "../decode/bmp.js";
+import type { ParsedArchive } from "../resource/types.js";
+import type { TtmSlot } from "./thread.js";
 
-export function loadBmpIntoSlot(archive: ParsedArchive, slot: TtmSlot, slotNo: number, name: string): void {
+export function loadBmpIntoSlot(
+  archive: ParsedArchive,
+  slot: TtmSlot,
+  slotNo: number,
+  name: string,
+): void {
   const res = archive.byName.get(name);
   if (!res) throw new Error(`bmp not found: ${name}`);
   slot.sprites[slotNo] = decodeBmp(res.payload).sprites;
@@ -1569,20 +1809,25 @@ export function releaseBmpSlot(slot: TtmSlot, slotNo: number): void {
 - [ ] **Step 4: Write `src/ttm/interpreter.ts`** (port of `~/dev/jc_reborn/ttm.c:141-470`)
 
 ```ts
-import { BinaryReader } from '../io/binary-reader.js';
-import { OP } from './opcodes.js';
-import type { TtmThread } from './thread.js';
-import type { ParsedArchive } from '../resource/types.js';
-import type { Palette } from '../types.js';
-import { setPaletteFromVga } from '../gfx/palette.js';
-import { decodePal } from '../decode/pal.js';
-import { decodeScr } from '../decode/scr.js';
-import { drawLine, drawRect, drawCircle, putPixel } from '../gfx/primitives.js';
-import { drawSprite, drawSpriteFlip } from '../gfx/sprite.js';
-import { setClip } from '../gfx/clip.js';
-import { copyZoneToBg, saveZone, restoreZone, saveImage1 } from '../gfx/zone.js';
-import { clearLayer } from '../gfx/layer.js';
-import { loadBmpIntoSlot } from './bmp-slots.js';
+import { BinaryReader } from "../io/binary-reader.js";
+import { OP } from "./opcodes.js";
+import type { TtmThread } from "./thread.js";
+import type { ParsedArchive } from "../resource/types.js";
+import type { Palette } from "../types.js";
+import { setPaletteFromVga } from "../gfx/palette.js";
+import { decodePal } from "../decode/pal.js";
+import { decodeScr } from "../decode/scr.js";
+import { drawLine, drawRect, drawCircle, putPixel } from "../gfx/primitives.js";
+import { drawSprite, drawSpriteFlip } from "../gfx/sprite.js";
+import { setClip } from "../gfx/clip.js";
+import {
+  copyZoneToBg,
+  saveZone,
+  restoreZone,
+  saveImage1,
+} from "../gfx/zone.js";
+import { clearLayer } from "../gfx/layer.js";
+import { loadBmpIntoSlot } from "./bmp-slots.js";
 
 export interface TtmContext {
   archive: ParsedArchive;
@@ -1592,7 +1837,10 @@ export interface TtmContext {
 }
 
 // Reads opcode + args (and optional trailing string) from bytecode at pos
-function readInstr(bc: Uint8Array, pos: number): { op: number; args: number[]; str?: string; nextPos: number } {
+function readInstr(
+  bc: Uint8Array,
+  pos: number,
+): { op: number; args: number[]; str?: string; nextPos: number } {
   const r = new BinaryReader(bc.buffer, bc.byteOffset + pos);
   const op = r.u16();
   const argCount = op & 0x000f;
@@ -1607,29 +1855,49 @@ function readInstr(bc: Uint8Array, pos: number): { op: number; args: number[]; s
       if (b === 0) break;
       sb.push(b);
     }
-    if (((r.pos) & 1) !== 0) r.u8(); // pad to even
-    str = new TextDecoder('latin1').decode(new Uint8Array(sb));
+    if ((r.pos & 1) !== 0) r.u8(); // pad to even
+    str = new TextDecoder("latin1").decode(new Uint8Array(sb));
   }
-  return { op, args, str, nextPos: pos + (r.pos - (r.pos - 2 - argCount * 2 - (str ? str.length + 1 + ((str.length + 1) & 1 ? 1 : 0) : 0))) };
+  return {
+    op,
+    args,
+    str,
+    nextPos:
+      pos +
+      (r.pos -
+        (r.pos -
+          2 -
+          argCount * 2 -
+          (str ? str.length + 1 + ((str.length + 1) & 1 ? 1 : 0) : 0))),
+  };
   // NOTE: simpler — recompute below
 }
 
 // Cleaner instruction reader
-function step(bc: Uint8Array, pos: number): { op: number; args: number[]; str?: string; pos: number } {
+function step(
+  bc: Uint8Array,
+  pos: number,
+): { op: number; args: number[]; str?: string; pos: number } {
   let p = pos;
   const dv = new DataView(bc.buffer, bc.byteOffset);
-  const op = dv.getUint16(p, true); p += 2;
+  const op = dv.getUint16(p, true);
+  p += 2;
   const argCount = op & 0x000f;
   const args: number[] = [];
-  for (let i = 0; i < argCount; i++) { args.push(dv.getUint16(p, true)); p += 2; }
+  for (let i = 0; i < argCount; i++) {
+    args.push(dv.getUint16(p, true));
+    p += 2;
+  }
   let str: string | undefined;
   if (op === OP.LOAD_SCREEN || op === OP.LOAD_IMAGE || op === OP.LOAD_PALETTE) {
     const sb: number[] = [];
     while (p < bc.length) {
-      const b = dv.getUint8(p++); if (b === 0) break; sb.push(b);
+      const b = dv.getUint8(p++);
+      if (b === 0) break;
+      sb.push(b);
     }
     if (p & 1) p++;
-    str = new TextDecoder('latin1').decode(new Uint8Array(sb));
+    str = new TextDecoder("latin1").decode(new Uint8Array(sb));
   }
   return { op, args, str, pos: p };
 }
@@ -1667,8 +1935,10 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
         for (let i = 0; i < t.slot.sprites.length; i++) t.slot.sprites[i] = [];
         break;
       case OP.PURGE:
-        if (t.nextGotoOffset) { t.ip = t.nextGotoOffset; t.nextGotoOffset = 0; }
-        else t.isRunning = 2;
+        if (t.nextGotoOffset) {
+          t.ip = t.nextGotoOffset;
+          t.nextGotoOffset = 0;
+        } else t.isRunning = 2;
         return;
       case OP.UPDATE:
         return;
@@ -1681,7 +1951,8 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
       case OP.SET_PALETTE_SLOT:
         // unimplemented in jc_reborn
         break;
-      case OP.LOCAL_TAG: case OP.TAG:
+      case OP.LOCAL_TAG:
+      case OP.TAG:
         break; // labels — no-op at runtime
       case OP.TTM_UNKNOWN_1:
         // region id, used by CLEAR_SCREEN — store on thread if needed
@@ -1702,7 +1973,12 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
         t.delay = ((a[0]! + a[1]!) / 2) | 0;
         break;
       case OP.SET_CLIP_ZONE:
-        setClip(t.layer, { x: a[0]!, y: a[1]!, w: a[2]! - a[0]!, h: a[3]! - a[1]! });
+        setClip(t.layer, {
+          x: a[0]!,
+          y: a[1]!,
+          w: a[2]! - a[0]!,
+          h: a[3]! - a[1]!,
+        });
         break;
       case OP.COPY_ZONE_TO_BG:
         copyZoneToBg(t.layer, a[0]!, a[1]!, a[2]!, a[3]!);
@@ -1732,13 +2008,19 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
         const sp = t.slot.sprites[a[0]!]?.[t.selectedBmpSlot]; // NOTE: ttm.c:307 args are (spriteNo, imageNo) ordered
         // graphics.c grDrawSprite(sfc, slot, x, y, spriteNo, imageNo)
         // ttm opcode args: a[0]=spriteNo, a[1]=imageNo, a[2]=x, a[3]=y (verify against ttm.c:306)
-        const sprIdx = a[0]!, imgIdx = a[1]!, x = a[2]!, y = a[3]!;
+        const sprIdx = a[0]!,
+          imgIdx = a[1]!,
+          x = a[2]!,
+          y = a[3]!;
         const s = t.slot.sprites[imgIdx]?.[sprIdx];
         if (s) drawSprite(t.layer, s, x, y);
         break;
       }
       case OP.DRAW_SPRITE_FLIP: {
-        const sprIdx = a[0]!, imgIdx = a[1]!, x = a[2]!, y = a[3]!;
+        const sprIdx = a[0]!,
+          imgIdx = a[1]!,
+          x = a[2]!,
+          y = a[3]!;
         const s = t.slot.sprites[imgIdx]?.[sprIdx];
         if (s) drawSpriteFlip(t.layer, s, x, y);
         break;
@@ -1750,17 +2032,19 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
         ctx.playSample(a[0]!);
         break;
       case OP.LOAD_SCREEN: {
-        const res = ctx.archive.byName.get(ins.str! + '.SCR') ?? ctx.archive.byName.get(ins.str!);
+        const res =
+          ctx.archive.byName.get(ins.str! + ".SCR") ??
+          ctx.archive.byName.get(ins.str!);
         if (res) ctx.setBackground(decodeScr(res.payload).indexed);
         break;
       }
       case OP.LOAD_IMAGE: {
-        const name = ins.str!.endsWith('.BMP') ? ins.str! : ins.str! + '.BMP';
+        const name = ins.str!.endsWith(".BMP") ? ins.str! : ins.str! + ".BMP";
         loadBmpIntoSlot(ctx.archive, t.slot, t.selectedBmpSlot, name);
         break;
       }
       case OP.LOAD_PALETTE: {
-        const name = ins.str!.endsWith('.PAL') ? ins.str! : ins.str! + '.PAL';
+        const name = ins.str!.endsWith(".PAL") ? ins.str! : ins.str! + ".PAL";
         const res = ctx.archive.byName.get(name);
         if (res) setPaletteFromVga(ctx.palette, decodePal(res.payload).vga);
         break;
@@ -1790,17 +2074,26 @@ export function pumpTicks(): number {
   acc += now - lastMs;
   lastMs = now;
   let elapsed = 0;
-  while (acc >= MS_PER_TICK) { acc -= MS_PER_TICK; ticks++; elapsed++; }
+  while (acc >= MS_PER_TICK) {
+    acc -= MS_PER_TICK;
+    ticks++;
+    elapsed++;
+  }
   return elapsed;
 }
 
-export function getTicks(): number { return ticks; }
+export function getTicks(): number {
+  return ticks;
+}
 ```
 
 - [ ] **Step 6: Write `src/engine/loop.ts`**
 
 ```ts
-export function startLoop(onTick: (elapsedTicks: number) => void, onRender: () => void): () => void {
+export function startLoop(
+  onTick: (elapsedTicks: number) => void,
+  onRender: () => void,
+): () => void {
   let stopped = false;
   const frame = () => {
     if (stopped) return;
@@ -1809,36 +2102,44 @@ export function startLoop(onTick: (elapsedTicks: number) => void, onRender: () =
     requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);
-  return () => { stopped = true; };
+  return () => {
+    stopped = true;
+  };
 }
 ```
 
 - [ ] **Step 7: Modify `src/main.ts`** to play one TTM scene
 
-Add a "Play TTM" button. On click, choose a TTM by name (e.g., the first JOHNNY*.TTM with tag 1). Set up a thread, start the scene, run the rAF loop:
+Add a "Play TTM" button. On click, choose a TTM by name (e.g., the first JOHNNY\*.TTM with tag 1). Set up a thread, start the scene, run the rAF loop:
 
 ```ts
-import { decodeTtm } from './decode/ttm-loader.js';
-import { makeThread, type TtmThread } from './ttm/thread.js';
-import { ttmPlay, ttmStartScene, type TtmContext } from './ttm/interpreter.js';
-import { startLoop } from './engine/loop.js';
-import { pumpTicks } from './engine/clock.js';
+import { decodeTtm } from "./decode/ttm-loader.js";
+import { makeThread, type TtmThread } from "./ttm/thread.js";
+import { ttmPlay, ttmStartScene, type TtmContext } from "./ttm/interpreter.js";
+import { startLoop } from "./engine/loop.js";
+import { pumpTicks } from "./engine/clock.js";
 
-const playBtn = document.createElement('button');
-playBtn.textContent = 'Play TTM (tag 1)';
-document.querySelector('div')!.appendChild(playBtn);
+const playBtn = document.createElement("button");
+playBtn.textContent = "Play TTM (tag 1)";
+document.querySelector("div")!.appendChild(playBtn);
 
 let bgIndexed: Uint8Array | null = null;
 
-playBtn.addEventListener('click', () => {
+playBtn.addEventListener("click", () => {
   const ttmRes = archive.byName.get(picker.value)!;
-  if (ttmRes.type !== '.TTM') { alert('pick a .TTM'); return; }
+  if (ttmRes.type !== ".TTM") {
+    alert("pick a .TTM");
+    return;
+  }
   const t = makeThread();
   t.slot.ttm = decodeTtm(ttmRes.payload);
   const ctx: TtmContext = {
-    archive, palette: pal,
-    setBackground: (idx) => { bgIndexed = idx; },
-    playSample: (n) => console.log('playSample', n),
+    archive,
+    palette: pal,
+    setBackground: (idx) => {
+      bgIndexed = idx;
+    },
+    playSample: (n) => console.log("playSample", n),
   };
   ttmStartScene(t, 1);
   const img = ctx_makeImage();
@@ -1846,18 +2147,28 @@ playBtn.addEventListener('click', () => {
     () => {
       const elapsed = pumpTicks();
       if (t.isRunning !== 1) return;
-      if (t.timer > elapsed) { t.timer -= elapsed; return; }
+      if (t.timer > elapsed) {
+        t.timer -= elapsed;
+        return;
+      }
       t.timer = t.delay;
       ttmPlay(t, ctx);
     },
     () => {
-      composite(img, { background: bgIndexed, ttmThreads: [t.layer], holiday: null, palette: pal });
+      composite(img, {
+        background: bgIndexed,
+        ttmThreads: [t.layer],
+        holiday: null,
+        palette: pal,
+      });
       ctx2d.putImageData(img, 0, 0);
     },
   );
 });
 
-function ctx_makeImage(): ImageData { return ctx.createImageData(SCREEN_W, SCREEN_H); }
+function ctx_makeImage(): ImageData {
+  return ctx.createImageData(SCREEN_W, SCREEN_H);
+}
 const ctx2d = ctx;
 ```
 
@@ -1872,20 +2183,27 @@ Pick a TTM (e.g., one from the `JOHNNY*.TTM` family), click "Play TTM (tag 1)". 
 - [ ] **Step 8b: Write `src/ttm/interpreter.test.ts`**
 
 ```ts
-import { describe, it, expect } from 'vitest';
-import { OP } from './opcodes.js';
-import { ttmPlay, ttmStartScene, type TtmContext } from './interpreter.js';
-import { makeThread } from './thread.js';
+import { describe, it, expect } from "vitest";
+import { OP } from "./opcodes.js";
+import { ttmPlay, ttmStartScene, type TtmContext } from "./interpreter.js";
+import { makeThread } from "./thread.js";
 
 // Build a tiny synthetic TTM bytecode: TAG 1, SET_DELAY 8, SET_COLORS 3 4, UPDATE
 function makeBytecode(): Uint8Array {
   const buf = new ArrayBuffer(64);
   const dv = new DataView(buf);
   let p = 0;
-  const w = (n: number) => { dv.setUint16(p, n, true); p += 2; };
-  w(OP.TAG); w(1);
-  w(OP.SET_DELAY); w(8);
-  w(OP.SET_COLORS); w(3); w(4);
+  const w = (n: number) => {
+    dv.setUint16(p, n, true);
+    p += 2;
+  };
+  w(OP.TAG);
+  w(1);
+  w(OP.SET_DELAY);
+  w(8);
+  w(OP.SET_COLORS);
+  w(3);
+  w(4);
   w(OP.UPDATE);
   return new Uint8Array(buf, 0, p);
 }
@@ -1897,10 +2215,15 @@ const fakeCtx: TtmContext = {
   playSample: () => {},
 };
 
-describe('ttmPlay', () => {
-  it('honors SET_DELAY and SET_COLORS, yields on UPDATE', () => {
+describe("ttmPlay", () => {
+  it("honors SET_DELAY and SET_COLORS, yields on UPDATE", () => {
     const t = makeThread();
-    t.slot.ttm = { version: 'x', numPages: 1, bytecode: makeBytecode(), tags: [{ id: 1, description: '', offset: 0 }] };
+    t.slot.ttm = {
+      version: "x",
+      numPages: 1,
+      bytecode: makeBytecode(),
+      tags: [{ id: 1, description: "", offset: 0 }],
+    };
     ttmStartScene(t, 1);
     ttmPlay(t, fakeCtx);
     expect(t.delay).toBe(8);
@@ -1929,6 +2252,7 @@ git commit -m "feat: TTM single-thread interpreter + rAF tick loop with tests"
 ## Task 6: ADS scheduler
 
 **Files:**
+
 - Create: `src/ads/opcodes.ts`, `src/ads/scheduler.ts`
 - Modify: `src/main.ts` to play an ADS
 
@@ -1961,6 +2285,7 @@ export const ADS = {
 - [ ] **Step 2: Write `src/ads/scheduler.ts`** (port of `~/dev/jc_reborn/ads.c:445-800`)
 
 This is the largest file. Implement, in order:
+
 - `adsFindTagOffset(bc, tagId)` — find ADS tag offset.
 - `adsPlayChunk(state, fromOffset)` — execute conditionals/RANDOM blocks until END_IF/RANDOM_END.
 - `adsRandomPickOp(ops)` — weighted random selection (rng: `Math.random()` for v1; mention seedable PRNG as later improvement).
@@ -1975,31 +2300,37 @@ This is the largest file. Implement, in order:
 - Track ADS state: `adsChunks` (bookmarks per condition for triggered re-execution), `adsLastPlayed[(slot,tag)]`, `runningSet`.
 
 ```ts
-import { OP } from '../ttm/opcodes.js';
-import { ADS } from './opcodes.js';
-import { makeThread, type TtmThread, type TtmSlot } from '../ttm/thread.js';
-import { ttmPlay, ttmStartScene, type TtmContext } from '../ttm/interpreter.js';
-import type { ParsedArchive } from '../resource/types.js';
-import type { AdsResource } from '../decode/ads-loader.js';
-import { decodeTtm } from '../decode/ttm-loader.js';
+import { OP } from "../ttm/opcodes.js";
+import { ADS } from "./opcodes.js";
+import { makeThread, type TtmThread, type TtmSlot } from "../ttm/thread.js";
+import { ttmPlay, ttmStartScene, type TtmContext } from "../ttm/interpreter.js";
+import type { ParsedArchive } from "../resource/types.js";
+import type { AdsResource } from "../decode/ads-loader.js";
+import { decodeTtm } from "../decode/ttm-loader.js";
 
 const MAX_THREADS = 10;
 
 export interface AdsState {
   ads: AdsResource;
-  ttmSlots: Map<number, TtmSlot>;       // by sub-resource slot id
-  threads: TtmThread[];                  // length MAX_THREADS
-  lastPlayed: Set<number>;               // (slot<<16)|tag
+  ttmSlots: Map<number, TtmSlot>; // by sub-resource slot id
+  threads: TtmThread[]; // length MAX_THREADS
+  lastPlayed: Set<number>; // (slot<<16)|tag
   triggers: Array<{ slot: number; tag: number; chunkOffset: number }>;
   ip: number;
   done: boolean;
 }
 
-export function makeAdsState(ads: AdsResource, archive: ParsedArchive): AdsState {
+export function makeAdsState(
+  ads: AdsResource,
+  archive: ParsedArchive,
+): AdsState {
   const ttmSlots = new Map<number, TtmSlot>();
   for (const sub of ads.subResources) {
     const ttm = decodeTtm(archive.byName.get(sub.name)!.payload);
-    ttmSlots.set(sub.slot, { ttm, sprites: Array.from({ length: 6 }, () => []) });
+    ttmSlots.set(sub.slot, {
+      ttm,
+      sprites: Array.from({ length: 6 }, () => []),
+    });
   }
   return {
     ads,
@@ -2034,15 +2365,18 @@ Pick an ADS (e.g., `JOHNNY.ADS`), click "Play ADS". Expected: multiple TTM scene
 Cover the pure pieces: `adsRandomPickOp` weighted distribution (seed `Math.random` via `vi.spyOn`); `adsFindTagOffset` returns correct offset for known tag; conditional evaluator (IF_LASTPLAYED/IF_NOT_RUNNING/IF_IS_RUNNING with AND/OR) with a synthetic state. Skip end-to-end ADS run — verified visually.
 
 ```ts
-import { describe, it, expect, vi } from 'vitest';
-import { adsRandomPickOp } from './scheduler.js';
+import { describe, it, expect, vi } from "vitest";
+import { adsRandomPickOp } from "./scheduler.js";
 
-describe('adsRandomPickOp', () => {
-  it('picks weighted ops deterministically when rng controlled', () => {
-    const ops = [{ slot: 1, tag: 1, weight: 10 }, { slot: 2, tag: 2, weight: 90 }];
-    vi.spyOn(Math, 'random').mockReturnValue(0.5); // cumulative > 10/100, picks 2nd
+describe("adsRandomPickOp", () => {
+  it("picks weighted ops deterministically when rng controlled", () => {
+    const ops = [
+      { slot: 1, tag: 1, weight: 10 },
+      { slot: 2, tag: 2, weight: 90 },
+    ];
+    vi.spyOn(Math, "random").mockReturnValue(0.5); // cumulative > 10/100, picks 2nd
     expect(adsRandomPickOp(ops).slot).toBe(2);
-    vi.spyOn(Math, 'random').mockReturnValue(0.05);
+    vi.spyOn(Math, "random").mockReturnValue(0.05);
     expect(adsRandomPickOp(ops).slot).toBe(1);
     vi.restoreAllMocks();
   });
@@ -2061,10 +2395,12 @@ git commit -m "feat: ADS scheduler with conditionals, RANDOM blocks, multi-threa
 ## Task 7: Island composer
 
 **Files:**
+
 - Create: `src/island/island.ts`, `src/island/island-data.ts`
 - Modify: `src/main.ts` to use island as background
 
 Port `~/dev/jc_reborn/island.c` and the data tables from `island.c`. The island composer:
+
 - Picks a random island origin offset (`grDx`, `grDy` in C).
 - Picks an ocean variant (calm/wavy).
 - Picks a wind direction.
@@ -2086,10 +2422,12 @@ Port `~/dev/jc_reborn/island.c` and the data tables from `island.c`. The island 
 ## Task 8: Walking + pathfinding
 
 **Files:**
+
 - Create: `src/walk/walk.ts`, `src/walk/calcpath.ts`, `src/walk/walk-data.ts`, `src/walk/calcpath-data.ts`
 - Modify: ADS scheduler to recognize the special "walk" thread
 
 Port:
+
 - `walk.c` → `walk.ts` — 8-direction state machine, frame extraction.
 - `calcpath.c` → `calcpath.ts` — DFS over `walkMatrix`.
 - `walk_data.h` → `walk-data.ts` — bookmark tables.
@@ -2108,10 +2446,12 @@ The walking thread runs alongside ADS scene threads; treat as a special-cased TT
 ## Task 9: Story scheduler
 
 **Files:**
+
 - Create: `src/story/story.ts`, `src/story/story-data.ts`
 - Modify: `src/main.ts` to swap demo entry for story-driven loop
 
 Port `~/dev/jc_reborn/story.c` and `story_data.h`:
+
 - Weighted random scene picker.
 - Filter candidates by current state (last scene played, time of day, season).
 
@@ -2125,6 +2465,7 @@ Port `~/dev/jc_reborn/story.c` and `story_data.h`:
 ## Task 10: WebAudio
 
 **Files:**
+
 - Create: `src/audio/sound.ts`, `src/ui/click-overlay.ts`
 - Modify: `src/main.ts` (gate engine start), `src/ttm/interpreter.ts` (PLAY_SAMPLE wired)
 
@@ -2132,14 +2473,28 @@ Port `~/dev/jc_reborn/story.c` and `story_data.h`:
 
 ```ts
 export function showStartOverlay(): Promise<void> {
-  return new Promise(resolve => {
-    const div = document.createElement('div');
-    div.textContent = 'Click to start';
+  return new Promise((resolve) => {
+    const div = document.createElement("div");
+    div.textContent = "Click to start";
     Object.assign(div.style, {
-      position: 'fixed', inset: '0', display: 'grid', placeItems: 'center',
-      background: 'rgba(0,0,0,0.85)', color: '#fff', fontSize: '24px', cursor: 'pointer', zIndex: '999',
+      position: "fixed",
+      inset: "0",
+      display: "grid",
+      placeItems: "center",
+      background: "rgba(0,0,0,0.85)",
+      color: "#fff",
+      fontSize: "24px",
+      cursor: "pointer",
+      zIndex: "999",
     });
-    div.addEventListener('click', () => { div.remove(); resolve(); }, { once: true });
+    div.addEventListener(
+      "click",
+      () => {
+        div.remove();
+        resolve();
+      },
+      { once: true },
+    );
     document.body.appendChild(div);
   });
 }
@@ -2150,18 +2505,25 @@ export function showStartOverlay(): Promise<void> {
 ```ts
 let ctx: AudioContext | null = null;
 const buffers = new Map<number, AudioBuffer>();
-const SOUND_IDS = [0,1,2,3,4,5,6,7,8,9,10,12,14,15,16,17,18,19,20,21,22,23,24];
+const SOUND_IDS = [
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+  24,
+];
 
 export async function initSound(): Promise<void> {
   ctx = new AudioContext();
-  await Promise.all(SOUND_IDS.map(async (n) => {
-    try {
-      const r = await fetch(`/data/sound${n}.wav`);
-      if (!r.ok) return;
-      const buf = await r.arrayBuffer();
-      buffers.set(n, await ctx!.decodeAudioData(buf));
-    } catch { /* missing sound ok */ }
-  }));
+  await Promise.all(
+    SOUND_IDS.map(async (n) => {
+      try {
+        const r = await fetch(`/data/sound${n}.wav`);
+        if (!r.ok) return;
+        const buf = await r.arrayBuffer();
+        buffers.set(n, await ctx!.decodeAudioData(buf));
+      } catch {
+        /* missing sound ok */
+      }
+    }),
+  );
 }
 
 export function playSample(n: number): void {
@@ -2186,6 +2548,7 @@ export function playSample(n: number): void {
 ## Task 11: Polish — fade out, holiday layer, fullscreen
 
 **Files:**
+
 - Create: `src/gfx/fade.ts`, `src/ui/fullscreen.ts`, `src/debug/hud.ts`
 - Modify: ADS scheduler (FADE_OUT), compositor (holiday layer)
 
@@ -2203,7 +2566,7 @@ export function playSample(n: number): void {
 After all tasks:
 
 0. `pnpm test` — all unit tests green.
-1. `cd /Users/gil/dev/jc-reborn-web && pnpm dev`
+1. `cd ~/dev/jc-reborn-web && pnpm dev`
 2. Open `http://localhost:5173`. Click overlay.
 3. Confirm:
    - Island background renders with random offset, ocean, clouds.
@@ -2230,8 +2593,8 @@ After all tasks:
 
 ## Critical files to be modified
 
-- `/Users/gil/dev/jc-reborn-web/src/resource/uncompress.ts` — RLE + LZW; off-by-one here corrupts every BMP.
-- `/Users/gil/dev/jc-reborn-web/src/gfx/compositor.ts` — hot path; layer ordering must match `~/dev/jc_reborn/graphics.c:175-208`.
-- `/Users/gil/dev/jc-reborn-web/src/ttm/interpreter.ts` — opcode dispatch; argument order errors per opcode are easy to introduce.
-- `/Users/gil/dev/jc-reborn-web/src/ads/scheduler.ts` — largest file; conditional + RANDOM control flow must match `~/dev/jc_reborn/ads.c` line-for-line.
-- `/Users/gil/dev/jc-reborn-web/src/walk/calcpath.ts` — pathfinding correctness gates Johnny's movement.
+- `~/dev/jc-reborn-web/src/resource/uncompress.ts` — RLE + LZW; off-by-one here corrupts every BMP.
+- `~/dev/jc-reborn-web/src/gfx/compositor.ts` — hot path; layer ordering must match `~/dev/jc_reborn/graphics.c:175-208`.
+- `~/dev/jc-reborn-web/src/ttm/interpreter.ts` — opcode dispatch; argument order errors per opcode are easy to introduce.
+- `~/dev/jc-reborn-web/src/ads/scheduler.ts` — largest file; conditional + RANDOM control flow must match `~/dev/jc_reborn/ads.c` line-for-line.
+- `~/dev/jc-reborn-web/src/walk/calcpath.ts` — pathfinding correctness gates Johnny's movement.
