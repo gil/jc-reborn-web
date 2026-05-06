@@ -14,3 +14,5 @@ export function pumpTicks(): number {
 }
 
 export function getTicks(): number { return ticks; }
+
+export function resetClock(): void { lastMs = performance.now(); }
