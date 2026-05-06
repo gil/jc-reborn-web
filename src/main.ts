@@ -12,9 +12,14 @@ import { islandInit, islandInitHoliday, randomIslandState } from './island/islan
 import { SCREEN_W, SCREEN_H } from './types.js';
 import type { TtmContext } from './ttm/interpreter.js';
 import { storyInit, storyTick, storyAnimateBg, type GameState } from './story/story.js';
+import { initSound, playSample } from './audio/sound.js';
+import { initSoundIcon } from './ui/sound-icon.js';
 
 const canvas = document.getElementById('stage') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
+
+initSoundIcon(canvas);
+initSound(); // fire-and-forget: pre-fetches WAV bytes; AudioContext created on first icon click
 
 const { map: mapBuf, archive: arcBuf } = await fetchData();
 const map = parseMap(mapBuf);
@@ -36,7 +41,7 @@ const ttmCtx: TtmContext = {
   archive,
   palette: pal,
   setBackground: (indexed) => { game.background = indexed; },
-  playSample: (n) => console.log('playSample', n),
+  playSample,
   dx: 0,
   dy: 0,
 };
