@@ -15,6 +15,7 @@ import { storyInit, storyTick, storyAnimateBg, type GameState } from './story/st
 import { initSound, playSample } from './audio/sound.js';
 import { initSoundIcon } from './ui/sound-icon.js';
 import { initFullscreen } from './ui/fullscreen.js';
+import { initCrt } from './ui/crt.js';
 import { initHud, hudUpdate } from './debug/hud.js';
 
 const canvas = document.getElementById('stage') as HTMLCanvasElement;
@@ -22,6 +23,7 @@ const ctx = canvas.getContext('2d')!;
 
 const controls = initSoundIcon(canvas);
 initFullscreen(canvas, controls);
+initCrt(canvas, controls);
 initHud();
 initSound(); // fire-and-forget: pre-fetches WAV bytes; AudioContext created on first icon click
 
