@@ -100,3 +100,5 @@ Hans Milling thanks a number of people for giving him (or helping him find) some
 - Jaap - Helping in finding the format of the resource files
 - Gregori - Assisting with the Lempel-Ziv decompression
 - Guido - The author of the xBaK project that led to understanding the TTM and ADS commands.
+
+Thanks to [Matt Sephton (gingerbeardman)](https://github.com/gingerbeardman) as well, for the [webgl-crt-shader](https://github.com/gingerbeardman/webgl-crt-shader).
