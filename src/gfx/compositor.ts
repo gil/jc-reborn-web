@@ -1,11 +1,13 @@
 import { SCREEN_W, SCREEN_H, TRANSPARENT, type Layer, type Palette } from '../types.js';
 import { getSavedZonesLayer } from './zone.js';
+import { type FadeState, applyFade } from './fade.js';
 
 export interface CompositeInput {
   background: Uint8Array | null;          // 640*480 indexed, no transparency
   ttmThreads: (Layer | null)[];           // up to MAX_TTM_THREADS = 10
   holiday: Layer | null;
   palette: Palette;
+  fade: FadeState | null;
 }
 
 export function composite(out: ImageData, input: CompositeInput): void {
@@ -36,4 +38,5 @@ export function composite(out: ImageData, input: CompositeInput): void {
       px[o + 3] = 255;
     }
   }
+  if (input.fade) applyFade(px, input.fade);
 }

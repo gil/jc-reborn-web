@@ -4,7 +4,7 @@ import { indexArchive } from './resource/resource-archive.js';
 import { decodePal } from './decode/pal.js';
 import { decodeAds } from './decode/ads-loader.js';
 import { makePalette, setPaletteFromVga } from './gfx/palette.js';
-import { makeAdsState, adsTick, adsThreadLayers } from './ads/scheduler.js';
+import { makeAdsState, adsTick, adsThreadLayers, adsActiveThreadCount } from './ads/scheduler.js';
 import { composite } from './gfx/compositor.js';
 import { startLoop } from './engine/loop.js';
 import { pumpTicks } from './engine/clock.js';
@@ -14,11 +14,15 @@ import type { TtmContext } from './ttm/interpreter.js';
 import { storyInit, storyTick, storyAnimateBg, type GameState } from './story/story.js';
 import { initSound, playSample } from './audio/sound.js';
 import { initSoundIcon } from './ui/sound-icon.js';
+import { initFullscreen } from './ui/fullscreen.js';
+import { initHud, hudUpdate } from './debug/hud.js';
 
 const canvas = document.getElementById('stage') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 
-initSoundIcon(canvas);
+const controls = initSoundIcon(canvas);
+initFullscreen(canvas, controls);
+initHud();
 initSound(); // fire-and-forget: pre-fetches WAV bytes; AudioContext created on first icon click
 
 const { map: mapBuf, archive: arcBuf } = await fetchData();
@@ -55,6 +59,7 @@ const game: GameState = {
   background: islandRt.bgLayer.indexed,
   ttmCtx,
   archive,
+  fadeState: null,
 };
 
 const storyState = storyInit(archive, game);
@@ -75,7 +80,9 @@ startLoop(
       ttmThreads: adsThreadLayers(game.adsState),
       holiday: game.holidayLayer,
       palette: pal,
+      fade: game.fadeState,
     });
     ctx.putImageData(img, 0, 0);
+    hudUpdate(adsActiveThreadCount(game.adsState), storyState.currentScene?.adsName ?? '-');
   },
 );

@@ -8,6 +8,7 @@ import {
   storyScenes, type StoryScene,
   FINAL, FIRST, ISLAND, LEFT_ISLAND, VARPOS_OK, LOWTIDE_OK, NORAFT, HOLIDAY_NOK,
 } from './story-data.js';
+import { type FadeState, nextFadeState, fadeDone } from '../gfx/fade.js';
 
 export interface GameState {
   adsState: AdsState;
@@ -18,6 +19,7 @@ export interface GameState {
   background: Uint8Array | null;
   ttmCtx: TtmContext;
   archive: ParsedArchive;
+  fadeState: FadeState | null;
 }
 
 type StoryPhase =
@@ -205,8 +207,8 @@ export function storyTick(state: StoryState, game: GameState): void {
   switch (state.phase.kind) {
     case 'advance': {
       if (!state.queue.length) {
-        console.log('[STORY] → fading');
         state.phase = { kind: 'fading', remaining: 100 };
+        game.fadeState = nextFadeState();
         return;
       }
       const scene = state.queue.shift()!;
@@ -259,8 +261,12 @@ export function storyTick(state: StoryState, game: GameState): void {
     }
 
     case 'fading': {
+      if (game.fadeState && !fadeDone(game.fadeState)) {
+        game.fadeState.step++;
+      }
       state.phase.remaining -= 1;
       if (state.phase.remaining <= 0) {
+        game.fadeState = null;
         buildSequence(state, game);
       }
       break;

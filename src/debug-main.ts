@@ -102,6 +102,6 @@ demoBtn.addEventListener('click', () => {
   drawSprite(layer, sprites[0]!, 300, 200);
   drawSpriteFlip(layer, sprites[0]!, 400, 200);
   const img = ctx.createImageData(SCREEN_W, SCREEN_H);
-  composite(img, { background: bg, ttmThreads: [layer], holiday: null, palette: pal });
+  composite(img, { background: bg, ttmThreads: [layer], holiday: null, palette: pal, fade: null });
   ctx.putImageData(img, 0, 0);
 });
