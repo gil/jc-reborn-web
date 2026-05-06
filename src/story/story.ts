@@ -171,6 +171,7 @@ function buildSequence(state: StoryState, game: GameState): void {
 }
 
 function startScene(scene: StoryScene, game: GameState): void {
+  console.log(`[STORY] scene ${scene.adsName}[${scene.adsTagNo}] spot${scene.spotStart}→${scene.spotEnd}`);
   const raw = game.archive.byName.get(scene.adsName);
   if (!raw) { console.warn(`ADS not found: ${scene.adsName}`); return; }
   const ads = decodeAds(raw.payload);
@@ -204,6 +205,7 @@ export function storyTick(state: StoryState, game: GameState): void {
   switch (state.phase.kind) {
     case 'advance': {
       if (!state.queue.length) {
+        console.log('[STORY] → fading');
         state.phase = { kind: 'fading', remaining: 100 };
         return;
       }
@@ -211,6 +213,7 @@ export function storyTick(state: StoryState, game: GameState): void {
       state.currentScene = scene;
 
       if (state.prevSpot !== -1) {
+        console.log(`[STORY] → walking spot${state.prevSpot}→${scene.spotStart}`);
         adsPlayWalk(
           game.adsState,
           game.archive,
@@ -219,9 +222,6 @@ export function storyTick(state: StoryState, game: GameState): void {
           scene.spotStart, scene.hdgStart,
           game.islandState.xPos, game.islandState.yPos,
         );
-        // Swap adsState after walk: need to set up scene ADS too.
-        // Walk runs on the CURRENT adsState; after walk done, start scene.
-        // Stash the scene to play after walk.
         state.phase = { kind: 'walking' };
       } else {
         startScene(scene, game);
@@ -231,8 +231,12 @@ export function storyTick(state: StoryState, game: GameState): void {
     }
 
     case 'walking': {
-      if (game.adsState.walkCtx === null) {
-        // Walk done — now start the queued scene
+      const wc = game.adsState.walkCtx;
+      if (wc === null || wc.done) {
+        // Walk done — clear the walk context, then start the queued scene.
+        // adsTick kept the walk layer visible one extra frame (done=true) so
+        // startScene can prime new threads before the layer disappears.
+        game.adsState.walkCtx = null;
         if (state.currentScene) {
           startScene(state.currentScene, game);
         }
@@ -244,7 +248,7 @@ export function storyTick(state: StoryState, game: GameState): void {
     case 'playing': {
       if (sceneIsDone(game)) {
         const scene = state.currentScene!;
-        // Update prevSpot only for non-FINAL scenes (FINAL scenes end the sequence)
+        console.log(`[STORY] → advance (scene done: ${scene.adsName}[${scene.adsTagNo}])`);
         if (!(scene.flags & FINAL)) {
           state.prevSpot = scene.spotEnd;
           state.prevHdg = scene.hdgEnd;

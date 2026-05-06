@@ -71,7 +71,7 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
     const a = ins.args;
     switch (ins.op) {
       case OP.DRAW_BACKGROUND:
-        for (let i = 0; i < t.slot.sprites.length; i++) t.slot.sprites[i] = [];
+        clearLayer(t.layer);
         break;
       case OP.PURGE:
         if (t.nextGotoOffset) { t.ip = t.nextGotoOffset; t.nextGotoOffset = 0; }

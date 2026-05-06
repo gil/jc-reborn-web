@@ -25,6 +25,7 @@ export interface WalkContext {
   dx: number;
   dy: number;
   timer: number;
+  done: boolean;        // walk finished; keep layer visible one more frame
 }
 
 export interface AdsState {
@@ -37,6 +38,7 @@ export interface AdsState {
   adsTags: Array<{ id: number; offset: number }>;
   stopRequested: boolean;
   walkCtx: WalkContext | null;
+  lingeringLayers: Layer[];        // last frame of stopped threads; shown for one tick
 }
 
 // ------- byte-reader helpers -------
@@ -129,6 +131,7 @@ export function makeAdsState(ads: AdsResource, archive: ParsedArchive, startTag:
     adsTags,
     stopRequested: false,
     walkCtx: null,
+    lingeringLayers: [],
   };
 
   // Play the first chunk of the sequence (kicks off initial scenes)
@@ -184,6 +187,8 @@ function adsAddScene(state: AdsState, slotNo: number, tag: number, arg3: number)
   } else if (arg3s > 0) {               // positive → repeat count
     thread.sceneIterations = arg3s - 1;
   }
+
+  console.log(`[ADS] start slot=${slotNo} tag=${tag} iters=${thread.sceneIterations}`);
 }
 
 function findTtmTag(slot: TtmSlot, tag: number): number {
@@ -209,7 +214,10 @@ function findTtmTag(slot: TtmSlot, tag: number): number {
 }
 
 function adsStopScene(state: AdsState, idx: number): void {
-  state.threads[idx]!.isRunning = 0;
+  const t = state.threads[idx]!;
+  state.lingeringLayers.push(t.layer); // keep last frame visible until new scene draws
+  console.log(`[ADS] stop  slot=${t.sceneSlot} tag=${t.sceneTag}`);
+  t.isRunning = 0;
 }
 
 function adsStopSceneByTag(state: AdsState, slotNo: number, tag: number): void {
@@ -374,14 +382,22 @@ function adsPlayTriggeredChunks(state: AdsState, slotNo: number, tag: number): v
 // ------- per-frame tick (browser rAF adaptation of adsPlay loop) -------
 
 export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContext): void {
+  // Lingering layers shown for exactly one tick after a thread stops so there's
+  // always content while the replacement scene primes its first frame.
+  state.lingeringLayers = [];
+
   // Walk context: independent timer, runs alongside TTM threads
   if (state.walkCtx) {
     const wc = state.walkCtx;
-    wc.timer -= elapsedTicks;
-    if (wc.timer <= 0) {
-      const delay = walkAnimate(wc.ws, wc.layer, wc.sprites, wc.bgSprites, wc.dx, wc.dy);
-      wc.timer = delay;
-      if (delay === 0) state.walkCtx = null;
+    if (!wc.done) {
+      wc.timer -= elapsedTicks;
+      if (wc.timer <= 0) {
+        const delay = walkAnimate(wc.ws, wc.layer, wc.sprites, wc.bgSprites, wc.dx, wc.dy);
+        wc.timer = delay;
+        // Mark done instead of nulling: layer stays visible one more composite frame
+        // so storyTick can start the next scene before the layer disappears.
+        if (delay === 0) wc.done = true;
+      }
     }
   }
 
@@ -417,9 +433,45 @@ export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContex
     if (t.isRunning === 2) {
       if (t.sceneIterations > 0) {
         t.sceneIterations--;
+        console.log(`[ADS] restart slot=${t.sceneSlot} tag=${t.sceneTag} iters_left=${t.sceneIterations}`);
         t.isRunning = 1;
         t.timer = 0;
         t.ip = findTtmTag(t.slot, t.sceneTag);
+      } else {
+        const slot = t.sceneSlot, tag = t.sceneTag;
+        adsStopScene(state, i);
+        if (!state.stopRequested) adsPlayTriggeredChunks(state, slot, tag);
+      }
+    }
+  }
+
+  // Second pass: same logic as the main loop, for threads that were restarted
+  // (sceneIterations timer=0) or newly started by triggered chunks at a slot
+  // index already past in the main loop. Must handle PURGE fully — leaving a
+  // thread at isRunning=2 with timer=delay causes it to be skipped for delay
+  // ticks with a blank layer, making the character disappear.
+  for (let i = 0; i < state.threads.length; i++) {
+    const t = state.threads[i]!;
+    if (!t.isRunning || t.timer > 0) continue;
+
+    console.log(`[ADS] 2pass slot=${t.sceneSlot} tag=${t.sceneTag}`);
+
+    if (t.nextGotoOffset) { t.ip = t.nextGotoOffset; t.nextGotoOffset = 0; }
+    if (t.sceneTimer > 0) { t.sceneTimer -= t.delay; if (t.sceneTimer <= 0) t.isRunning = 2; }
+
+    if (t.isRunning === 1) {
+      t.timer = t.delay;
+      ttmPlay(t, ttmCtx);
+    }
+
+    if (t.isRunning === 2) {
+      if (t.sceneIterations > 0) {
+        t.sceneIterations--;
+        console.log(`[ADS] 2pass-restart slot=${t.sceneSlot} tag=${t.sceneTag} iters_left=${t.sceneIterations}`);
+        t.isRunning = 1;
+        t.ip = findTtmTag(t.slot, t.sceneTag);
+        t.timer = t.delay;
+        ttmPlay(t, ttmCtx); // prime first frame of new iteration immediately
       } else {
         const slot = t.sceneSlot, tag = t.sceneTag;
         adsStopScene(state, i);
@@ -435,6 +487,7 @@ export function adsActiveThreadCount(state: AdsState): number {
 
 export function adsThreadLayers(state: AdsState): (Layer | null)[] {
   const layers: (Layer | null)[] = state.threads.map(t => t.isRunning ? t.layer : null);
+  for (const l of state.lingeringLayers) layers.push(l);
   if (state.walkCtx) layers.push(state.walkCtx.layer);
   return layers;
 }
@@ -457,5 +510,6 @@ export function adsPlayWalk(
     bgSprites,
     dx, dy,
     timer: 0,
+    done: false,
   };
 }
