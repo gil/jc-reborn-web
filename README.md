@@ -1,6 +1,8 @@
 # Johnny Castaway - Reborn (Web)
 
-![Screenshot](./docs/screenshot.png)
+| Screenshot                           | Screenshot with shader                           |
+| ------------------------------------ | ------------------------------------------------ |
+| ![Screenshot](./docs/screenshot.png) | ![Screenshot with Shader](./docs/screenshot.png) |
 
 This is an AI-assisted browser port of [Johnny Reborn](https://github.com/jno6809/jc_reborn), an open source engine for the classic [Johnny Castaway](https://en.wikipedia.org/wiki/Johnny_Castaway) screen saver — developed by Dynamix for Windows 3.x and published by Sierra On-Line in 1992, marketed under the **Screen Antics** brand.
 
