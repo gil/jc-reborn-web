@@ -39,6 +39,10 @@ export interface AdsState {
   stopRequested: boolean;
   walkCtx: WalkContext | null;
   lingeringLayers: Layer[];        // last frame of stopped threads; shown for one tick
+  // Offset just past the last PLAY_SCENE executed in any chunk. Used as a fallback
+  // when a scene stops with no matching IF_LASTPLAYED and no active threads remain:
+  // we cascade forward from here, skipping IF_LASTPLAYED bodies, until the terminal END.
+  scriptCursor: number;
 }
 
 // ------- byte-reader helpers -------
@@ -132,9 +136,11 @@ export function makeAdsState(ads: AdsResource, archive: ParsedArchive, startTag:
     stopRequested: false,
     walkCtx: null,
     lingeringLayers: [],
+    scriptCursor: tagOffset,
   };
 
-  // Play the first chunk of the sequence (kicks off initial scenes)
+  // Play the first chunk of the sequence (kicks off initial scenes).
+  // adsPlayChunk will update scriptCursor to point past the first PLAY_SCENE.
   adsPlayChunk(state, tagOffset);
 
   return state;
@@ -251,7 +257,13 @@ function adsRandomEnd(state: AdsState): void {
 
 // ------- chunk player (adsPlayChunk) -------
 
-function adsPlayChunk(state: AdsState, offset: number): void {
+// stopAtPlayScene=true  – initial setup (makeAdsState) and GOSUB_TAG: stop at PLAY_SCENE.
+// stopAtPlayScene=false – triggered chunks: don't stop at PLAY_SCENE (updates scriptCursor
+//   but continues), allowing IF_IS_RUNNING → FADE_OUT → END to set stopRequested.
+// cascade=true          – fallback when no IF_LASTPLAYED chunk fired and all threads stopped:
+//   runs forward from scriptCursor, setting inSkipBlock=true on every IF_LASTPLAYED it meets
+//   (skipping all their bodies) until the terminal END sets stopRequested.
+function adsPlayChunk(state: AdsState, offset: number, stopAtPlayScene = true, cascade = false): void {
   const bc = state.bc;
   let p = offset;
   let inRandBlock = false;
@@ -275,8 +287,13 @@ function adsPlayChunk(state: AdsState, offset: number): void {
         break;
       case ADS.IF_LASTPLAYED:
         p += 4; // 2 args
-        if (!inOrBlock) continueLoop = false;
-        inOrBlock = false;
+        if (cascade) {
+          // Cascade mode: skip every IF_LASTPLAYED body to reach the terminal END.
+          inSkipBlock = true;
+        } else {
+          if (!inOrBlock) continueLoop = false;
+          inOrBlock = false;
+        }
         break;
       case ADS.IF_NOT_RUNNING: {
         const slot = readU16(bc, p); const tag = readU16(bc, p + 2); p += 4;
@@ -295,7 +312,8 @@ function adsPlayChunk(state: AdsState, offset: number): void {
         break;
       case ADS.PLAY_SCENE:
         if (inSkipBlock) inSkipBlock = false;
-        else continueLoop = false;
+        else if (stopAtPlayScene) { state.scriptCursor = p; continueLoop = false; }
+        else state.scriptCursor = p; // triggered or cascade: update cursor but continue
         break;
       case ADS.ADD_SCENE_LOCAL: {
         const args = [readU16(bc, p), readU16(bc, p + 2), readU16(bc, p + 4), readU16(bc, p + 6), readU16(bc, p + 8)];
@@ -353,29 +371,43 @@ function adsPlayChunk(state: AdsState, offset: number): void {
       case ADS.END_IF:
         break;
       default:
-        // Tag opcode — not expected here, skip
+        // In triggered chunks, stop at tag boundaries to avoid executing the next section.
+        // In the initial setup call, PLAY_SCENE already stops before any tag boundary.
+        if (!stopAtPlayScene) continueLoop = false;
         break;
     }
   }
 }
 
 function adsPlayTriggeredChunks(state: AdsState, slotNo: number, tag: number): void {
+  let chunkFired = false;
+
   // Local triggers first (ACTIVITY.ADS tag 7)
   if (state.chunksLocal.length) {
     for (let i = state.chunksLocal.length - 1; i >= 0; i--) {
       const c = state.chunksLocal[i]!;
       if (c.slot === slotNo && c.tag === tag) {
         state.chunksLocal.splice(i, 1);
-        adsPlayChunk(state, c.offset);
+        adsPlayChunk(state, c.offset, false);
+        chunkFired = true;
       }
     }
-    return;
-  }
-  // Global IF_LASTPLAYED chunks
-  for (const c of state.chunks) {
-    if (c.slot === slotNo && c.tag === tag) {
-      adsPlayChunk(state, c.offset);
+  } else {
+    // Global IF_LASTPLAYED chunks
+    for (const c of state.chunks) {
+      if (c.slot === slotNo && c.tag === tag) {
+        adsPlayChunk(state, c.offset, false);
+        chunkFired = true;
+      }
     }
+  }
+
+  // Cascade fallback: if no IF_LASTPLAYED matched and all threads have stopped,
+  // scan forward from scriptCursor skipping every IF_LASTPLAYED body until the
+  // terminal END sets stopRequested. This handles scenes (e.g. tag 41) that are
+  // added directly from random pools with no dedicated IF_LASTPLAYED handler.
+  if (!chunkFired && !state.stopRequested && adsActiveThreadCount(state) === 0) {
+    adsPlayChunk(state, state.scriptCursor, false, true);
   }
 }
 
