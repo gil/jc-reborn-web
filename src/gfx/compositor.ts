@@ -3,7 +3,7 @@ import { getSavedZonesLayer } from './zone.js';
 import { type FadeState, applyFade } from './fade.js';
 
 export interface CompositeInput {
-  background: Uint8Array | null;          // 640*480 indexed, no transparency
+  background: Uint8Array | null;          // 640*480 indexed; TRANSPARENT (0xff) = index 0
   ttmThreads: (Layer | null)[];           // up to MAX_TTM_THREADS = 10
   holiday: Layer | null;
   palette: Palette;

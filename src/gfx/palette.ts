@@ -6,9 +6,12 @@ export function makePalette(): Palette {
 
 export function setPaletteFromVga(pal: Palette, vga: Uint8Array): void {
   for (let i = 0; i < 16; i++) {
-    pal[i * 4 + 0] = vga[i * 3 + 0]! << 2; // R: VGA 0-63 → 0-252
-    pal[i * 4 + 1] = vga[i * 3 + 1]! << 2; // G
-    pal[i * 4 + 2] = vga[i * 3 + 2]! << 2; // B
+    const r = vga[i * 3 + 0]!;
+    const g = vga[i * 3 + 1]!;
+    const b = vga[i * 3 + 2]!;
+    pal[i * 4 + 0] = (r << 2) | (r >> 4);
+    pal[i * 4 + 1] = (g << 2) | (g >> 4);
+    pal[i * 4 + 2] = (b << 2) | (b >> 4);
     pal[i * 4 + 3] = 0xff;
   }
 }
