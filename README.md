@@ -1,10 +1,12 @@
-# Johnny Reborn Web
+# Johnny Reborn (Web)
+
+![Screenshot](./docs/screenshot.png)
 
 This is an AI-assisted browser port of [Johnny Reborn](https://github.com/gil/jc_reborn), an open source engine for the classic [Johnny Castaway](https://en.wikipedia.org/wiki/Johnny_Castaway) screen saver — developed by Dynamix for Windows 3.x and published by Sierra On-Line in 1992, marketed under the **Screen Antics** brand.
 
 Written in TypeScript, runs entirely in the browser with no server-side logic. Uses the original game data files, which are not included.
 
-I've also added some small fixes and features, such as debug panel and a simple CRT shader (if we can even call it that).
+I've also added some small fixes and features, such as debug screen top preview all the assets and integration with the great [webgl-crt-shader](https://github.com/gingerbeardman/webgl-crt-shader) by [gingerbeardman](https://github.com/gingerbeardman).
 
 ## Setup
 
