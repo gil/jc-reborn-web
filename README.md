@@ -1,4 +1,4 @@
-# Johnny Reborn (Web)
+# Johnny Castaway - Reborn (Web)
 
 ![Screenshot](./docs/screenshot.png)
 
