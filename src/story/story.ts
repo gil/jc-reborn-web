@@ -4,6 +4,7 @@ import { islandInit, islandInitHoliday, islandAnimate, type IslandRuntime, type 
 import type { TtmContext } from '../ttm/interpreter.js';
 import type { ParsedArchive } from '../resource/types.js';
 import type { Layer } from '../types.js';
+import { clearSavedZones } from '../gfx/zone.js';
 import {
   storyScenes, type StoryScene,
   FINAL, FIRST, ISLAND, LEFT_ISLAND, VARPOS_OK, LOWTIDE_OK, NORAFT, HOLIDAY_NOK,
@@ -177,6 +178,7 @@ function startScene(scene: StoryScene, game: GameState): void {
   const raw = game.archive.byName.get(scene.adsName);
   if (!raw) { console.warn(`ADS not found: ${scene.adsName}`); return; }
   const ads = decodeAds(raw.payload);
+  clearSavedZones();
   game.adsState = makeAdsState(ads, game.archive, scene.adsTagNo);
 
   game.ttmCtx.dx = (scene.flags & ISLAND)
