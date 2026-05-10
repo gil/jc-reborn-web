@@ -6,13 +6,19 @@
 
 This is an AI-assisted browser port of [Johnny Reborn](https://github.com/jno6809/jc_reborn), an open source engine for the classic [Johnny Castaway](https://en.wikipedia.org/wiki/Johnny_Castaway) screen saver — developed by Dynamix for Windows 3.x and published by Sierra On-Line in 1992, marketed under the **Screen Antics** brand.
 
-Written in TypeScript, runs entirely in the browser with no server-side logic. Uses the original game data files, which are not included.
+Written in TypeScript, runs entirely in the browser with no server-side logic. Uses the original screen saver data files, **which are not included**.
 
-I've also added some small fixes and features, such as debug screen top preview all the assets and integration with the great [webgl-crt-shader](https://github.com/gingerbeardman/webgl-crt-shader) by [gingerbeardman](https://github.com/gingerbeardman).
+I've also added some small fixes and features, such as:
+
+- Debug page to preview all the assets.
+- Integration with the great [webgl-crt-shader](https://github.com/gingerbeardman/webgl-crt-shader) by [gingerbeardman](https://github.com/gingerbeardman).
+- Better color accuracy.
+- Fixed freezing and glitches in some scenes.
+- Tried to figure out and fix handling of a few opcodes.
 
 ## Setup
 
-### Data files
+### Data files (Not included!)
 
 You need the two original data files placed in `public/data/`:
 
@@ -84,7 +90,7 @@ Output goes to `dist/`. Serve as a static site.
 
 ## Thanks
 
-Since this project is almost 100% ported from [Johnny Reborn](https://github.com/jno6809/jc_reborn) code, all credits for the hard work should go to [Jérémie GUILLAUME (jno6809)](https://github.com/jno6809) and the following people that assisted they on this journey:
+Since this project is 90%+ ported from [Johnny Reborn](https://github.com/jno6809/jc_reborn) code, all credits for the hard work should go to [Jérémie GUILLAUME (jno6809)](https://github.com/jno6809) and the following people that assisted they on this journey:
 
 - Hans Milling aka nivs1978, author of the JCOS project - main source of info for my first lines of the Johnny Reborn code
   - https://github.com/nivs1978/Johnny-Castaway-Open-Source
@@ -103,4 +109,4 @@ Hans Milling thanks a number of people for giving him (or helping him find) some
 - Gregori - Assisting with the Lempel-Ziv decompression
 - Guido - The author of the xBaK project that led to understanding the TTM and ADS commands.
 
-Thanks to [Matt Sephton (gingerbeardman)](https://github.com/gingerbeardman) as well, for the [webgl-crt-shader](https://github.com/gingerbeardman/webgl-crt-shader).
+Thanks to [Matt Sephton (gingerbeardman)](https://github.com/gingerbeardman) as well for the [webgl-crt-shader](https://github.com/gingerbeardman/webgl-crt-shader).
