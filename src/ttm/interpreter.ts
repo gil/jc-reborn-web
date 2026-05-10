@@ -7,6 +7,7 @@ import { decodePal } from '../decode/pal.js';
 import { decodeScr } from '../decode/scr.js';
 import { drawLine, drawRect, drawCircle, putPixel } from '../gfx/primitives.js';
 import { drawSprite, drawSpriteFlip } from '../gfx/sprite.js';
+import { drawScreen } from '../gfx/sprite.js';
 import { setClip } from '../gfx/clip.js';
 import { copyZoneToBg, saveZone, restoreZone, saveImage1 } from '../gfx/zone.js';
 import { clearLayer } from '../gfx/layer.js';
@@ -150,8 +151,13 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
       case OP.CLEAR_SCREEN:
         clearLayer(t.layer);
         break;
-      case OP.DRAW_SCREEN:
+      case OP.DRAW_SCREEN: {
+        const x = a[0]! + ctx.dx, y = a[1]! + ctx.dy, w = a[2]!, h = a[3]!;
+        const imgIdx = a[4]!, sprIdx = a[5]!;
+        const s = t.slot.sprites[imgIdx]?.[sprIdx];
+        if (s) drawScreen(t.layer, s, x, y, w, h);
         break;
+      }
       case OP.PLAY_SAMPLE:
         ctx.playSample(a[0]!);
         break;
