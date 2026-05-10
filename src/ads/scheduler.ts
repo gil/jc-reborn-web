@@ -6,6 +6,7 @@ import type { AdsResource } from '../decode/ads-loader.js';
 import type { ParsedArchive } from '../resource/types.js';
 import { decodeTtm } from '../decode/ttm-loader.js';
 import { makeLayer } from '../gfx/layer.js';
+import { clearSavedZones } from '../gfx/zone.js';
 import { decodeBmp } from '../decode/bmp.js';
 import type { Sprite } from '../types.js';
 import { walkInit, walkAnimate, type WalkState } from '../walk/walk.js';
@@ -481,6 +482,7 @@ export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContex
         const slot = t.sceneSlot, tag = t.sceneTag;
         adsStopScene(state, i);
         if (!state.stopRequested) adsPlayTriggeredChunks(state, slot, tag);
+        if (adsActiveThreadCountForSlot(state, slot) === 0) clearSavedZones();
       }
     }
   }
@@ -526,6 +528,7 @@ export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContex
         const slot = t.sceneSlot, tag = t.sceneTag;
         adsStopScene(state, i);
         if (!state.stopRequested) adsPlayTriggeredChunks(state, slot, tag);
+        if (adsActiveThreadCountForSlot(state, slot) === 0) clearSavedZones();
       }
     }
   }
@@ -533,6 +536,10 @@ export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContex
 
 export function adsActiveThreadCount(state: AdsState): number {
   return state.threads.filter(t => t.isRunning).length;
+}
+
+function adsActiveThreadCountForSlot(state: AdsState, slotNo: number): number {
+  return state.threads.filter(t => t.isRunning && t.sceneSlot === slotNo).length;
 }
 
 export function adsThreadLayers(state: AdsState): (Layer | null)[] {
