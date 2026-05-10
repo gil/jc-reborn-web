@@ -93,7 +93,7 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
       case OP.TTM_UNKNOWN_1:
         break;
       case OP.GOTO_TAG: {
-        const tgt = findTagOffset(bc, OP.LOCAL_TAG, a[0]!);
+        const tgt = findTagOffset(bc, OP.TAG, a[0]!);
         if (tgt >= 0) t.ip = tgt;
         break;
       }
