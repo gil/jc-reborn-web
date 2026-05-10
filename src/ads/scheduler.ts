@@ -355,9 +355,11 @@ function adsPlayChunk(state: AdsState, offset: number, stopAtPlayScene = true, c
         adsRandomEnd(state);
         inRandBlock = false;
         break;
-      case ADS.UNKNOWN_6:
-        p += 6; // 3 args
+      case ADS.UNKNOWN_6: {
+        const slot = readU16(bc, p); const tag = readU16(bc, p + 2); p += 6; // 3 args
+        if (isSceneRunning(state, slot, tag)) inSkipBlock = true;
         break;
+      }
       case ADS.FADE_OUT:
         break;
       case ADS.GOSUB_TAG: {
