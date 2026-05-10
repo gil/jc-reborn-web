@@ -179,6 +179,7 @@ function adsAddScene(state: AdsState, slotNo: number, tag: number, arg3: number)
   thread.fgColor = 0x0f;
   thread.bgColor = 0x0f;
   thread.layer = makeLayer();
+  thread.timerYield = false;
 
   // Slot 0: start from beginning; otherwise find tag in TTM bytecode
   if (slotNo === 0) {
@@ -459,6 +460,11 @@ export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContex
     if (t.isRunning === 1) {
       t.timer = t.delay;
       ttmPlay(t, ttmCtx);
+      if (t.isRunning === 1 && t.timerYield) {
+        t.timer = t.delay;
+        t.timerYield = false;
+        t.delay = 4;
+      }
     }
 
     // Handle thread expiry (isRunning==2 set by PURGE or sceneTimer above)
@@ -494,6 +500,11 @@ export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContex
     if (t.isRunning === 1) {
       t.timer = t.delay;
       ttmPlay(t, ttmCtx);
+      if (t.isRunning === 1 && t.timerYield) {
+        t.timer = t.delay;
+        t.timerYield = false;
+        t.delay = 4;
+      }
     }
 
     if (t.isRunning === 2) {
@@ -504,6 +515,11 @@ export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContex
         t.ip = findTtmTag(t.slot, t.sceneTag);
         t.timer = t.delay;
         ttmPlay(t, ttmCtx); // prime first frame of new iteration immediately
+        if (t.isRunning === 1 && t.timerYield) {
+          t.timer = t.delay;
+          t.timerYield = false;
+          t.delay = 4;
+        }
       } else {
         const slot = t.sceneSlot, tag = t.sceneTag;
         adsStopScene(state, i);
@@ -518,8 +534,8 @@ export function adsActiveThreadCount(state: AdsState): number {
 }
 
 export function adsThreadLayers(state: AdsState): (Layer | null)[] {
-  const layers: (Layer | null)[] = state.threads.map(t => t.isRunning ? t.layer : null);
-  for (const l of state.lingeringLayers) layers.push(l);
+  const layers: (Layer | null)[] = [...state.lingeringLayers]; // lingering under active; active wins
+  for (const t of state.threads) layers.push(t.isRunning ? t.layer : null);
   if (state.walkCtx) layers.push(state.walkCtx.layer);
   return layers;
 }
