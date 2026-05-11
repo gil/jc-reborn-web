@@ -7,7 +7,7 @@ import { makePalette, setPaletteFromVga } from './gfx/palette.js';
 import { makeAdsState, adsTick, adsThreadLayers, adsActiveThreadCount } from './ads/scheduler.js';
 import { composite } from './gfx/compositor.js';
 import { startLoop } from './engine/loop.js';
-import { pumpTicks, resetClock } from './engine/clock.js';
+import { resetClock } from './engine/clock.js';
 import { islandInit, islandInitHoliday, randomIslandState } from './island/island.js';
 import { SCREEN_W, SCREEN_H } from './types.js';
 import type { TtmContext } from './ttm/interpreter.js';
@@ -76,11 +76,9 @@ document.addEventListener('visibilitychange', () => {
 
 startLoop(
   () => {
-    const elapsed = pumpTicks();
-    if (elapsed <= 0) return;
-    storyAnimateBg(storyState, game, elapsed);
+    const mini = adsTick(game.adsState, game.ttmCtx);
+    storyAnimateBg(storyState, game, mini);
     storyTick(storyState, game);
-    adsTick(game.adsState, elapsed, game.ttmCtx);
   },
   () => {
     composite(img, {

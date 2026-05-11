@@ -413,7 +413,7 @@ function adsPlayTriggeredChunks(state: AdsState, slotNo: number, tag: number): v
 
 // ------- per-frame tick (browser rAF adaptation of adsPlay loop) -------
 
-export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContext): void {
+export function adsTick(state: AdsState, ttmCtx: TtmContext): number {
   // Lingering layers shown for exactly one tick after a thread stops so there's
   // always content while the replacement scene primes its first frame.
   state.lingeringLayers = [];
@@ -428,56 +428,63 @@ export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContex
     }
   }
 
-  // Walk context: independent timer, runs alongside TTM threads
+  // (a) Advance threads whose timer reached 0 in the previous frame
+  for (const t of state.threads) {
+    if (t.isRunning !== 1 || t.timer !== 0) continue;
+    t.timer = t.delay;
+    ttmPlay(t, ttmCtx);
+  }
+
+  // (b) Compute mini: minimum of walk timer + all non-zero thread timers and
+  // delays. Includes isRunning=2 threads so their cleanup timer isn't frozen.
+  let mini = 300;
+  if (state.walkCtx && !state.walkCtx.done) {
+    mini = Math.min(mini, state.walkCtx.timer);
+  }
+  for (const t of state.threads) {
+    if (!t.isRunning) continue;
+    if (t.delay < mini) mini = t.delay;
+    if (t.timer < mini) mini = t.timer;
+  }
+  if (mini === 300) mini = 1;
+
+  // (c) Decrement all timers by mini — walk context and all threads
   if (state.walkCtx) {
     const wc = state.walkCtx;
     if (!wc.done) {
-      wc.timer -= elapsedTicks;
+      wc.timer -= mini;
       if (wc.timer <= 0) {
         const delay = walkAnimate(wc.ws, wc.layer, wc.sprites, wc.bgSprites, wc.dx, wc.dy);
         wc.timer = delay;
-        // Mark done instead of nulling: layer stays visible one more composite frame
-        // so storyTick can start the next scene before the layer disappears.
         if (delay === 0) wc.done = true;
       }
     }
   }
-
-  // Decrement all active timers
   for (const t of state.threads) {
-    if (t.isRunning) t.timer -= elapsedTicks;
+    if (t.isRunning) t.timer -= mini;
   }
 
+  // (d) Post-process: handle expired, restarted threads and scene triggers.
+  // Single pass — with mini-based lockstep all threads reach timer==0 together.
   for (let i = 0; i < state.threads.length; i++) {
     const t = state.threads[i]!;
-    if (!t.isRunning) continue;
+    if (!t.isRunning || t.timer > 0) continue;
 
-    if (t.timer > 0) continue;
-
-    // Resolve pending goto set during previous ttmPlay
     if (t.nextGotoOffset) {
       t.ip = t.nextGotoOffset;
       t.nextGotoOffset = 0;
     }
 
-    // sceneTimer: time-limited scene (ADD_SCENE with negative arg3)
     if (t.sceneTimer > 0) {
       t.sceneTimer -= t.delay;
       if (t.sceneTimer <= 0) t.isRunning = 2;
     }
 
-    if (t.isRunning === 1) {
-      t.timer = t.delay;
-      ttmPlay(t, ttmCtx);
-    }
-
-    // Handle thread expiry (isRunning==2 set by PURGE or sceneTimer above)
     if (t.isRunning === 2) {
       if (t.sceneIterations > 0) {
         t.sceneIterations--;
         console.log(`[ADS] restart slot=${t.sceneSlot} tag=${t.sceneTag} iters_left=${t.sceneIterations}`);
         t.isRunning = 1;
-        t.timer = 0;
         t.ip = findTtmTag(t.slot, t.sceneTag);
       } else {
         const slot = t.sceneSlot, tag = t.sceneTag;
@@ -487,40 +494,7 @@ export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContex
     }
   }
 
-  // Second pass: same logic as the main loop, for threads that were restarted
-  // (sceneIterations timer=0) or newly started by triggered chunks at a slot
-  // index already past in the main loop. Must handle PURGE fully — leaving a
-  // thread at isRunning=2 with timer=delay causes it to be skipped for delay
-  // ticks with a blank layer, making the character disappear.
-  for (let i = 0; i < state.threads.length; i++) {
-    const t = state.threads[i]!;
-    if (!t.isRunning || t.timer > 0) continue;
-
-    console.log(`[ADS] 2pass slot=${t.sceneSlot} tag=${t.sceneTag}`);
-
-    if (t.nextGotoOffset) { t.ip = t.nextGotoOffset; t.nextGotoOffset = 0; }
-    if (t.sceneTimer > 0) { t.sceneTimer -= t.delay; if (t.sceneTimer <= 0) t.isRunning = 2; }
-
-    if (t.isRunning === 1) {
-      t.timer = t.delay;
-      ttmPlay(t, ttmCtx);
-    }
-
-    if (t.isRunning === 2) {
-      if (t.sceneIterations > 0) {
-        t.sceneIterations--;
-        console.log(`[ADS] 2pass-restart slot=${t.sceneSlot} tag=${t.sceneTag} iters_left=${t.sceneIterations}`);
-        t.isRunning = 1;
-        t.ip = findTtmTag(t.slot, t.sceneTag);
-        t.timer = t.delay;
-        ttmPlay(t, ttmCtx); // prime first frame of new iteration immediately
-      } else {
-        const slot = t.sceneSlot, tag = t.sceneTag;
-        adsStopScene(state, i);
-        if (!state.stopRequested) adsPlayTriggeredChunks(state, slot, tag);
-      }
-    }
-  }
+  return mini;
 }
 
 export function adsActiveThreadCount(state: AdsState): number {
