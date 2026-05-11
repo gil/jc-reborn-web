@@ -24,9 +24,6 @@ export interface TtmThread {
   fgColor: number;
   bgColor: number;
   layer: Layer;
-  // Set by TIMER opcode so adsTick can apply the timer's delay then reset it,
-  // preventing a double-wait when TIMER is immediately followed by UPDATE.
-  timerYield: boolean;
 }
 
 export function makeThread(): TtmThread {
@@ -37,6 +34,5 @@ export function makeThread(): TtmThread {
     ip: 0, delay: 4, timer: 0, nextGotoOffset: 0,
     selectedBmpSlot: 0, fgColor: 15, bgColor: 0,
     layer: makeLayer(),
-    timerYield: false,
   };
 }

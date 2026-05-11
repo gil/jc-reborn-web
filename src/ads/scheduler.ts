@@ -179,7 +179,6 @@ function adsAddScene(state: AdsState, slotNo: number, tag: number, arg3: number)
   thread.fgColor = 0x0f;
   thread.bgColor = 0x0f;
   thread.layer = makeLayer();
-  thread.timerYield = false;
 
   // Slot 0: start from beginning; otherwise find tag in TTM bytecode
   if (slotNo === 0) {
@@ -460,11 +459,6 @@ export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContex
     if (t.isRunning === 1) {
       t.timer = t.delay;
       ttmPlay(t, ttmCtx);
-      if (t.isRunning === 1 && t.timerYield) {
-        t.timer = t.delay;
-        t.timerYield = false;
-        t.delay = 4;
-      }
     }
 
     // Handle thread expiry (isRunning==2 set by PURGE or sceneTimer above)
@@ -500,11 +494,6 @@ export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContex
     if (t.isRunning === 1) {
       t.timer = t.delay;
       ttmPlay(t, ttmCtx);
-      if (t.isRunning === 1 && t.timerYield) {
-        t.timer = t.delay;
-        t.timerYield = false;
-        t.delay = 4;
-      }
     }
 
     if (t.isRunning === 2) {
@@ -515,11 +504,6 @@ export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContex
         t.ip = findTtmTag(t.slot, t.sceneTag);
         t.timer = t.delay;
         ttmPlay(t, ttmCtx); // prime first frame of new iteration immediately
-        if (t.isRunning === 1 && t.timerYield) {
-          t.timer = t.delay;
-          t.timerYield = false;
-          t.delay = 4;
-        }
       } else {
         const slot = t.sceneSlot, tag = t.sceneTag;
         adsStopScene(state, i);

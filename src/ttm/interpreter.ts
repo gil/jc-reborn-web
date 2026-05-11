@@ -120,10 +120,12 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
         break;
       case OP.SET_FRAME1:
         break;
-      case OP.TIMER:
-        t.delay = ((a[0]! + a[1]!) / 2) | 0;
-        t.timerYield = true;
-        return;
+      case OP.TIMER: {
+        const v = ((a[0]! + a[1]!) / 2) | 0;
+        t.delay = v;
+        t.timer = v;
+        break;
+      }
       case OP.SET_CLIP_ZONE:
         setClip(t.layer, { x: a[0]!, y: a[1]!, w: a[2]! - a[0]!, h: a[3]! - a[1]! });
         break;
