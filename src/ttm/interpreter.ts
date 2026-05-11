@@ -84,7 +84,7 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
     const a = ins.args;
     switch (ins.op) {
       case OP.DRAW_BACKGROUND:
-        clearLayer(t.layer);
+        // jc_reborn only frees image slots here; framebuffer is unchanged
         break;
       case OP.PURGE:
         if (t.sceneTimer > 0) {
