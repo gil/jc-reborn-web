@@ -177,7 +177,11 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
       case OP.LOAD_SCREEN: {
         const name = ins.str!.endsWith('.SCR') ? ins.str! : ins.str! + '.SCR';
         const res = ctx.archive.byName.get(name);
-        if (res) ctx.setBackground(decodeScr(res.payload).indexed);
+        if (res) {
+          ctx.setBackground(decodeScr(res.payload).indexed);
+          ctx.dx = 0;
+          ctx.dy = 0;
+        }
         break;
       }
       case OP.LOAD_IMAGE: {
