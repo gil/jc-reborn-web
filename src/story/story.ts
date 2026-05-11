@@ -38,6 +38,7 @@ export interface StoryState {
   currentScene: StoryScene | null;
   currentDay: number;
   debugAds: string | null;
+  playingTicks: number;
 }
 
 function loadCurrentDay(): number {
@@ -203,6 +204,7 @@ export function storyInit(_archive: ParsedArchive, game: GameState, debugAds: st
     currentScene: null,
     currentDay: 1,
     debugAds,
+    playingTicks: 0,
   };
   buildSequence(state, game);
   return state;
@@ -232,6 +234,7 @@ export function storyTick(state: StoryState, game: GameState): void {
         state.phase = { kind: 'walking' };
       } else {
         startScene(scene, game);
+        state.playingTicks = 0;
         state.phase = { kind: 'playing' };
       }
       break;
@@ -247,12 +250,14 @@ export function storyTick(state: StoryState, game: GameState): void {
         if (state.currentScene) {
           startScene(state.currentScene, game);
         }
+        state.playingTicks = 0;
         state.phase = { kind: 'playing' };
       }
       break;
     }
 
     case 'playing': {
+      state.playingTicks++;
       if (sceneIsDone(game)) {
         const scene = state.currentScene!;
         console.log(`[STORY] → advance (scene done: ${scene.adsName}[${scene.adsTagNo}])`);
@@ -261,6 +266,12 @@ export function storyTick(state: StoryState, game: GameState): void {
           state.prevHdg = scene.hdgEnd;
         }
         state.phase = { kind: 'advance' };
+      } else if (state.playingTicks > 8000) {
+        console.warn(`[STORY] WATCHDOG: force-ending ${state.currentScene?.adsName}[${state.currentScene?.adsTagNo}] after ${state.playingTicks} ticks`);
+        for (const t of game.adsState.threads) {
+          if (t.isRunning) t.isRunning = 0;
+        }
+        game.adsState.stopRequested = true;
       }
       break;
     }
