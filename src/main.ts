@@ -64,7 +64,9 @@ const game: GameState = {
   fadeState: null,
 };
 
-const storyState = storyInit(archive, game);
+const debugAds = new URLSearchParams(location.search).get('ads');
+
+const storyState = storyInit(archive, game, debugAds);
 
 const img = ctx.createImageData(SCREEN_W, SCREEN_H);
 

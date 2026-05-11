@@ -37,22 +37,7 @@ export interface StoryState {
   prevHdg: number;
   currentScene: StoryScene | null;
   currentDay: number;
-}
-
-function pickScene(wantedFlags: number, unwantedFlags: number, currentDay: number): StoryScene {
-  const candidates = storyScenes.filter(s =>
-    (s.flags & wantedFlags) === wantedFlags &&
-    !(s.flags & unwantedFlags) &&
-    (s.dayNo === 0 || s.dayNo === currentDay),
-  );
-  if (!candidates.length) {
-    // fallback: drop wantedFlags requirement (shouldn't happen in normal play)
-    const fallback = storyScenes.filter(s =>
-      !(s.flags & unwantedFlags) && (s.dayNo === 0 || s.dayNo === currentDay),
-    );
-    return fallback[Math.floor(Math.random() * fallback.length)]!;
-  }
-  return candidates[Math.floor(Math.random() * candidates.length)]!;
+  debugAds: string | null;
 }
 
 function loadCurrentDay(): number {
@@ -127,7 +112,11 @@ function buildSequence(state: StoryState, game: GameState): void {
   state.currentDay = loadCurrentDay();
   const baseIsland = calcIslandDateTime(game.islandState);
 
-  const finalScene = pickScene(FINAL, 0, state.currentDay);
+  const candidates = state.debugAds
+    ? storyScenes.filter(s => s.adsName === state.debugAds)
+    : storyScenes;
+
+  const finalScene = pickSceneFrom(candidates, FINAL, 0, state.currentDay);
   state.finalScene = finalScene;
 
   const queue: StoryScene[] = [];
@@ -137,7 +126,6 @@ function buildSequence(state: StoryState, game: GameState): void {
     let wantedFlags = 0;
     let unwantedFlags = FINAL;
 
-    // Determine island state from final scene (used for the whole sequence)
     const newIslandState = (finalScene.flags & ISLAND)
       ? calcIslandFromScene(finalScene, state.currentDay, baseIsland)
       : baseIsland;
@@ -146,7 +134,7 @@ function buildSequence(state: StoryState, game: GameState): void {
     if (newIslandState.xPos || newIslandState.yPos) wantedFlags |= VARPOS_OK;
 
     for (let i = 0; i < count; i++) {
-      const scene = pickScene(wantedFlags, unwantedFlags, state.currentDay);
+      const scene = pickSceneFrom(candidates, wantedFlags, unwantedFlags, state.currentDay);
       queue.push(scene);
       unwantedFlags |= FIRST;
     }
@@ -158,7 +146,6 @@ function buildSequence(state: StoryState, game: GameState): void {
   state.prevHdg = -1;
   state.phase = { kind: 'advance' };
 
-  // Reinit island once for the whole sequence
   const finalSceneForIsland = state.finalScene!;
   if (finalSceneForIsland.flags & ISLAND) {
     const newIslandState = calcIslandFromScene(finalSceneForIsland, state.currentDay, baseIsland);
@@ -171,6 +158,21 @@ function buildSequence(state: StoryState, game: GameState): void {
     game.background = null;
     game.holidayLayer = null;
   }
+}
+
+function pickSceneFrom(list: StoryScene[], wantedFlags: number, unwantedFlags: number, currentDay: number): StoryScene {
+  const candidates = list.filter(s =>
+    (s.flags & wantedFlags) === wantedFlags &&
+    !(s.flags & unwantedFlags) &&
+    (s.dayNo === 0 || s.dayNo === currentDay),
+  );
+  if (!candidates.length) {
+    const fallback = list.filter(s =>
+      !(s.flags & unwantedFlags) && (s.dayNo === 0 || s.dayNo === currentDay),
+    );
+    return fallback[Math.floor(Math.random() * fallback.length)]!;
+  }
+  return candidates[Math.floor(Math.random() * candidates.length)]!;
 }
 
 function startScene(scene: StoryScene, game: GameState): void {
@@ -191,7 +193,7 @@ function sceneIsDone(game: GameState): boolean {
   return game.adsState.stopRequested && adsActiveThreadCount(game.adsState) === 0;
 }
 
-export function storyInit(_archive: ParsedArchive, game: GameState): StoryState {
+export function storyInit(_archive: ParsedArchive, game: GameState, debugAds: string | null = null): StoryState {
   const state: StoryState = {
     phase: { kind: 'advance' },
     queue: [],
@@ -200,6 +202,7 @@ export function storyInit(_archive: ParsedArchive, game: GameState): StoryState 
     prevHdg: -1,
     currentScene: null,
     currentDay: 1,
+    debugAds,
   };
   buildSequence(state, game);
   return state;
@@ -269,6 +272,7 @@ export function storyTick(state: StoryState, game: GameState): void {
       state.phase.remaining -= 1;
       if (state.phase.remaining <= 0) {
         game.fadeState = null;
+        if (state.debugAds) state.prevSpot = -1;
         buildSequence(state, game);
       }
       break;

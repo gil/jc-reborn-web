@@ -35,6 +35,14 @@ const info = document.getElementById('info') as HTMLPreElement;
 
 document.getElementById('play')!.addEventListener('click', () => render(picker.value));
 
+const sendBtn = document.getElementById('send') as HTMLButtonElement;
+picker.addEventListener('change', () => {
+  sendBtn.style.display = picker.value.endsWith('.ADS') ? '' : 'none';
+});
+sendBtn.addEventListener('click', () => {
+  location.href = '/?ads=' + encodeURIComponent(picker.value);
+});
+
 function render(name: string): void {
   const res = archive.byName.get(name)!;
   info.textContent = `${name} type=${res.type} size=${res.payload.length}`;
