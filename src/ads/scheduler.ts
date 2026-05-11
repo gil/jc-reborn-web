@@ -418,6 +418,16 @@ export function adsTick(state: AdsState, elapsedTicks: number, ttmCtx: TtmContex
   // always content while the replacement scene primes its first frame.
   state.lingeringLayers = [];
 
+  // Pre-tick sweep: free leaked threads with nil/unloaded TTM slot (e.g. walk
+  // threads that survived into the playing phase). These would wedge the engine
+  // because play() skips them but their timer stays frozen.
+  for (const t of state.threads) {
+    if (t.isRunning === 1 && !t.slot.ttm) {
+      console.warn(`[ADS] pre-tick sweep: freeing leaked nil-slot thread slot=${t.sceneSlot} tag=${t.sceneTag} timer=${t.timer}`);
+      t.isRunning = 0;
+    }
+  }
+
   // Walk context: independent timer, runs alongside TTM threads
   if (state.walkCtx) {
     const wc = state.walkCtx;

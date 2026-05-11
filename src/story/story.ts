@@ -178,6 +178,13 @@ function pickSceneFrom(list: StoryScene[], wantedFlags: number, unwantedFlags: n
 
 function startScene(scene: StoryScene, game: GameState): void {
   console.log(`[STORY] scene ${scene.adsName}[${scene.adsTagNo}] spot${scene.spotStart}→${scene.spotEnd}`);
+
+  const livePrev = game.adsState.threads.filter(t => t.isRunning);
+  if (livePrev.length) {
+    const desc = livePrev.map(t => `slot=${t.sceneSlot} tag=${t.sceneTag} isRunning=${t.isRunning}`).join(', ');
+    console.warn(`[STORY] startScene: ${livePrev.length} thread(s) still running from previous scene — will be replaced: ${desc}`);
+  }
+
   const raw = game.archive.byName.get(scene.adsName);
   if (!raw) { console.warn(`ADS not found: ${scene.adsName}`); return; }
   const ads = decodeAds(raw.payload);
@@ -223,6 +230,14 @@ export function storyTick(state: StoryState, game: GameState): void {
 
       if (state.prevSpot !== -1) {
         console.log(`[STORY] → walking spot${state.prevSpot}→${scene.spotStart}`);
+
+        const stragglers = game.adsState.threads.filter(t => t.isRunning);
+        if (stragglers.length) {
+          const desc = stragglers.map(t => `slot=${t.sceneSlot} tag=${t.sceneTag} isRunning=${t.isRunning}`).join(', ');
+          console.warn(`[STORY] startWalk: ${stragglers.length} straggler thread(s) before walk — freeing them: ${desc}`);
+          for (const t of stragglers) t.isRunning = 0;
+        }
+
         adsPlayWalk(
           game.adsState,
           game.archive,
@@ -247,6 +262,14 @@ export function storyTick(state: StoryState, game: GameState): void {
         // adsTick kept the walk layer visible one extra frame (done=true) so
         // startScene can prime new threads before the layer disappears.
         game.adsState.walkCtx = null;
+
+        const residual = game.adsState.threads.filter(t => t.isRunning);
+        if (residual.length) {
+          const desc = residual.map(t => `slot=${t.sceneSlot} tag=${t.sceneTag} isRunning=${t.isRunning}`).join(', ');
+          console.warn(`[STORY] walk done: ${residual.length} residual thread(s) after walk — freeing: ${desc}`);
+          for (const t of residual) t.isRunning = 0;
+        }
+
         if (state.currentScene) {
           startScene(state.currentScene, game);
         }
