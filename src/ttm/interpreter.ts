@@ -53,6 +53,19 @@ function findTagOffset(bc: Uint8Array, tagOp: number, tagId: number): number {
   return -1;
 }
 
+function findPreviousTagOffset(bc: Uint8Array, beforeOffset: number): number {
+  let lastTagOffset = 0;
+  let p = 0;
+  while (p < beforeOffset && p < bc.length) {
+    const ins = step(bc, p);
+    if (ins.op === OP.TAG || ins.op === OP.LOCAL_TAG) {
+      lastTagOffset = ins.pos;
+    }
+    p = ins.pos;
+  }
+  return lastTagOffset;
+}
+
 export function ttmStartScene(t: TtmThread, tagId: number): void {
   const off = findTagOffset(t.slot.ttm!.bytecode, OP.TAG, tagId);
   if (off < 0) throw new Error(`tag ${tagId} not found`);
@@ -74,9 +87,13 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
         clearLayer(t.layer);
         break;
       case OP.PURGE:
-        if (t.nextGotoOffset) { t.ip = t.nextGotoOffset; t.nextGotoOffset = 0; }
-        else t.isRunning = 2;
-        return;
+        if (t.sceneTimer > 0) {
+          const prevTag = findPreviousTagOffset(bc, t.ip);
+          t.nextGotoOffset = prevTag;
+        } else {
+          t.isRunning = 2;
+        }
+        break;
       case OP.UPDATE:
         return;
       case OP.SET_DELAY:
