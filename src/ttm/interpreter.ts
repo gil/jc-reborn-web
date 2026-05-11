@@ -111,8 +111,8 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
         break;
       case OP.GOTO_TAG: {
         const tgt = findTagOffset(bc, OP.TAG, a[0]!);
-        if (tgt >= 0) t.ip = tgt;
-        return;
+        if (tgt >= 0) t.nextGotoOffset = tgt;
+        break;
       }
       case OP.SET_COLORS:
         t.fgColor = a[0]! & 0x0f;
