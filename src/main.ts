@@ -7,7 +7,7 @@ import { makePalette, setPaletteFromVga } from './gfx/palette.js';
 import { makeAdsState, adsTick, adsThreadLayers, adsActiveThreadCount } from './ads/scheduler.js';
 import { composite } from './gfx/compositor.js';
 import { startLoop } from './engine/loop.js';
-import { resetClock } from './engine/clock.js';
+import { pumpMs, hasEnoughMs, consumeMs, msPerTick, resetClock } from './engine/clock.js';
 import { islandInit, islandInitHoliday, randomIslandState } from './island/island.js';
 import { SCREEN_W, SCREEN_H } from './types.js';
 import type { TtmContext } from './ttm/interpreter.js';
@@ -74,11 +74,22 @@ document.addEventListener('visibilitychange', () => {
   if (!document.hidden) resetClock();
 });
 
+let pacedMini = 4; // initial guess before first tick
+
 startLoop(
   () => {
-    const mini = adsTick(game.adsState, game.ttmCtx);
-    storyAnimateBg(storyState, game, mini);
-    storyTick(storyState, game);
+    pumpMs();
+
+    // Advance the engine one mini-step for every mini * 20ms of accumulated
+    // wall-clock time.  Matches the DOS game loop: adsPlay() → delay(mini*20).
+    // rAF may call us more often than the engine needs; the accumulation gates
+    // the actual tick rate so animations don't run too fast.
+    while (hasEnoughMs(pacedMini * msPerTick())) {
+      consumeMs(pacedMini * msPerTick());
+      pacedMini = adsTick(game.adsState, game.ttmCtx);
+      storyAnimateBg(storyState, game, pacedMini);
+      storyTick(storyState, game);
+    }
   },
   () => {
     composite(img, {
