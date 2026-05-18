@@ -7,7 +7,7 @@ const SOUND_IDS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16, 17, 18, 19,
 export async function initSound(): Promise<void> {
   await Promise.all(SOUND_IDS.map(async (n) => {
     try {
-      const r = await fetch(`/data/sound${n}.wav`);
+      const r = await fetch(`${import.meta.env.BASE_URL}data/sound${n}.wav`);
       if (!r.ok) return;
       rawBuffers.set(n, await r.arrayBuffer());
     } catch { /* missing sound ok */ }
