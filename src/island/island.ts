@@ -83,22 +83,16 @@ export function islandInit(archive: ParsedArchive, state: IslandState): IslandRu
 
   // Clouds (grDx=grDy=0 in C — no island offset)
   const windDir = Math.random() < 0.5;
-  let numClouds: number;
   const r = Math.random;
-  if (r() < 0.5) numClouds = 1;
-  else if (r() < 0.5) numClouds = 0;
-  else if (r() < 0.75) numClouds = 2;
-  else if (r() < 0.75) numClouds = 3;
-  else if (r() < 0.75) numClouds = 4;
-  else numClouds = 5;
+  const numClouds = Math.floor(r() * 6);
 
   for (let i = 0; i < numClouds; i++) {
     const cloudNo = Math.floor(r() * 3);
-    const [maxW, maxH] = cloudNo === 0 ? [640 - 129, 135 - 36]
-      : cloudNo === 1 ? [640 - 192, 135 - 57]
-      : [640 - 264, 135 - 76];
+    const [maxW, maxH] = cloudNo === 0 ? [640 - 129, 100 - 36]
+      : cloudNo === 1 ? [640 - 192, 100 - 57]
+      : [640 - 264, 100 - 76];
     const cx = Math.floor(r() * maxW);
-    const cy = Math.floor(r() * maxH);
+    const cy = Math.floor(r() * maxH) + 25;
     blitNoOffset(rt, cx, cy, 15 + cloudNo, windDir);
   }
 
@@ -138,7 +132,7 @@ export function islandAnimate(rt: IslandRuntime): void {
       case 2: blit(rt, 518, 303, 9 + rt.counter1); break;  // high tide right
     }
   }
-  if (rt.counter2 === 0) rt.counter1 = (rt.counter1 + 1) % 3;
+  if (rt.counter2 === 0) rt.counter1 = (rt.counter1 + 1) % 2;
 }
 
 // Returns a holiday overlay layer (or null if no holiday).

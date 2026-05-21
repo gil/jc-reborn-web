@@ -195,10 +195,12 @@ function startScene(scene: StoryScene, game: GameState): void {
     ? game.islandState.xPos + (scene.flags & LEFT_ISLAND ? 272 : 0)
     : 0;
   game.ttmCtx.dy = (scene.flags & ISLAND) ? game.islandState.yPos : 0;
+
+  if (scene.dayNo !== 0) game.ttmCtx.playSample(17);
 }
 
 function sceneIsDone(game: GameState): boolean {
-  return game.adsState.stopRequested && adsActiveThreadCount(game.adsState) === 0;
+  return adsActiveThreadCount(game.adsState) === 0;
 }
 
 export function storyInit(_archive: ParsedArchive, game: GameState, debugAds: string | null = null): StoryState {
@@ -302,7 +304,11 @@ function storyTickStep(state: StoryState, game: GameState): void {
         }
         state.phase = { kind: 'advance' };
       } else if (state.playingTicks > 8000) {
-        console.warn(`[STORY] WATCHDOG: force-ending ${state.currentScene?.adsName}[${state.currentScene?.adsTagNo}] after ${state.playingTicks} ticks`);
+        const live = game.adsState.threads
+          .filter(t => t.isRunning)
+          .map(t => `slot=${t.sceneSlot} tag=${t.sceneTag} run=${t.isRunning} ip=${t.ip} timer=${t.timer} delay=${t.delay} sceneTimer=${t.sceneTimer} iters=${t.sceneIterations}`)
+          .join(' | ');
+        console.warn(`[STORY] WATCHDOG: force-ending ${state.currentScene?.adsName}[${state.currentScene?.adsTagNo}] after ${state.playingTicks} ticks — live threads: ${live || 'none'}`);
         for (const t of game.adsState.threads) {
           if (t.isRunning) t.isRunning = 0;
         }
