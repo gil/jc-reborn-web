@@ -11,21 +11,15 @@
         color: #ccc;
         font: 14px monospace;
       }
-      #stage {
-        display: block;
-        margin: 0 auto;
-        /* image-rendering: pixelated; */
-      }
-      :fullscreen body,
-      :-webkit-full-screen body {
+      body {
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 100vh;
+        min-height: 100vh;
       }
-      :fullscreen #stage,
-      :-webkit-full-screen #stage {
-        margin: 0;
+      #stage {
+        display: block;
+        /* image-rendering: pixelated; */
       }
     </style>
   </head>
