@@ -38,7 +38,7 @@ function step(bc: Uint8Array, pos: number): { op: number; args: number[]; str?: 
     if (p & 1) p++; // align to even byte boundary
     str = new TextDecoder('latin1').decode(new Uint8Array(sb));
   } else {
-    for (let i = 0; i < argCount; i++) { args.push(dv.getUint16(p, true)); p += 2; }
+    for (let i = 0; i < argCount; i++) { args.push(dv.getInt16(p, true)); p += 2; }
   }
   return { op, args, str, pos: p };
 }
@@ -126,11 +126,14 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
         t.timer = v;
         break;
       }
-      case OP.SET_CLIP_ZONE:
-        setClip(t.layer, { x: a[0]!, y: a[1]!, w: a[2]! - a[0]!, h: a[3]! - a[1]! });
+      case OP.SET_CLIP_ZONE: {
+        const x1 = a[0]! + ctx.dx, y1 = a[1]! + ctx.dy;
+        const x2 = a[2]! + ctx.dx, y2 = a[3]! + ctx.dy;
+        setClip(t.layer, { x: x1, y: y1, w: x2 - x1, h: y2 - y1 });
         break;
+      }
       case OP.COPY_ZONE_TO_BG:
-        copyZoneToBg(t.layer, a[0]!, a[1]!, a[2]!, a[3]!);
+        copyZoneToBg(t.layer, a[0]! + ctx.dx, a[1]! + ctx.dy, a[2]!, a[3]!);
         break;
       case OP.SAVE_IMAGE1:
         saveImage1(t.layer, a[0]!, a[1]!, a[2]!, a[3]!);
