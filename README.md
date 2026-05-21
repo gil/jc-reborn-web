@@ -15,6 +15,7 @@ I've also added some small fixes and features, such as:
 - Better color accuracy.
 - Fixed freezing and glitches in some scenes.
 - Tried to figure out and fix handling of a few opcodes.
+- Improved engine by comparing implementation with [Johnny-Castaway-2026-Public](https://github.com/deckarep/Johnny-Castaway-2026-Public) and [JohnnyCastaway](https://github.com/tallPete/JohnnyCastaway).
 
 ## Setup
 
@@ -109,4 +110,9 @@ Hans Milling thanks a number of people for giving him (or helping him find) some
 - Gregori - Assisting with the Lempel-Ziv decompression
 - Guido - The author of the xBaK project that led to understanding the TTM and ADS commands.
 
-Thanks to [Matt Sephton (gingerbeardman)](https://github.com/gingerbeardman) as well for the [webgl-crt-shader](https://github.com/gingerbeardman/webgl-crt-shader).
+Thanks to the authors of the following projects as well that were used for inspiration for engine optimizations and fixes:
+
+- [Ralph Caraveo](https://github.com/deckarep) for [Johnny-Castaway-2026-Public](https://github.com/deckarep/Johnny-Castaway-2026-Public)
+- [Peter Smith](https://github.com/tallPete) for [JohnnyCastaway](https://github.com/tallPete/JohnnyCastaway)
+
+And finally, thanks to [Matt Sephton (gingerbeardman)](https://github.com/gingerbeardman) as well for the [webgl-crt-shader](https://github.com/gingerbeardman/webgl-crt-shader).
