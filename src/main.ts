@@ -86,9 +86,12 @@ startLoop(
     // the actual tick rate so animations don't run too fast.
     while (hasEnoughMs(pacedMini * msPerTick())) {
       consumeMs(pacedMini * msPerTick());
+      // storyTick first: phase transitions (e.g. scene end → walk, walk done → new scene)
+      // create new walkCtx / adsState. adsTick then advances them in the SAME iteration
+      // so their layers are populated before the render callback runs.
+      storyTick(storyState, game);
       pacedMini = adsTick(game.adsState, game.ttmCtx);
       storyAnimateBg(storyState, game, pacedMini);
-      storyTick(storyState, game);
     }
   },
   () => {
