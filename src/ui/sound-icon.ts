@@ -33,7 +33,7 @@ export function initSoundIcon(canvas: HTMLCanvasElement): HTMLElement {
   let audioStarted = false;
   btn.addEventListener('click', async () => {
     if (!audioStarted) { await resumeAudioCtx(); audioStarted = true; }
-    btn.innerHTML = toggleMute() ? SVG_ON : SVG_OFF;
+    btn.innerHTML = toggleMute() ? SVG_OFF : SVG_ON;
   });
 
   controls.appendChild(btn);
