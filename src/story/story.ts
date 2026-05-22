@@ -1,4 +1,5 @@
 import { decodeAds } from '../decode/ads-loader.js';
+import { decodeScr } from '../decode/scr.js';
 import { makeAdsState, adsPlayWalk, adsActiveThreadCount, type AdsState } from '../ads/scheduler.js';
 import { islandInit, islandInitHoliday, islandAnimate, type IslandRuntime, type IslandState } from '../island/island.js';
 import type { TtmContext } from '../ttm/interpreter.js';
@@ -24,6 +25,7 @@ export interface GameState {
 }
 
 type StoryPhase =
+  | { kind: 'splash'; startMs: number; fading: boolean }
   | { kind: 'walking' }
   | { kind: 'playing' }
   | { kind: 'fading'; remaining: number }
@@ -203,7 +205,7 @@ function sceneIsDone(game: GameState): boolean {
   return adsActiveThreadCount(game.adsState) === 0;
 }
 
-export function storyInit(_archive: ParsedArchive, game: GameState, debugAds: string | null = null): StoryState {
+export function storyInit(_archive: ParsedArchive, game: GameState, debugAds: string | null = null, skipIntro: boolean = false): StoryState {
   const state: StoryState = {
     phase: { kind: 'advance' },
     queue: [],
@@ -215,7 +217,16 @@ export function storyInit(_archive: ParsedArchive, game: GameState, debugAds: st
     debugAds,
     playingTicks: 0,
   };
-  buildSequence(state, game);
+  const introRaw = skipIntro ? null : game.archive.byName.get('INTRO.SCR');
+  if (introRaw) {
+    const intro = decodeScr(introRaw.payload);
+    game.background = intro.indexed;
+    game.holidayLayer = null;
+    for (const t of game.adsState.threads) t.isRunning = 0;
+    state.phase = { kind: 'splash', startMs: performance.now(), fading: false };
+  } else {
+    buildSequence(state, game);
+  }
   return state;
 }
 
@@ -233,6 +244,21 @@ export function storyTick(state: StoryState, game: GameState): void {
 
 function storyTickStep(state: StoryState, game: GameState): void {
   switch (state.phase.kind) {
+    case 'splash': {
+      if (!state.phase.fading) {
+        if (performance.now() - state.phase.startMs >= 2000) {
+          game.fadeState = nextFadeState();
+          state.phase = { ...state.phase, fading: true };
+        }
+      } else if (game.fadeState && !fadeDone(game.fadeState)) {
+        game.fadeState.step++;
+      } else {
+        game.fadeState = null;
+        buildSequence(state, game);
+      }
+      break;
+    }
+
     case 'advance': {
       if (!state.queue.length) {
         state.phase = { kind: 'fading', remaining: 100 };
@@ -333,7 +359,8 @@ function storyTickStep(state: StoryState, game: GameState): void {
 }
 
 // Island wave animation — call each game tick with elapsed ticks
-export function storyAnimateBg(_state: StoryState, game: GameState, elapsed: number): void {
+export function storyAnimateBg(state: StoryState, game: GameState, elapsed: number): void {
+  if (state.phase.kind === 'splash') return;
   if (!game.background) return;
   game.bgAnimTimer -= elapsed;
   while (game.bgAnimTimer <= 0) {

@@ -64,9 +64,11 @@ const game: GameState = {
   fadeState: null,
 };
 
-const debugAds = new URLSearchParams(location.search).get('ads');
+const params = new URLSearchParams(location.search);
+const debugAds = params.get('ads');
+const skipIntro = params.get('skipIntro') === 'true';
 
-const storyState = storyInit(archive, game, debugAds);
+const storyState = storyInit(archive, game, debugAds, skipIntro);
 
 const img = ctx.createImageData(SCREEN_W, SCREEN_H);
 
