@@ -37,9 +37,16 @@ export interface AdsState {
   randOps: RandOp[];
   adsTags: Array<{ id: number; offset: number }>;
   stopRequested: boolean;
+  ticksSinceStopRequest: number;   // grace period for orphan GOTO-loop threads after END
   walkCtx: WalkContext | null;
   lingeringLayers: Layer[];        // last frame of stopped threads; shown for one tick
 }
+
+// Ticks of grace allowed for natural PURGE completion after END before force-stopping
+// remaining threads. Some TTM tags (e.g. MJFISH.TTM 45/46/47) are infinite GOTO-self
+// loops that only terminate via explicit STOP_SCENE in cascade chunks — those chunks
+// are blocked by stopRequested, so without this sweep they wedge the scene forever.
+const STOP_REQUEST_GRACE_TICKS = 100;
 
 // ------- byte-reader helpers -------
 
@@ -130,6 +137,7 @@ export function makeAdsState(ads: AdsResource, archive: ParsedArchive, startTag:
     randOps: [],
     adsTags,
     stopRequested: false,
+    ticksSinceStopRequest: 0,
     walkCtx: null,
     lingeringLayers: [],
   };
@@ -462,6 +470,20 @@ export function adsTick(state: AdsState, ttmCtx: TtmContext): number {
         const slot = t.sceneSlot, tag = t.sceneTag;
         adsStopScene(state, i);
         if (!state.stopRequested) adsPlayTriggeredChunks(state, slot, tag);
+      }
+    }
+  }
+
+  if (state.stopRequested) {
+    state.ticksSinceStopRequest++;
+    if (state.ticksSinceStopRequest > STOP_REQUEST_GRACE_TICKS) {
+      const live = state.threads.filter(t => t.isRunning);
+      if (live.length) {
+        const desc = live.map(t => `slot=${t.sceneSlot} tag=${t.sceneTag}`).join(', ');
+        console.warn(`[ADS] grace expired: force-stopping ${live.length} orphan thread(s): ${desc}`);
+        for (let i = 0; i < state.threads.length; i++) {
+          if (state.threads[i]!.isRunning) adsStopScene(state, i);
+        }
       }
     }
   }
