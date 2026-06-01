@@ -16,7 +16,7 @@ export function disasmTtm(bytecode: Uint8Array, opcodeNames?: Record<number, str
       if (p & 1) p++;
       str = new TextDecoder('latin1').decode(new Uint8Array(sb));
     } else {
-      for (let i = 0; i < argCount; i++) { args.push(dv.getUint16(p, true)); p += 2; }
+      for (let i = 0; i < argCount; i++) { args.push(dv.getInt16(p, true)); p += 2; }
     }
     const name = opcodeNames?.[op] ?? '???';
     let line = `${offset.toString(16).padStart(6, '0')}  ${op.toString(16).padStart(4, '0')} ${name}`;
