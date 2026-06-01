@@ -97,7 +97,7 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
       case OP.UPDATE:
         return;
       case OP.SET_DELAY:
-        t.delay = Math.max(4, a[0]!);
+        t.timer = t.delay = Math.max(4, a[0]!);
         break;
       case OP.SET_BMP_SLOT:
         t.selectedBmpSlot = a[0]!;
