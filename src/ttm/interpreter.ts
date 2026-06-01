@@ -151,10 +151,10 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
         drawLine(t.layer, a[0]! + ctx.dx, a[1]! + ctx.dy, a[2]! + ctx.dx, a[3]! + ctx.dy, t.fgColor);
         break;
       case OP.DRAW_RECT:
-        drawRect(t.layer, a[0]! + ctx.dx, a[1]! + ctx.dy, a[2]! + ctx.dx, a[3]! + ctx.dy, t.fgColor);
+        drawRect(t.layer, a[0]! + ctx.dx, a[1]! + ctx.dy, a[2]!, a[3]!, t.fgColor);
         break;
       case OP.DRAW_CIRCLE:
-        drawCircle(t.layer, a[0]! + ctx.dx, a[1]! + ctx.dy, a[2]! + ctx.dx, a[3]! + ctx.dy, t.fgColor, t.bgColor);
+        drawCircle(t.layer, a[0]! + ctx.dx, a[1]! + ctx.dy, a[2]!, a[3]!, t.fgColor, t.bgColor);
         break;
       case OP.DRAW_SPRITE: {
         // grDrawSprite(layer, slot, x, y, spriteNo, imageNo) — args[0..3] = x,y,sprNo,imgNo
