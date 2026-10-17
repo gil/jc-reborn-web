@@ -208,6 +208,58 @@ Checking what each opcode means against the original is chunk 5's job; this tabl
 
 ## ADS opcode coverage
 
+Every opcode the 10 ADS scripts use, framed with the original size table, plus every table opcode the scheduler does not list. Counts come from the `keeps its opcode counts` snapshot in `src/decode/__snapshots__/ads-loader.data.test.ts.snap`. "Not listed" opcodes are read by `scanBytecode` (`src/ads/scheduler.ts:63`) as a section tag word and by `adsPlayChunk` as its `default` case.
+
+| Opcode | Our name | Uses in the data | Original args (`1048:0383`) | Scheduler args (`ADS_ARG_COUNTS`) | Scheduler handler |
+| --- | --- | --- | --- | --- | --- |
+| `0x1070` | `IF_LASTPLAYED_LOCAL` | 1 | 2 | 2 | `src/ads/scheduler.ts:277` |
+| `0x1330` | `IF_UNKNOWN_1` | 55 | 2 | 2 | `src/ads/scheduler.ts:283` |
+| `0x1350` | `IF_LASTPLAYED` | 500 | 2 | 2 | `src/ads/scheduler.ts:286` |
+| `0x1360` | `IF_NOT_RUNNING` | 76 | 2 | 2 | `src/ads/scheduler.ts:291` |
+| `0x1370` | `IF_IS_RUNNING` | 30 | 2 | 2 | `src/ads/scheduler.ts:296` |
+| `0x1420` | `AND` | 47 | 0 (not in the table) | 0 | `src/ads/scheduler.ts:301` |
+| `0x1430` | `OR` | 30 | 0 (not in the table) | 0 | `src/ads/scheduler.ts:303` |
+| `0x1510` | `PLAY_SCENE` | 584 | 0 (not in the table) | 0 | `src/ads/scheduler.ts:306` |
+| `0x1520` | `ADD_SCENE_LOCAL` | 1 | 0 (not in the table) | 5 | `src/ads/scheduler.ts:310` |
+| `0x2005` | `ADD_SCENE` | 867 | 4 | 4 | `src/ads/scheduler.ts:320` |
+| `0x2010` | `STOP_SCENE` | 111 | 3 | 3 | `src/ads/scheduler.ts:328` |
+| `0x3010` | `RANDOM_START` | 77 | 0 (not in the table) | 0 | `src/ads/scheduler.ts:336` |
+| `0x3020` | `NOP` | 17 | 1 | 1 | `src/ads/scheduler.ts:340` |
+| `0x30ff` | `RANDOM_END` | 77 | 0 (not in the table) | 0 | `src/ads/scheduler.ts:345` |
+| `0x4000` | `UNKNOWN_6` | 4 | 3 | 3 | `src/ads/scheduler.ts:349` |
+| `0xf010` | `FADE_OUT` | 67 | 1 | 0 | `src/ads/scheduler.ts:352` |
+| `0xf200` | `GOSUB_TAG` | 12 | 1 | 1 | `src/ads/scheduler.ts:354` |
+| `0xffff` | `END` | 66 | 0 (not in the table); `1048:04fc` ends the section and skips the next tag word | 0 | `src/ads/scheduler.ts:359` |
+| `0xf000` | none | 0 | 0 | not listed | no case |
+| `0xf210` | none | 0 | 1 | not listed | no case |
+| `0x1010` | none | 0 | 2 | not listed | no case |
+| `0x1020` | none | 0 | 2 | not listed | no case |
+| `0x1030` | none | 0 | 2 | not listed | no case |
+| `0x1040` | none | 0 | 2 | not listed | no case |
+| `0x1050` | none | 0 | 2 | not listed | no case |
+| `0x1060` | none | 0 | 2 | not listed | no case |
+| `0x1080` | none | 0 | 1 | not listed | no case |
+| `0x1310` | none | 0 | 2 | not listed | no case |
+| `0x1320` | none | 0 | 2 | not listed | no case |
+| `0x1340` | none | 0 | 2 | not listed | no case |
+| `0x1380` | none | 0 | 1 | not listed | no case |
+| `0x1390` | none | 0 | 1 | not listed | no case |
+| `0x13a0` | none | 0 | 1 | not listed | no case |
+| `0x13a1` | none | 0 | 1 | not listed | no case |
+| `0x13b0` | none | 0 | 1 | not listed | no case |
+| `0x13b1` | none | 0 | 1 | not listed | no case |
+| `0x13c0` | none | 0 | 1 | not listed | no case |
+| `0x13c1` | none | 0 | 1 | not listed | no case |
+| `0x2000` | none | 0 | 4 | not listed | no case |
+| `0x2015` | none | 0 | 3 | not listed | no case |
+| `0x2020` | none | 0 | 3 | not listed | no case |
+| `0x4010` | none | 0 | 3 | not listed | no case |
+
+Original and scheduler differ for `0xf010` (1 against 0), `0x1520` (0 against 5), and the 24 table opcodes the scheduler does not list (`0xf000`, `0xf210`, `0x1010`..`0x1060`, `0x1080`, `0x1310`, `0x1320`, `0x1340`, `0x1380`..`0x13c1`, `0x2000`, `0x2015`, `0x2020`, `0x4010`), which its scan takes for tag words with no args; `0xf000` takes 0 args in both but is still taken for a tag.
+
+- Data: the only `0x1520` (`ACTIVITY.ADS`, byte 2052) is followed by `0x2005 4 16 0 1`. The original reads that as a no-arg `0x1520`, then a normal `0x2005`. The scheduler reads the same 5 words as `0x1520`'s args. Both land on the same next instruction.
+- Data: every `0xf010` is followed by `0xFFFF`, which the original reads as its arg. The scheduler reads it as an `END`.
+
 ## Thunks
 
 ## Side-by-side checklist
@@ -241,3 +293,7 @@ Checking what each opcode means against the original is chunk 5's job; this tabl
 | `1050:04a8` | `ttm_skipStringArg` | `src/decode/ttm-bytecode.ts:30` (`readTtmInstruction` string field) | match |
 | `1050:013e` | `ttm_readWord` | `src/decode/ttm-bytecode.ts:19` (`readTtmInstruction` `getUint16`) | match |
 | `1050:03e2` | `ttm_selectTtm` | none (each scheduler slot holds its decoded TTM directly) | match |
+| `1048:0079` | `ads_loadAds` | `src/decode/ads-loader.ts:14` (`decodeAds`: `ADS:RES:` ids and names, `ADS:SCR:` decompressed whole); failing on a missing TTM: OQ-13 | fixed |
+| `1048:0303` | `ads_nextInstruction` | `src/decode/ads-bytecode.ts:12` (`adsArgCount`); the scheduler still uses `ADS_ARG_COUNTS`: OQ-11 | fixed |
+| `1048:04fc` | `ads_indexSections` | `src/decode/ads-bytecode.ts:18` (`indexAdsSections`); the scheduler still scans on its own: OQ-11 | fixed |
+| `1048:040f` | `ads_sectionSceneIds` | none yet (scheduler state): OQ-12 | open |

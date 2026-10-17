@@ -40,7 +40,7 @@
 
 ## Part A: Read the original
 
-- [ ] **Action 1: Read the ADS loader**
+- [x] **Action 1: Read the ADS loader**
 
 Read `1048:0079` (`ads_loadAds`), `1048:04fc`, `1048:040f`, `1048:0303` (its pseudo-C is incomplete: the jump table and handlers are in the assembly and in raw bytes), and the table at `1068:260a`. Dump the size table and the handler bytes from the code segment:
 
@@ -56,14 +56,14 @@ Write under `ADS loader` in `docs/re/decoders.md`, one claim per bullet:
 - `1048:04fc`: with a slot number, how it builds the section list: section 0 starts after the first word (its tag), every `0xFFFF` ends a section and the next one starts at the following word (its tag word, so later sections start 2 bytes earlier relative to their tag than section 0), the end test (`offset >= length - 1`), a trailing `0xFFFF` at the very end adds no section, the count in record word `[1]`, up to 80 starts with no bounds check, and the per-section scene lists from `1048:040f` in record words `[0x1e9 + i]`. With 0, what it restores.
 - `1048:040f`: collects, per section, the distinct ids that `1048:0bf4` (chunk 6) returns for each instruction whose opcode is in `1068:260a` (`0x2000`, `0x2005`), into a zero-terminated near list.
 
-- [ ] **Action 2: Name the functions**
+- [x] **Action 2: Name the functions**
 
 Add `scripts/re/names.json` entries (sorted, status `named`; `1048:0079` exists). Suggested: `1048:0303` `ads_nextInstruction`, `1048:04fc` `ads_indexSections`, `1048:040f` `ads_sectionSceneIds`.
 
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 3: Commit the findings**
+- [x] **Action 3: Commit the findings**
 
 ```bash
 git add docs/re/decoders.md scripts/re/names.json docs/re/function-map.md
@@ -72,7 +72,7 @@ git commit -m "docs(re): ADS loader, size table, and section index findings"
 
 ## Part B: Run the original size table
 
-- [ ] **Action 4: Write the failing Python tests**
+- [x] **Action 4: Write the failing Python tests**
 
 Append to `scripts/re/unicorn/test_original_loaders.py`, before the `if __name__ == "__main__":` block, and add `AdsFraming` to its `from original_loaders import ...` line:
 
@@ -97,7 +97,7 @@ class AdsFramingTest(unittest.TestCase):
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_loaders.py' -v`
 Expected: FAIL with `ImportError: cannot import name 'AdsFraming'`.
 
-- [ ] **Action 5: Add the framing probe to the harness**
+- [x] **Action 5: Add the framing probe to the harness**
 
 `1048:0303` reads the current slot from `1068:2608`, the slot's record from `1068:460c`, and the record's end pointer from word `[4]` (byte `+8`); it compares only offsets. The probe sets up one slot whose end is `0xFFFF`, writes the opcode word at a fixed far address, and reads how far the function moves the pointer. Append to `scripts/re/unicorn/original_loaders.py`:
 
@@ -135,7 +135,7 @@ Expected: all pass. If `arg_count` raises for every opcode, the record or slot l
 Run: `re/.venv/bin/python -I -m py_compile scripts/re/unicorn/original_loaders.py scripts/re/unicorn/test_original_loaders.py`
 Expected: no output.
 
-- [ ] **Action 6: Dump every opcode**
+- [x] **Action 6: Dump every opcode**
 
 In `scripts/re/unicorn/dump_loaders.py`, add `AdsFraming` to the `from original_loaders import ...` line, add before `COMMANDS`:
 
@@ -154,7 +154,7 @@ Expected: no output.
 Run: `re/.venv/bin/python -I scripts/re/unicorn/dump_loaders.py ads-arg-counts`
 Expected: `ads-arg-counts.tsv: 34 rows` (the 35 table entries minus `0xf000`, which takes 0 args). It runs 65,536 emulated calls; give it a minute.
 
-- [ ] **Action 7: Commit**
+- [x] **Action 7: Commit**
 
 ```bash
 git add scripts/re/unicorn/original_loaders.py scripts/re/unicorn/dump_loaders.py scripts/re/unicorn/test_original_loaders.py
@@ -163,7 +163,7 @@ git commit -m "feat(re): probe the original ADS instruction size for every opcod
 
 ## Part C: Our ADS framing and section index
 
-- [ ] **Action 8: Write the failing tests**
+- [x] **Action 8: Write the failing tests**
 
 Create `src/decode/ads-bytecode.test.ts`:
 
@@ -215,7 +215,7 @@ Section offsets follow the original: section 0's offset is after its tag word (2
 Run: `pnpm exec vitest run src/decode/ads-bytecode.test.ts`
 Expected: FAIL (`./ads-bytecode.js` does not exist).
 
-- [ ] **Action 9: Implement `src/decode/ads-bytecode.ts`**
+- [x] **Action 9: Implement `src/decode/ads-bytecode.ts`**
 
 Fill `ARG_COUNTS` from the table you dumped in Action 1 (it must match `re/fixtures/loaders/ads-arg-counts.tsv`; Action 13 checks every opcode). The planning read gave:
 
@@ -258,7 +258,7 @@ A later section's tag word is then read as an instruction with no args, which is
 Run: `pnpm exec vitest run src/decode/ads-bytecode.test.ts`
 Expected: all pass.
 
-- [ ] **Action 10: Commit**
+- [x] **Action 10: Commit**
 
 ```bash
 git add src/decode/ads-bytecode.ts src/decode/ads-bytecode.test.ts
@@ -267,7 +267,7 @@ git commit -m "feat(decode): original ADS size table and section index"
 
 ## Part D: Our ADS loader
 
-- [ ] **Action 11: Write the failing tests**
+- [x] **Action 11: Write the failing tests**
 
 Create `src/decode/ads-loader.test.ts`:
 
@@ -314,7 +314,7 @@ describe('decodeAds', () => {
 Run: `pnpm exec vitest run src/decode/ads-loader.test.ts`
 Expected: FAIL (the old parser expects 4 "unknown bytes" after `ADS:` and has no `sections`).
 
-- [ ] **Action 12: Implement**
+- [x] **Action 12: Implement**
 
 Replace the whole of `src/decode/ads-loader.ts` with:
 
@@ -373,7 +373,7 @@ Expected: all pass.
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 13: Write the ADS corpus tests**
+- [x] **Action 13: Write the ADS corpus tests**
 
 Create `src/decode/ads-loader.data.test.ts`:
 
@@ -483,7 +483,7 @@ describe.skipIf(!hasFixture('loaders/ads-arg-counts.tsv'))('ADS framing matches 
 Run: `pnpm exec vitest run src/decode/ads-loader.data.test.ts`
 Expected: 7 tests pass; snapshots are written. If `uses only opcodes our ADS opcode table names` fails, do not add names to `src/ads/opcodes.ts`: list the opcodes as gaps in the coverage table (Action 15) and in the chunk 6 open question (Action 16), and change the test to expect exactly that list.
 
-- [ ] **Action 14: Commit**
+- [x] **Action 14: Commit**
 
 ```bash
 git add src/decode/ads-loader.ts src/decode/ads-loader.test.ts src/decode/ads-loader.data.test.ts src/decode/__snapshots__
@@ -492,7 +492,7 @@ git commit -m "fix(decode): ADS loader uses chunk lookup and the original sectio
 
 ## Part E: Coverage, open questions for chunk 6, checklist
 
-- [ ] **Action 15: Write the ADS opcode coverage table**
+- [x] **Action 15: Write the ADS opcode coverage table**
 
 Under `ADS opcode coverage` in `docs/re/decoders.md`, add one row per opcode the data uses (counts from the `keeps its opcode counts` entry in `src/decode/__snapshots__/ads-loader.data.test.ts.snap`), plus one row per table opcode where the scheduler's count differs even if the data never uses it:
 
@@ -508,7 +508,7 @@ Under `ADS opcode coverage` in `docs/re/decoders.md`, add one row per opcode the
 
 Below the table, list in one sentence every opcode where the original and scheduler arg counts differ. Chunk 6 starts from that list.
 
-- [ ] **Action 16: Log the scheduler differences for chunk 6**
+- [x] **Action 16: Log the scheduler differences for chunk 6**
 
 The user asked that what this chunk leaves in the scheduler be noted for chunk 6. Add these entries to `docs/re/open-questions.md` under "Workarounds without a known root cause" (next free `OQ-` numbers), filling the `<...>` parts from Action 15:
 
@@ -541,7 +541,7 @@ The user asked that what this chunk leaves in the scheduler be noted for chunk 6
 - **Status:** open
 ```
 
-- [ ] **Action 17: Fill the checklist rows**
+- [x] **Action 17: Fill the checklist rows**
 
 In `docs/re/decoders.md` under `Side-by-side checklist`, add rows (real line numbers):
 
@@ -557,7 +557,7 @@ Leave `1048:040f` as `named`; the wrap-up step marks the others `verified`.
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 18: Run every check and commit**
+- [x] **Action 18: Run every check and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -575,7 +575,7 @@ git commit -m "docs(re): ADS opcode coverage, chunk 6 open questions, checklist"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
-- [ ] Only if something could not be finished: record it in
+- [x] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
