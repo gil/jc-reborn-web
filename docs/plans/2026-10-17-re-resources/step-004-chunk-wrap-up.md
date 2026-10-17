@@ -31,14 +31,14 @@ The spec's done rule for a chunk:
 - Its tests pass, including corpus tests when data is present.
 - No comment in its files makes a claim the findings don't back.
 
-- [ ] **Action 1: Promote checked functions to `verified`**
+- [x] **Action 1: Promote checked functions to `verified`**
 
 `verified` means: fully read, findings written in `docs/re/resources.md`, and its checklist row is `match` or `fixed`. For every in-scope function that meets that, set `"status": "verified"` in `scripts/re/names.json`. Leave `named` for anything listed in `docs/re/open-questions.md` (for example the compress side under OQ-7). Runtime library and `platform_` helpers named along the way are out of scope; leave them `named`.
 
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 2: List what is still not verified**
+- [x] **Action 2: List what is still not verified**
 
 Run:
 
@@ -54,7 +54,7 @@ for (const a of addresses.filter(inScope)) if (names[a]?.status !== 'verified') 
 
 Expected: only addresses that appear in `docs/re/open-questions.md`. Check each printed address with `rg -n "<address>" docs/re/open-questions.md`. For any that is missing from both, go back and read it, write its finding and checklist row, and mark it `verified`; or add an open-questions entry saying exactly what is unknown.
 
-- [ ] **Action 3: Audit the comments in chunk 2 files**
+- [x] **Action 3: Audit the comments in chunk 2 files**
 
 Run: `rg -n "//|/\*" src/io src/resource src/testing`
 
@@ -69,11 +69,11 @@ Also check the four decoders touched in step 2 (`src/decode/scr.ts`, `bmp.ts`, `
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 4: Update the segment overview**
+- [x] **Action 4: Update the segment overview**
 
 In `docs/re/segments.md`, update the rows for Code4 (`1018`) and Code6 (`1028`) with what chunk 2 learned: `1028` holds the decompression stream and the RLE and LZW codecs (both directions); `1018` holds the resource map, name hash, and the virtual file layer. Add the method table (`1068:1dc2`), the stream slot table (`1068:3f66`), and the open-file slots (`1068:3499`) under "Tables found", each with one line.
 
-- [ ] **Action 5: Commit**
+- [x] **Action 5: Commit**
 
 ```bash
 git add scripts/re/names.json docs/re/function-map.md docs/re/open-questions.md docs/re/resources.md docs/re/segments.md src/io src/resource
