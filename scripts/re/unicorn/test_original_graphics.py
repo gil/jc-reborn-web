@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 from ne_image import NeImage
-from original_graphics import DC_A, DC_B, DirtyEmulator, build_mask_original, create_brush_original, mirror_rows_original
+from original_graphics import DC_A, DC_B, DirtyEmulator, build_mask_original, create_brush_original, mirror_rows_original, wipe_shapes_original
 
 REPO = Path(__file__).resolve().parents[3]
 BINARY = REPO / "public/data/SCRANTIC.SCR"
@@ -73,6 +73,24 @@ class DirtyListTest(unittest.TestCase):
         events = dirty.run(["replay", DC_B, DC_A, 0])
         self.assertEqual(events, [["copy", DC_B, DC_A, 400, 400, 8, 8], ["copy", DC_B, DC_A, 0, 0, 8, 8]])
         self.assertEqual(dirty.lists(), [])
+
+
+@unittest.skipUnless(BINARY.exists(), "needs public/data/SCRANTIC.SCR")
+class WipeTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.image = NeImage.load(BINARY)
+
+    def test_right_to_left_fills_strips_of_a_hundredth_of_the_width(self):
+        shapes = wipe_shapes_original(self.image, "right-to-left", 0, 0, 640, 480)
+        self.assertEqual(len(shapes), 107)
+        self.assertEqual(shapes[0], ["rect", 634, 0, 640, 480])
+        self.assertEqual(shapes[-1], ["rect", -2, 0, 4, 480])
+
+    def test_ellipse_grows_its_radius_by_1_then_2_then_3(self):
+        shapes = wipe_shapes_original(self.image, "ellipse", 0, 0, 640, 480)
+        self.assertEqual(shapes[:3], [["ellipse", 318, 238, 322, 242], ["ellipse", 316, 236, 324, 244], ["ellipse", 313, 233, 327, 247]])
+        self.assertEqual(len(shapes), 25)
 
 
 if __name__ == "__main__":

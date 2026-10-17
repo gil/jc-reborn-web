@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from corpus import load_resources
 from ne_image import NeImage
-from original_graphics import DC_A, DC_B, DC_C, DirtyEmulator, create_brush_original, masks_and_mirrors_original
+from original_graphics import DC_A, DC_B, DC_C, WIPES, DirtyEmulator, create_brush_original, masks_and_mirrors_original, wipe_shapes_original
 from original_loaders import load_bmp_original
 
 REPO = Path(__file__).resolve().parents[3]
@@ -97,10 +97,23 @@ def dump_dirty(image: NeImage, resources):
     write_tsv("restore-table.tsv", ["which", "source", "target"], [[which, *pair] for which in (0, 1) for pair in table.restore_table(which)])
 
 
+WIPE_AREAS = [(0, 0, 640, 480), (80, 60, 640, 480)]
+
+
+def dump_wipes(image: NeImage, resources):
+    rows = []
+    for name in WIPES:
+        for x, y, w, h in WIPE_AREAS:
+            shapes = wipe_shapes_original(image, name, x, y, w, h)
+            rows.append([name, x, y, w, h, json.dumps(shapes, separators=(",", ":"))])
+    write_tsv("wipes.tsv", ["wipe", "x", "y", "w", "h", "shapes"], rows)
+
+
 COMMANDS = {
     "brushes": dump_brushes,
     "masks": dump_masks,
     "dirty": dump_dirty,
+    "wipes": dump_wipes,
 }
 
 

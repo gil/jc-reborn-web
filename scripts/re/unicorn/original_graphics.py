@@ -279,3 +279,33 @@ class DirtyEmulator:
                 break
             entry += 4
         return pairs
+
+WIPES = {
+    "ellipse": "1020:0512",
+    "rect": "1020:05a0",
+    "right-to-left": "1020:0637",
+    "left-to-right": "1020:0688",
+    "top-to-bottom": "1020:06d2",
+    "bottom-to-top": "1020:071c",
+}
+PUMP_MESSAGES = "1008:13cd"
+FAKE_DC = 0x55
+
+
+def wipe_shapes_original(image: NeImage, name: str, x: int, y: int, w: int, h: int) -> list[list[object]]:
+    emu = new_graphics_emulator(image)
+    shapes: list[list[object]] = []
+
+    def recorder(kind: str):
+        def record(emu: Emulator):
+            _dc, left, top, right, bottom = pascal_args(emu, 5)
+            shapes.append([kind, signed(left), signed(top), signed(right), signed(bottom)])
+            return {"ax": 1}
+
+        return record
+
+    emu.add_stub("GDI", 27, recorder("rect"), arg_bytes=10)
+    emu.add_stub("GDI", 24, recorder("ellipse"), arg_bytes=10)
+    emu.replace_function(PUMP_MESSAGES, lambda emu: {"ax": 0})
+    emu.call_far(WIPES[name], stack_words=[h, w, y, x, FAKE_DC])
+    return shapes
