@@ -800,6 +800,14 @@
       "signature": null,
       "callingConvention": null
     },
+    "1030:000e": {
+      "name": "decoders_bmpPixelBytes",
+      "subsystem": "decoders",
+      "status": "named",
+      "note": "Called through 1068:1e24: sums ((w + 1) / 2) * h over a bitmap record list as a u32 and zeroes its second output",
+      "signature": null,
+      "callingConvention": null
+    },
     "1030:01c4": {
       "name": "gfx_saveRectBits",
       "subsystem": "gfx",
@@ -852,7 +860,7 @@
       "name": "decoders_readBmpInfo",
       "subsystem": "decoders",
       "status": "named",
-      "note": "Seeks BMP:INF:, reads the image count, allocates 14-byte records, and reads every width then every height",
+      "note": "Finds BMP:INF:, reads the u16 image count, every width, then every height into 14-byte near records (+6 width, +8 height) behind a zero-terminated pointer list",
       "signature": null,
       "callingConvention": null
     },
@@ -860,7 +868,23 @@
       "name": "decoders_loadBmp",
       "subsystem": "decoders",
       "status": "named",
-      "note": "Loads a BMP resource: info via BMP:INF:, pixel data from BMP:BIN:, optional BMP:VGA: or BMP:AMG: layer; returns a handle or 0",
+      "note": "Loads a BMP resource: records from BMP:INF:, BMP:BIN: unpacked into one far buffer, images built by 1040:0000 through 1068:2574; BMP:VGA:/BMP:AMG: layers never run; returns the record list or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:15cc": {
+      "name": "decoders_freeBmpInfo",
+      "subsystem": "decoders",
+      "status": "named",
+      "note": "Frees a bitmap record block (the list's first entry), then the pointer list",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:1624": {
+      "name": "decoders_expandAmgBits",
+      "subsystem": "decoders",
+      "status": "named",
+      "note": "Expands 1-bit pixels into 4-bit indices 0 or 1, from the end backward so it works in place; only reached from the dead BMP:AMG: branch",
       "signature": null,
       "callingConvention": null
     },
@@ -1116,7 +1140,7 @@
       "name": "decoders_loadBmpMatrix",
       "subsystem": "decoders",
       "status": "named",
-      "note": "Reads a BMP:MTX: grid of tile indices, loads the BMP tiles, and composes them into one bitmap at 1068:45f8",
+      "note": "Reads a BMP:MTX: grid (u16 columns, u16 rows, u16 image indices column by column), loads the same BMP's images, and composes them into one bitmap at 1068:45f8; only TTM opcode 0xF08F calls it, and no resource has BMP:MTX:",
       "signature": null,
       "callingConvention": null
     },

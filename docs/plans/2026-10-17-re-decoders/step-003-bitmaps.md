@@ -37,7 +37,7 @@
 
 ## Part A: Read the original
 
-- [ ] **Action 1: Read the bitmap loader**
+- [x] **Action 1: Read the bitmap loader**
 
 Read `1030:1112` (`decoders_readBmpInfo`), `1030:124a` (`decoders_loadBmp`), `1030:000e`, `1030:15cc`, and `1030:1624`. Find the targets of the function pointers `1068:1e24`, `1068:2574`, and `1068:2578` in the relocation table:
 
@@ -62,7 +62,7 @@ Write under `Bitmap` in `docs/re/decoders.md`, one claim per bullet:
 - `1030:15cc`: frees the record block and the pointer list.
 - The data: 2 bitmaps carry `BMP:VGA:` (`MJTELE.BMP`, `JOHNWALK.BMP`); the original ignores it in its 16-color mode, so do we.
 
-- [ ] **Action 2: Read the bitmap matrix loader**
+- [x] **Action 2: Read the bitmap matrix loader**
 
 Read `1040:0db0` (`decoders_loadBmpMatrix`) and its helpers `1038:00d2`, `1038:0119` (named in step 1). Find who calls it; Ghidra shows no direct callers, so look for a relocation that points at it:
 
@@ -71,14 +71,14 @@ Expected: the rows (if any) whose target is `1040:0db0` (`0x0db0` = 3504). The f
 
 Write under `Bitmap matrix`: the `BMP:MTX:` layout it expects, what it builds (`1068:45f8`), who reaches it, and that no resource in the data has a `BMP:MTX:` chunk (step 1's `re/fixtures/loaders/chunks.tsv` has `-1` for every `BMP:MTX:` row: check with `rg -c "BMP:MTX:\t-1" re/fixtures/loaders/chunks.tsv`, expected `117`). We need no decoder for it.
 
-- [ ] **Action 3: Name the functions**
+- [x] **Action 3: Name the functions**
 
 Update `scripts/re/names.json` (sorted, status `named`, notes in our words). `1030:1112`, `1030:124a`, `1040:0db0` exist; correct their notes if needed. Suggested new names: `1030:000e` `decoders_bmpPixelBytes`, `1030:15cc` `decoders_freeBmpInfo`, `1030:1624` `decoders_expandAmgBits`.
 
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 4: Commit the findings**
+- [x] **Action 4: Commit the findings**
 
 ```bash
 git add docs/re/decoders.md scripts/re/names.json docs/re/function-map.md

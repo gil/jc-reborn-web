@@ -82,7 +82,33 @@ Results of the original chunk lookup (`1038:016b`, then `1038:0215` with occurre
 
 ## Bitmap
 
+- `1030:1112`: far cdecl `(handle, count out, list out)`. Finds `BMP:INF:` with occurrence 0 and reads a u16 image count, then `count` u16 widths, then `count` u16 heights, each with `resources_readFile`. A missing chunk or a short read returns 0.
+- `1030:1112`: allocates a zeroed near list of `count + 1` record pointers and one zeroed near block of `count` 14-byte records; the list's first entry is the block. It returns 0 when either allocation fails, without freeing what it already got.
+- `1030:1112`: record layout: `+6` width and `+8` height, written here; `+1` a byte copied from `1068:2e74`, `+2` the DIB, `+4` the mask, `+0x0a` and `+0x0c` a second DIB and mask, all written later by `1040:0000`. The list ends with a 0 entry. Returns 1.
+- `1030:000e` (through `1068:1e24`): `(list, second out)` sums `((width + 1) / 2) × height` over the zero-terminated record list, returned as a u32 in `DX:AX`. It always sets the second output to 0.
+- `1030:124a`: far cdecl `(name or handle)`. Opens the name with `1038:016b` unless `1038:0584` says it is already a handle, and closes it at the end only when it opened it.
+- `1030:124a`: reads the records with `1030:1112`, then allocates one far pixel buffer of the `1030:000e` size. A second far buffer of the second output's size is only allocated when that size is not 0, and `1030:000e` always makes it 0.
+- `1030:124a`: when no decompression scratch is set at `1068:1dbe`, it checks that `0x3cc4` near bytes are free, frees them, and keeps a `0x3ac4`-byte block at `1068:1dbe`. `resources_initStreamMethod` (`1028:0547`) uses that block as the method's work buffer instead of a far allocation, and `resources_freeStream` leaves it alone. The loader frees it at the end and clears `1068:1dbe`.
+- `1030:124a`: finds `BMP:BIN:` with occurrence 0, opens a decompression stream with the low 16 bits of its size, and reads it into the far buffer in `0x7fff`-byte reads until a read comes back short. The read total is not checked against the buffer size.
+- `1030:124a`: calls `1068:2574` with 9 words: record list, pixel buffer (offset, segment), the stream's unpacked size from `resources_streamSize` (u32), the second buffer (offset, segment), and the `1030:000e` size (u32). Then it closes the stream.
+- `1068:2574`: points at `1040:0000` (relocation). `1040:0000` reads only the record list and the pixel buffer.
+- `1040:0000`: with `1068:2572` non-zero (its static value is 1; only `1040:0286` clears it, and sets it back to 1 after), it frees the pixel buffer after building every image, so a loaded bitmap keeps only its DIBs and masks.
+- `1040:0000`: advances by `(width / 2) × height` bytes per image, while `1030:000e` sizes the buffer with `((width + 1) / 2) × height`. For an odd width the images after the first would start one byte per row too early. Every width in the data is even, so the two agree.
+- `1030:124a`: the `BMP:VGA:` (5) and `BMP:AMG:` (6) layers are only tried when `1068:1ebf` is non-zero. Nothing writes `1068:1ebf` (static 0; the three accesses in the code are reads), so these branches never run.
+- `1068:2578`: also points at `1040:0000`, but the dead `BMP:VGA:`/`BMP:AMG:` branch calls it with a layer buffer, the pixel buffer, and a byte count, which does not match `1040:0000`'s arguments. It is never reached.
+- `1030:1624`: `(source, destination, count)` expands 1 bit per pixel into 4-bit indices 0 or 1, 4 output bytes per input byte, working from the end backward so it can expand in place. Bit 0 of a byte becomes its last pixel. Only the dead `BMP:AMG:` branch calls it.
+- `1030:124a`: returns the record list, or 0 on any failure. On failure it frees the pixel buffer, closes the stream, and frees the records with `1030:15cc`.
+- `1030:15cc`: frees the record block (the list's first entry), then the list. It reads the first entry before checking the list for 0.
+- Data: 2 bitmaps carry a `BMP:VGA:` chunk (`MJTELE.BMP`, `JOHNWALK.BMP`). The original ignores it in every mode it can run in, and so do we.
+
 ## Bitmap matrix
+
+- `1040:0db0`: far cdecl `(name or handle)`. First drops the previous matrix bitmap (`1040:10ef` deletes `1068:45f8`). Returns 0 for a 0 argument.
+- `1040:0db0`: when given an open handle it saves the reader with `1038:00d2` and restores it with `1038:0119` after reading, so the caller's position is kept; when given a name it opens and closes the file itself.
+- `1040:0db0`: `BMP:MTX:` layout: u16 columns, u16 rows, then `columns × rows` u16 image indices, column by column (each column top to bottom). The indices go into a far buffer; a missing chunk or failed allocation returns 0.
+- `1040:0db0`: loads the same resource as a bitmap through `1028:17fa` (a thunk to `1030:124a`). Every tile has the size of image 0. It makes a compatible bitmap of `columns × tile width` by `rows × tile height` at `1068:45f8` and blits each indexed image into its cell. The index is not bounds checked. When `1068:2e77` is 2 it does a second blit per tile (not read further). Then it frees the index buffer and the bitmap records and returns 1.
+- `1058:06f7`: the only caller. It is inside the TTM interpreter `1058:040c`, in the handler for opcode `0xF08F` (a jump table at `1058:12bd` that Ghidra does not follow): it drops the old matrix with `1040:10ef` when `1068:2640` is set, loads the opcode's string argument with `1040:0db0`, and stores the result in `1068:2640`. `gfx_blitBmpMatrix` (`1040:1113`) draws from it.
+- Data: no resource has a `BMP:MTX:` chunk (all 117 `BMP:MTX:` lookups in `re/fixtures/loaders/chunks.tsv` fail), and `0xF08F` is not among the opcodes our TTM scripts use. We need no decoder for it.
 
 ## TTM loader
 
