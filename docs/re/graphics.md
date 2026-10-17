@@ -35,8 +35,8 @@ The original draws with Windows GDI. The binary tells which GDI call runs with w
 - `1030:00fe`: far cdecl `(record list)`. Does nothing for a null list. Otherwise calls `1030:0000`, then deletes every non-zero GDI object of every record (`+2` image, `+4` mask, `+10` mirrored image, `+12` mirrored mask), then frees the list and records with `decoders_freeBmpInfo`.
 - `1030:0000`: an empty function; it returns without doing anything.
 - `1030:15fb`: far cdecl `(record list)`. Returns the number of records before the zero terminator, 0 for a null list.
-- `1028:182c`: forwards its one word to `1030:15fb`. Called from `1050:0061`.
-- `1028:1845`: forwards its one word to `1030:00fe`. Called from `1050:080c` and twice from `decoders_loadBmpMatrix` (`1040:0db0`).
+- `1028:182c`: forwards its one word to `1030:15fb`. Referenced (relocations) from `1050:0052` and `1050:0093`.
+- `1028:1845`: forwards its one word to `1030:00fe`. Referenced from `1040:0f9f` and `1040:10dd` (`decoders_loadBmpMatrix`), `1050:0890`, and `1058:079a`, `1058:0837` (TTM code Ghidra does not disassemble).
 
 ## Surfaces and clip
 
@@ -78,15 +78,37 @@ The original draws with Windows GDI. The binary tells which GDI call runs with w
 
 ## Sprites
 
-None yet.
+- `1038:0ae4`: far cdecl `(record, x, y, flags)`. Does nothing for a null record. Reads record byte `+1` (scale mode the bitmaps were built for), `+2` image, `+4` mask, `+6` width, `+8` height, `+10` mirrored image, `+12` mirrored mask.
+- `1038:0ae4`: picks the bitmaps: `flags & 2` → `+10`/`+12`; else `flags & 1` → none; else `+2`/`+4`. When either picked handle is 0 it falls back to `+2`/`+4` and marks the draw as a fallback.
+- `1038:0ae4`: only a fallback draw negates `StretchBlt` destination extents: `flags & 1` → `y += h`, `h = -h`; `flags & 2` → `x += w`, `w = -w`. So with a pre-mirrored pair, flags 3 mirrors and does not flip upside down; without one, flags 3 does both. Where GDI puts the pixels of a negative extent is Windows behavior (OQ-18).
+- `1038:0ae4`: with the clip applied, makes a memory DC and does two `StretchBlt`s from source `(0, 0, w, h)`: the mask with ROP `0x220326` (destination AND NOT source), then the image with ROP `0xEE0086` (`SRCPAINT`, destination OR source).
+- `1038:0ae4`: on palette indices: the mask bit is set where the index is not 0 (`1040:035c`), so the first blit clears those pixels to 0; the image has entry 0 black (`1040:0000`), so the second blit ORs index 0 as 0. Net effect: index 0 keeps the destination, any other index replaces it. This rests on GDI keeping a 4-bit DDB's indices as is under these ROPs.
+- `1038:0ae4`: dirty rect `(x, y, w, h)` from the arguments and record size, before any flip.
+- `1038:0ae4`: calls `1038:0de1` first when record byte `+1` differs from `1068:2e75`, and has scaled-blit branches when `2e74`, `2e75`, `2e76` differ; all are 3 at runtime, so none runs (see Scaling).
+- `1038:0ac2`: far cdecl `(record, x, y)`: `1038:0ae4` with flags 0. Callers: story code in `1010` (island, raft, and the other scenery draws).
+- `1028:17d8`: forwards `(record, x, y, flags)` to `1038:0ae4`. Referenced from `1050:00fa` and from the TTM sprite opcode case at `1058:02ce`.
+- `1058:025b`: the TTM case for opcodes `0xa504`..`0xa5a7` in the dispatcher `1058:0144` (jump table at `1058:03bc`, not followed by Ghidra). Flags are `(opcode >> 4) & 0x0f`. Low nibble 4 calls `1028:17d8(record, x, y, flags)`; low nibble 6 calls `1030:03d7(record, x, y, flags, w, h)`; low nibble 7 (`0xa5a7`) draws nothing here. The data uses only `0xa504` (flags 0) and `0xa524` (flags 2, mirror) (`docs/re/decoders.md`, TTM opcode coverage).
+- `1030:03d7`: far cdecl `(record, x, y, flags, w, h)`. Always the plain pair `+2`/`+4`. The same two blits as `1038:0ae4`, to destination `(x, y, w, h)` from source `(0, 0, record w, record h)` with the source width negated for `flags & 2` and the source height for `flags & 1`. A negative source extent that starts at 0 points outside the bitmap; what GDI draws then is not in the binary (OQ-19). Dirty rect `(x, y, w, h)`.
+- `1030:03d7`: reached only from the TTM case above with opcodes `0xa506`..`0xa536`, which no TTM script uses.
+- Ours: `src/gfx/gdi/sprite.ts` draws raw indices with index 0 see-through and applies the flag rules above, including flags 3 with a pre-mirrored copy (`hasMirroredCopy`). For flags 0 and 2 it gives the same pixels as the old pipeline (`src/gfx/sprite.ts`) on every image (`src/gfx/gdi/sprite.data.test.ts`).
 
 ## Scaling (dead code)
 
-None yet.
+- `1068:2e74`..`1068:2e77`: four scale-mode bytes. `platform_initSaver` (`1008:143c`) sets all four to 3. The only other writers are `1038:1744` (copies `2e74` into `2e76`) and `1038:19c7` (sets `2e76`), so all four stay 3.
+- `1038:0de1`: far cdecl `(record)`. When record byte `+1` differs from `2e75`, replaces the record's image and mask with doubled (`1038:109e`) or halved (`1038:1485`) copies and stores `2e75` in `+1`. `1040:0000` stores `2e74` in `+1`, so it never differs.
+- `1038:109e`: far cdecl `(bitmap)`. For a one-plane bitmap, builds a copy twice as wide and tall from its bits (`GetBitmapBits`, a lookup table at `1068:42a0`, `CreateBitmapIndirect`), then calls `1038:0e8a`. Returns the new bitmap, 0 when an allocation fails, or the given bitmap unchanged when it has more than one plane.
+- `1038:0e8a`: far cdecl `(original, doubled)`. Reads the bits of both, makes a third copy with a 2× `StretchBlt`, reads its bits too, then frees everything. Nothing is compared or kept: it looks like leftover test code. Only `1038:109e` calls it.
+- `1038:1485`: far cdecl `(bitmap)`. For a one-plane bitmap, builds a copy half as wide and tall from every other row of its bits, merging pixel pairs through a table at `1068:44a0`. Returns it, 0 when an allocation fails, or the given bitmap unchanged when it has more than one plane.
+- `1038:19c7`: far cdecl `(mode)`. When `mode` differs from `2e76`, doubles or halves the three offscreen bitmaps, selects the new ones into A, B, C, sets `2e76`, and repaints the window. Nothing references it (no call and no relocation), so it never runs.
+- The `/ 2` and `<< 1` branches of `1038:0ae4`, `1038:07e8`, `1038:06ce`, and `1038:1ade` compare these bytes too and never run.
 
 ## Bitmap matrix
 
-None yet.
+- `1068:45f8`: the matrix bitmap built by `decoders_loadBmpMatrix` (`1040:0db0`); `1068:45fa`/`45fc` the source x/y of the view; `1068:45fe`/`4600` the tile width/height. Only `1040:0db0` sets `45f8` non-zero.
+- `1040:10ef`: deletes the matrix bitmap when there is one and clears `45f8`. Called from `1030:017f`, `1040:0db0`, and `1050:080c`.
+- `1040:1113`: far cdecl `(x, y, w, h)`. When there is a matrix bitmap, `BitBlt`s `(x, y, w, h)` from it at source `(45fa, 45fc)` with `SRCCOPY` onto the draw target, then presents the rect. Reached only from the TTM case for opcode `0xa704` (`1058:023e`, call at `1058:0251`).
+- `1040:1183`: far cdecl `(direction, steps)`. Moves the view by whole tiles: 0 up (`45fc -= steps × 4600`), 1 down, 2 left (`45fa -= steps × 45fe`), 3 right. Referenced only from TTM code at `1058:0721` (inside `1058:040c`).
+- No resource has a `BMP:MTX:` chunk and no TTM script uses `0xF08F` or `0xa704` (`docs/re/decoders.md`), so `45f8` stays 0 and none of this draws anything.
 
 ## Dirty rects
 
@@ -131,3 +153,15 @@ None yet.
 | `1030:04ee` | `gfx_drawText` | none (text not modeled) | open |
 | `1030:04ce` | `gfx_drawTextNear` | none (text not modeled) | open |
 | `1030:0765` | `gfx_loadFont` | none (text not modeled) | open |
+| `1038:0ae4` | `gfx_drawSprite` | `src/gfx/gdi/sprite.ts:11` `drawSprite` | open |
+| `1038:0ac2` | `gfx_drawSpritePlain` | `src/gfx/gdi/sprite.ts:11` `drawSprite` with flags 0 | match |
+| `1030:03d7` | `gfx_drawSpriteStretched` | `src/gfx/gdi/sprite.ts:25` `drawSpriteStretched` | open |
+| `1028:17d8` | `gfx_callDrawSprite` | none (forwarder) | match |
+| `1038:0de1` | `gfx_rescaleSprite` | none (scale modes are all 3, never runs) | match |
+| `1038:0e8a` | `gfx_checkDoubledBitmap` | none (scale modes are all 3, never runs) | match |
+| `1038:109e` | `gfx_doubleBitmap` | none (scale modes are all 3, never runs) | match |
+| `1038:1485` | `gfx_halveBitmap` | none (scale modes are all 3, never runs) | match |
+| `1038:19c7` | `gfx_rescaleDisplay` | none (scale modes are all 3, never runs) | match |
+| `1040:10ef` | `gfx_freeBmpMatrix` | none (no `BMP:MTX:` in the data) | match |
+| `1040:1113` | `gfx_blitBmpMatrix` | none (no `BMP:MTX:` in the data) | match |
+| `1040:1183` | `gfx_scrollBmpMatrix` | none (no `BMP:MTX:` in the data) | match |

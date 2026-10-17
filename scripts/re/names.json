@@ -816,6 +816,14 @@
       "signature": null,
       "callingConvention": null
     },
+    "1028:17d8": {
+      "name": "gfx_callDrawSprite",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Forwards (record, x, y, flags) to gfx_drawSprite; used by the TTM sprite opcodes",
+      "signature": null,
+      "callingConvention": null
+    },
     "1028:17fa": {
       "name": "decoders_callLoadBmp",
       "subsystem": "decoders",
@@ -893,6 +901,14 @@
       "subsystem": "gfx",
       "status": "named",
       "note": "Draws a line in the foreground color and marks it dirty; dirty width is wrong when x2 < x1 or y2 < y1 (uses -a-b, not a-b)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:03d7": {
+      "name": "gfx_drawSpriteStretched",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Draws an image record stretched to w x h with negative source extents for flags 1/2; reached only from TTM opcodes 0xa5X6, unused by the data",
       "signature": null,
       "callingConvention": null
     },
@@ -1120,6 +1136,54 @@
       "signature": null,
       "callingConvention": null
     },
+    "1038:0ac2": {
+      "name": "gfx_drawSpritePlain",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "gfx_drawSprite with flags 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0ae4": {
+      "name": "gfx_drawSprite",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Draws an image record at x, y: mask AND NOT, then image OR; flags 2 uses the pre-mirrored pair, else falls back to +2/+4 with negative StretchBlt extents (1 flips, 2 mirrors)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0de1": {
+      "name": "gfx_rescaleSprite",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Doubles or halves a record's image and mask when its scale byte differs from 1068:2e75; never at runtime (all scale modes are 3)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0e8a": {
+      "name": "gfx_checkDoubledBitmap",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Reads the bits of a bitmap, its doubled copy, and a 2x StretchBlt copy, then frees them all; nothing kept (leftover test code)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:109e": {
+      "name": "gfx_doubleBitmap",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Returns a copy of a one-plane bitmap twice as wide and tall; dead at runtime",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:1485": {
+      "name": "gfx_halveBitmap",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Returns a copy of a one-plane bitmap half as wide and tall; dead at runtime",
+      "signature": null,
+      "callingConvention": null
+    },
     "1038:1744": {
       "name": "gfx_initDisplay",
       "subsystem": "gfx",
@@ -1133,6 +1197,14 @@
       "subsystem": "gfx",
       "status": "verified",
       "note": "Removes the cursor and deletes the three offscreen DCs and bitmaps that exist",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:19c7": {
+      "name": "gfx_rescaleDisplay",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Doubles or halves the three offscreen bitmaps to a new scale mode; never referenced",
       "signature": null,
       "callingConvention": null
     },
@@ -1272,11 +1344,27 @@
       "signature": null,
       "callingConvention": null
     },
+    "1040:10ef": {
+      "name": "gfx_freeBmpMatrix",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Deletes the BMP:MTX: bitmap at 1068:45f8 and clears it",
+      "signature": null,
+      "callingConvention": null
+    },
     "1040:1113": {
       "name": "gfx_blitBmpMatrix",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Blits a rect of the composed BMP:MTX: bitmap to the offscreen DC and marks it dirty",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:1183": {
+      "name": "gfx_scrollBmpMatrix",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Moves the matrix view (1068:45fa/45fc) by whole tiles: 0 up, 1 down, 2 left, 3 right",
       "signature": null,
       "callingConvention": null
     },

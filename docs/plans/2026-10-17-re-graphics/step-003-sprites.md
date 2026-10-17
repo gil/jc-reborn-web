@@ -27,7 +27,7 @@ How the original blits a sprite (overview, "Sprites"): the mask blit clears the 
 
 ## Part A: Read and confirm
 
-- [ ] **Action 1: Read the functions**
+- [x] **Action 1: Read the functions**
 
 Read `re/out/functions/` for `1038_0ae4`, `1038_0ac2`, `1030_03d7`, `1038_0de1`, `1038_0e8a`, `1038_109e`, `1038_1485`, `1038_19c7`, `1028_17d8`, `1040_10ef`, `1040_1113`, `1040_1183`. Ghidra prints Pascal import arguments in reverse (`STRETCHBLT(cs, rop_low, rop_high, srcH, srcW, srcY, srcX, srcDC, h, w, y, x)` reads as `StretchBlt(dc, x, y, w, h, srcDC, srcX, srcY, srcW, srcH, rop)`). Confirm or correct:
 
@@ -42,7 +42,7 @@ If a reading differs from this list, change the code below to match the binary a
 
 ## Part B: Sprite blits
 
-- [ ] **Action 2: Write the failing test**
+- [x] **Action 2: Write the failing test**
 
 Create `src/gfx/gdi/sprite.test.ts`:
 
@@ -137,12 +137,12 @@ describe('drawSpriteStretched', () => {
 });
 ```
 
-- [ ] **Action 3: Run it to make sure it fails**
+- [x] **Action 3: Run it to make sure it fails**
 
 Run: `pnpm exec vitest run src/gfx/gdi/sprite.test.ts`
 Expected: FAIL, cannot resolve `./sprite.js`.
 
-- [ ] **Action 4: Implement `sprite.ts`**
+- [x] **Action 4: Implement `sprite.ts`**
 
 Create `src/gfx/gdi/sprite.ts`:
 
@@ -208,12 +208,12 @@ function blit(
 }
 ```
 
-- [ ] **Action 5: Run it to make sure it passes**
+- [x] **Action 5: Run it to make sure it passes**
 
 Run: `pnpm exec vitest run src/gfx/gdi/sprite.test.ts`
 Expected: PASS, 9 tests.
 
-- [ ] **Action 6: Commit**
+- [x] **Action 6: Commit**
 
 ```bash
 git add src/gfx/gdi/sprite.ts src/gfx/gdi/sprite.test.ts
@@ -222,7 +222,7 @@ git commit -m "feat(gfx): sprite blit, mirror, flip, and stretch as the original
 
 ## Part C: Corpus checks
 
-- [ ] **Action 7: Write the data test**
+- [x] **Action 7: Write the data test**
 
 Create `src/gfx/gdi/sprite.data.test.ts`:
 
@@ -279,12 +279,12 @@ describe.skipIf(!hasCorpus)('every BMP image drawn by the model', () => {
 });
 ```
 
-- [ ] **Action 8: Run it**
+- [x] **Action 8: Run it**
 
 Run: `pnpm exec vitest run src/gfx/gdi/sprite.data.test.ts`
 Expected: PASS; the first run writes `src/gfx/gdi/__snapshots__/sprite.data.test.ts.snap` with 117 entries. If the second test fails, the old pipeline differs from the model for plain or mirrored sprites: list the failing images in an open question for chunk 5 (do not change the old pipeline), and change the test to `expect(wrong).toMatchSnapshot()` so the known list is pinned.
 
-- [ ] **Action 9: Commit**
+- [x] **Action 9: Commit**
 
 ```bash
 git add src/gfx/gdi/sprite.data.test.ts src/gfx/gdi/__snapshots__
@@ -293,13 +293,13 @@ git commit -m "test(gfx): sprite model snapshot and old pipeline check on every 
 
 ## Part D: Findings
 
-- [ ] **Action 10: Write the findings**
+- [x] **Action 10: Write the findings**
 
 In `docs/re/graphics.md`, replace `None yet.` under `Sprites`, `Scaling (dead code)`, and `Bitmap matrix` with one bullet per claim from Action 1, each starting with its address. Include: the record fields `0ae4` reads; the flag rules, including flags 3 with a pre-mirrored copy; the two raster ops and what they do to palette indices (index 0 keeps the destination); clip and dirty rect; `1038:0ac2` = flags 0; `1028:17d8`; `1030:03d7` and its negative source extents; every scaling function and why it never runs; the matrix functions and why they never run on this data.
 
 Checklist rows (real line numbers): `1038:0ae4` → `src/gfx/gdi/sprite.ts` `drawSprite`, `open` (mirror/flip pixel placement, see below); `1038:0ac2` → `drawSprite` with flags 0, `match`; `1030:03d7` → `drawSpriteStretched`, `open`; `1028:17d8` → `none (forwarder)`, `match`; `1038:0de1`, `1038:0e8a`, `1038:109e`, `1038:1485`, `1038:19c7` → `none (scale modes are all 3, never runs)`, `match`; `1040:10ef`, `1040:1113`, `1040:1183` → `none (no BMP:MTX: in the data)`, `match`.
 
-- [ ] **Action 11: Log open questions**
+- [x] **Action 11: Log open questions**
 
 Add to `docs/re/open-questions.md` (next free OQ numbers):
 
@@ -323,14 +323,14 @@ Add to `docs/re/open-questions.md` (next free OQ numbers):
 
 Edit OQ-14: `1028:17d8` forwards to `1038:0ae4` (findings in `docs/re/graphics.md` `Sprites`); with steps 1 and 3 done, all three forwarders are settled; the return-0 stub group stays for chunk 5. If OQ-14 now only covers the stub group, rewrite its **Where** and **Resolve in** to say so.
 
-- [ ] **Action 12: Names and status**
+- [x] **Action 12: Names and status**
 
 In `scripts/re/names.json`: name `1038:0ae4` `gfx_drawSprite`, `1038:0ac2` `gfx_drawSpritePlain`, `1030:03d7` `gfx_drawSpriteStretched`, `1028:17d8` `gfx_callDrawSprite`, `1038:0de1` `gfx_rescaleSprite`, `1038:109e` `gfx_doubleBitmap`, `1038:1485` `gfx_halveBitmap`, `1038:19c7` `gfx_rescaleDisplay`, `1038:0e8a`, `1040:10ef`, `1040:1113`, `1040:1183` with names that fit what you read. Status `verified` for every row that is `match` or `fixed`; `named` for `open` rows.
 
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 13: Check and commit**
+- [x] **Action 13: Check and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -345,7 +345,7 @@ git commit -m "docs(re): chunk 4 sprites, scaling, and bitmap matrix"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
-- [ ] Only if something could not be finished: record it in
+- [x] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

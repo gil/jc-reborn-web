@@ -129,6 +129,23 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Resolve in:** chunk 5, when the model is wired in: decide whether any visible difference is worth modeling
 - **Status:** open
 
+### OQ-18: Where GDI puts a mirrored or flipped sprite
+
+- **Where:** `src/gfx/gdi/sprite.ts` (`drawSprite` with flags 1 or 2, `drawSpriteStretched`)
+- **What it does:** draws the mirrored or flipped image into exactly the same rect as the plain one.
+- **Original:** `1038:0ae4` mirrors through a pre-mirrored copy (only `JOHNWALK.BMP`, built by `1040:054e`, which lands exactly in place) or through a negative `StretchBlt` destination extent (`x + w` with width `-w`). Whether Windows 3.1 maps a negative extent to the same pixels or one pixel off is GDI behavior, not in the binary.
+- **Resolve in:** only with a reference capture from Windows 3.1
+- **Status:** open
+
+### OQ-19: Stretched sprites: negative source extents and shrink rule
+
+- **Where:** `src/gfx/gdi/sprite.ts` (`drawSpriteStretched`)
+- **What it does:** nearest pixel, mirrored or flipped inside the image.
+- **Original:** `1030:03d7` negates the source width or height with the source origin left at 0, which points outside the bitmap, and shrinking uses the DC's stretch mode (default `BLACKONWHITE`). Both are GDI behavior.
+- **Found in chunk 4:** only the TTM case `1058:025b` reaches `1030:03d7`, for opcodes `0xa506`, `0xa516`, `0xa526`, `0xa536`; the TTM scripts use none of them (`docs/re/decoders.md`, TTM opcode coverage).
+- **Resolve in:** chunk 5: confirm the opcode mapping in the interpreter; if it holds, close this
+- **Status:** open
+
 ## Past fixes to re-check against the original
 
 Each fix below was made without the decompile. Treat it as a guess until a chunk confirms or replaces it. "Out of scope" rows touch docs, build paths, or sound playback, which have no counterpart in the original.
@@ -180,13 +197,13 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **Why not reviewed:** the engine only reads `RESOURCE.001`; nothing in the original's runtime writes compressed data that we need to reproduce. All four callers of `1028:0615` pass a mode string `"r"`, and `1028:0a4b` (the only way to feed an encoder) has no callers.
 - **Status:** open, by choice
 
-### OQ-14: `1028` thunks that do not reach a decoder
+### OQ-14: `1028` stub group that does not reach a decoder
 
-- **Where:** `1028:17d8`, `1028:182c`, `1028:1845`, and the stub group `1028:17c8`, `1028:185e`..`1028:1b0d`
-- **What it does:** three forward to other code: `1038:0ae4` (four words, role unknown), `1030:15fb` (counts a bitmap record list), and `1030:00fe` (frees a loaded bitmap's DIBs, masks, and records). Of the rest, 42 return 0, `1028:196e` returns nothing, and `1028:1afc` and `1028:1b0d` return 1. Only direct `CALLF`s reference them: 20 of the return-0 stubs are called from `1058` code around the TTM interpreter (`1058:0054`..`1058:00e5`, `1058:021d`, `1058:02ec`, `1058:0a93`, `1058:0aa4`, `1058:1725`); the other 25 stubs have no reference. See `Thunks` in `docs/re/decoders.md`.
+- **Where:** the stub group `1028:17c8`, `1028:185e`..`1028:1b0d` (the forwarders `1028:17d8`, `1028:182c`, `1028:1845` were settled in chunk 4)
+- **What it does:** of the stubs, 42 return 0, `1028:196e` returns nothing, and `1028:1afc` and `1028:1b0d` return 1. Only direct `CALLF`s reference them: 20 of the return-0 stubs are called from `1058` code around the TTM interpreter (`1058:0054`..`1058:00e5`, `1058:021d`, `1058:02ec`, `1058:0a93`, `1058:0aa4`, `1058:1725`); the other 25 stubs have no reference. See `Thunks` in `docs/re/decoders.md`.
 - **Why not reviewed:** none of them reaches a decoder; their targets belong to graphics or to the TTM opcode handlers that call the stubs.
-- **Chunk 4, step 1:** `1028:182c` (called from `1050:0061`) returns the record count of a bitmap list through `1030:15fb`. `1028:1845` (called from `1050:080c` and twice from `1040:0db0`) frees a loaded bitmap through `1030:00fe`. Both verified; see `Bitmap masks and mirrors` in `docs/re/graphics.md`. `1028:17d8` is left for step 3 (sprites).
-- **Resolve in:** chunk 4 (graphics) for `1028:17d8`; chunk 5 (TTM interpreter) for the stub group
+- **Chunk 4:** the three forwarders are settled and verified. `1028:182c` returns the record count of a bitmap list through `1030:15fb`; `1028:1845` frees a loaded bitmap through `1030:00fe` (both in `Bitmap masks and mirrors`, `docs/re/graphics.md`); `1028:17d8` draws a sprite through `1038:0ae4` (`Sprites`). Only the stub group is left.
+- **Resolve in:** chunk 5 (TTM interpreter) for the stub group
 - **Status:** open, by choice
 
 ## Resolved
