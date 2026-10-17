@@ -105,6 +105,30 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Resolve in:** chunk 6 (ADS scheduler)
 - **Status:** open
 
+### OQ-15: Line and ellipse pixels are our choice, not GDI's
+
+- **Where:** `src/gfx/gdi/primitives.ts` (`lineTo`, `drawCircle`)
+- **What it does:** lines use a midpoint Bresenham that leaves out the end point; circles fill every pixel whose center lies within the radius of the rect center, with a 1-pixel border.
+- **Original:** `1030:02ef` and `1038:1bd8` call `MoveTo`/`LineTo`, `1040:0688` calls `Ellipse(cx - r, cy - r, cx + r, cy + r)`. Which pixels GDI picks is Windows behavior, not in `SCRANTIC.SCR`.
+- **Resolve in:** only with a reference capture from Windows 3.1; until then the end points, rect edges, and symmetry are pinned and the inner pixels are not
+- **Status:** open
+
+### OQ-16: Text drawing is not modeled
+
+- **Where:** `1030:04ee`, `1030:04ce`, `1030:0765`
+- **What it does:** `TextOut` with the `WILLY.FON` font, text and back colors from `1068:1ea0`/`1ea1`, back mode from `1068:1ea2`.
+- **Ours:** nothing draws text.
+- **Resolve in:** chunk 5 (TTM interpreter): find whether any TTM opcode reaches these functions and whether the data uses it
+- **Status:** open
+
+### OQ-17: The original presents only dirty rects, the model presents whole frames
+
+- **Where:** `1038:07e8` callers: `1030:02ef` (width `-a - b` when the line goes left or up), `1040:0688` (right and bottom passed as width and height)
+- **What it does:** the original copies only the dirty rect of each drawing call to the window, so a wrong rect leaves part of a line on screen later than the rest, or presents too much.
+- **Ours:** the browser shows the whole surface every frame.
+- **Resolve in:** chunk 5, when the model is wired in: decide whether any visible difference is worth modeling
+- **Status:** open
+
 ## Past fixes to re-check against the original
 
 Each fix below was made without the decompile. Treat it as a guess until a chunk confirms or replaces it. "Out of scope" rows touch docs, build paths, or sound playback, which have no counterpart in the original.

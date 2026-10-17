@@ -40,15 +40,41 @@ The original draws with Windows GDI. The binary tells which GDI call runs with w
 
 ## Surfaces and clip
 
-None yet.
+- `1038:1744`: far cdecl `(mode)`. Accepts modes 0, 2, and 8, returns 0 for any other. Always sets the color mode `1068:1ebd` to 2, and `1068:1ec1` to the device's `SIZEPALETTE` minus 1. Mode 8 releases the DC, calls `1038:194e`, and returns 0.
+- `1038:1744`: the screen size `1068:2562`/`1068:2564` changes only for scale mode `1068:2e74` 0 (320 × 200) or 1 (640 × 400). At runtime `2e74` is 3, so the size stays the 640 × 480 set by `platform_initSaver` (`1008:143c`).
+- `1038:1744`: creates three memory DCs compatible with the window DC (`1068:1eb4` = A, `1eb2` = B, `1eb0` = C) and three compatible bitmaps of the screen size (`1068:45a0`, `45a2`, `45a4`), selected into A, B, C. If any of the six is 0 it calls `1038:194e` and returns 0.
+- `1038:1744`: sets the clip rect to the whole screen, inclusive (`1068:1ea4` x1 = 0, `1ea8` y1 = 0, `1ea6` x2 = width - 1, `1eaa` y2 = height - 1) with the clip off (`1068:1ea3` = 0), copies `2e74` into `2e76`, and registers two cursors.
+- `1038:1744`: sets background `1068:1ead` = 0, foreground `1068:1eae` = 0, fill flag `1068:1eac` = 1, then fills C, B, and A (in that order) with `gfx_drawRect(0, 0, width, height)`: foreground equals background, so each is a `PATCOPY` of solid color 0. Ends with the copy source `1068:1eb6` = A and the draw target `1068:1eb8` = A. Returns 2.
+- `1038:194e`: removes the cursor, then deletes each of the three DCs and three bitmaps that is not 0. It does not clear the globals.
+- `1038:1ade`: far cdecl `(on)`. Does nothing when `on` is 0 and the last call (`1068:45a6`, starts 0) was also 0. Otherwise creates a rect region `(x1, y1, x2 + 1, y2 + 1)` from the clip rect when `on`, or `(0, 0, width, height)` when not, selects it into A, B, and C (GDI copies it), deletes it, and remembers `on` in `1068:45a6`.
+- `1038:1ade`: halves or doubles the region when `2e74` and `2e76` differ; both are 3 at runtime, so it never does.
+- `1038:1ade`: every drawing call runs it twice: before drawing with `on = 1068:1ea3`, after drawing with 0. So the clip only exists while a call draws; between calls every DC is unclipped.
+- `1068:1ea0`..`1068:1eae`: `1ea0` text color, `1ea1` text back color, `1ea2` text back mode (0 opaque, else transparent), `1ea3` clip on, `1ea4`/`1ea8` clip x1/y1, `1ea6`/`1eaa` clip x2/y2 (inclusive words), `1eac` fill flag, `1ead` background (brush) color, `1eae` foreground (pen) color. Data segment values: all 0 except `1ea6` = 319, `1eaa` = 199, `1eac` = 1.
+- `1068:1ea0`..`1068:1eae`: set by `1038:1744` (above); `1010:0136` (story_drawIsland: both colors, fill on); `1010:04a2` (foreground 15); `1010:1551` (saves the clip, sets it on with x2 = x + w and y2 = y + h, restores it at the end); `1048:1acb` and `1048:1e5a` (for each TTM thread, load the thread's colors and clip into these globals, with foreground = text color from one thread byte; after the loop, clip on over the whole screen); `1058:040c` (clip off, later restored); `1058:0144` (text back mode). Read in chunk 5 (`1048`, `1058`: TTM) and chunk 7 (`1010`: story).
+- `1068:1ea1`: nothing writes it, so text back color is always palette color 0.
+- Ours: `src/gfx/gdi/surface.ts` keeps the draw state in `DrawState` (`makeDrawState` = the values after `1038:1744`) and applies the clip per pixel with `activeClip` instead of a GDI region. The old pipeline's `src/gfx/clip.ts` is unchanged (chunk 5).
 
 ## Primitives
 
-None yet.
+- `1040:0d54`: far cdecl `(x, y, color)`. `SetPixel` on the draw target with `1040:097a(color)`, so `color % 16`; it ignores the foreground. Clip as `1038:1ade` above. Dirty rect `(x, y, 1, 1)`.
+- `1030:02ef`: far cdecl `(x1, y1, x2, y2)`. `SetROP2(R2_COPYPEN)`, a 1-pixel solid pen of the foreground, `MoveTo(x1, y1)`, `LineTo(x2, y2)`. Clip as above.
+- `1030:02ef`: dirty rect at `(min(x1, x2), min(y1, y2))`, width `x2 - x1 + 1` when `x2 >= x1` but `-x1 - x2 + 1` when `x2 < x1`; height the same with `y`. So a line drawn left or up passes a wrong (often negative) width or height to `1038:07e8`.
+- GDI behavior, not the binary: `LineTo` leaves out its end point, so a line from a point to itself draws nothing.
+- `1038:1bd8`: far cdecl `(x, y, w, h)`. `SetROP2(R2_COPYPEN)`, 1-pixel solid pen of the foreground. Clip as above. Dirty rect `(x, y, w, h)`.
+- `1038:1bd8`: when the fill flag `1068:1eac` is 0, or `w < 2`, or `h < 2`: an outline only, `MoveTo(x, y)`, then `LineTo` to `(x + w - 1, y)`, `(x + w - 1, y + h - 1)`, `(x, y + h - 1)`, and back to `(x, y)`. No brush is made.
+- `1038:1bd8`: otherwise it selects `1038:1d31(background)`. When the foreground byte equals the background byte (compared before `% 16`), `BitBlt(x, y, w, h, PATCOPY)` paints the whole rect with the brush and the pen is unused.
+- `1038:1bd8`: when they differ, `Rectangle(x, y, x + w, y + h)`. GDI behavior: the border is the 1-pixel pen on the rect's outer pixels, the inside is the brush, right and bottom edges excluded.
+- `1040:0688`: far cdecl `(r, cx, cy)`. 1-pixel foreground pen, brush `1038:1d31(background)`, `Ellipse(cx - r, cy - r, cx + r, cy + r)`. Clip as above.
+- `1040:0688`: its dirty call passes `(cx - r, cy - r, cx + r, cy + r)` as `(x, y, w, h)`, so the presented rect reaches `(cx + cx, cy + cy)` instead of `(cx + r, cy + r)`.
+- GDI behavior, not the binary: which pixels `Ellipse` and `LineTo` pick. `src/gfx/gdi/primitives.ts` uses a midpoint line without its end point, and a circle of every pixel whose center is within `r` of `(cx, cy)` with a 1-pixel border (OQ-15).
 
 ## Text
 
-None yet.
+- `1030:04ee`: far cdecl `(far string, x, y)`. Sets the text color to `1040:097a(1068:1ea0)`, the back color to `1040:097a(1068:1ea1)`, and the back mode to opaque when `1068:1ea2` is 0, else transparent. With the clip applied, `TextOut(x, y, string, length)` on the draw target, then restores the old text and back colors (not the back mode).
+- `1030:04ee`: dirty rect `(x, y, 8 × length, 15)`, whatever the font's real size.
+- `1030:04ce`: far cdecl `(near string, x, y)`: forwards to `1030:04ee` with the data segment.
+- `1030:0765`: once (guarded by `1068:1e28`) adds the font file `WILLY.FON` (`1068:1e2a`), creates the font `Willy Beamish Dialog` (`1068:1e34`) at height 8, width 8, weight 400, pitch and family `0x32`, and selects it into the current draw target only. Returns 1.
+- Ours: the model does not draw text (OQ-16).
 
 ## Sprites
 
@@ -95,3 +121,13 @@ None yet.
 | `1030:15fb` | `gfx_countBitmapRecords` | none (`sprites.length`) | match |
 | `1028:182c` | `gfx_countBitmapRecordsThunk` | none (`sprites.length`) | match |
 | `1028:1845` | `gfx_freeBitmapsThunk` | none (garbage collected) | match |
+| `1038:1744` | `gfx_initDisplay` | `src/gfx/gdi/surface.ts:24` `makeSurface`, `src/gfx/gdi/surface.ts:28` `makeDrawState` | fixed |
+| `1038:194e` | `gfx_closeDisplay` | none (nothing to free) | match |
+| `1038:1ade` | `gfx_applyClip` | `src/gfx/gdi/surface.ts:38` `activeClip` | fixed |
+| `1040:0d54` | `gfx_drawPixel` | `src/gfx/gdi/primitives.ts:4` `setPixel` | fixed |
+| `1030:02ef` | `gfx_drawLine` | `src/gfx/gdi/primitives.ts:8` `drawLine` | open |
+| `1038:1bd8` | `gfx_drawRect` | `src/gfx/gdi/primitives.ts:12` `drawRect` | fixed |
+| `1040:0688` | `gfx_drawCircle` | `src/gfx/gdi/primitives.ts:39` `drawCircle` | open |
+| `1030:04ee` | `gfx_drawText` | none (text not modeled) | open |
+| `1030:04ce` | `gfx_drawTextNear` | none (text not modeled) | open |
+| `1030:0765` | `gfx_loadFont` | none (text not modeled) | open |

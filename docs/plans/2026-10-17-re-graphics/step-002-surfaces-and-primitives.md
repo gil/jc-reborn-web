@@ -29,7 +29,7 @@ There is no Unicorn work here: every primitive is a handful of GDI calls (side-b
 
 ## Part A: Read and confirm
 
-- [ ] **Action 1: Read the functions**
+- [x] **Action 1: Read the functions**
 
 Read `re/out/functions/` pseudo-C and assembly for `1038_1744_gfx_initDisplay`, `1038_194e`, `1038_1ade`, `1040_0d54_gfx_drawPixel`, `1030_02ef_gfx_drawLine`, `1038_1bd8_gfx_drawRect`, `1040_0688_gfx_drawCircle`, `1030_04ee`, `1030_04ce`, `1030_0765`. Remember Ghidra prints Pascal import arguments in reverse. Confirm or correct, for each, the overview's first reading: argument order, which color each uses (foreground `1068:1eae`, background `1068:1ead`, own argument), when the clip is applied (`1038:1ade` before and after), the outline/fill/`PATCOPY` rule of `1038:1bd8`, the `Ellipse` rect of `1040:0688`, and the dirty-rect arguments each passes to `1038:07e8`. If something differs, change the code below to match the binary before writing it, and note the difference in the commit message.
 
@@ -40,7 +40,7 @@ Expected: writers in `1038:1744`, `1010:0136`, `1010:04a2`, `1010:1551`, `1048:1
 
 ## Part B: Surface and draw state
 
-- [ ] **Action 2: Write the failing surface test**
+- [x] **Action 2: Write the failing surface test**
 
 Create `src/gfx/gdi/surface.test.ts`:
 
@@ -104,12 +104,12 @@ describe('rawIndices', () => {
 });
 ```
 
-- [ ] **Action 3: Run it to make sure it fails**
+- [x] **Action 3: Run it to make sure it fails**
 
 Run: `pnpm exec vitest run src/gfx/gdi/surface.test.ts`
 Expected: FAIL, cannot resolve `./surface.js`.
 
-- [ ] **Action 4: Implement `surface.ts`**
+- [x] **Action 4: Implement `surface.ts`**
 
 Create `src/gfx/gdi/surface.ts`:
 
@@ -172,12 +172,12 @@ export function rawIndices(indexed: Uint8Array): Uint8Array {
 }
 ```
 
-- [ ] **Action 5: Run it to make sure it passes**
+- [x] **Action 5: Run it to make sure it passes**
 
 Run: `pnpm exec vitest run src/gfx/gdi/surface.test.ts`
 Expected: PASS, 6 tests.
 
-- [ ] **Action 6: Commit**
+- [x] **Action 6: Commit**
 
 ```bash
 git add src/gfx/gdi/surface.ts src/gfx/gdi/surface.test.ts
@@ -186,7 +186,7 @@ git commit -m "feat(gfx): surface and draw state of the original display"
 
 ## Part C: Primitives
 
-- [ ] **Action 7: Write the failing primitives test**
+- [x] **Action 7: Write the failing primitives test**
 
 Create `src/gfx/gdi/primitives.test.ts`:
 
@@ -296,12 +296,12 @@ How the expected rows come out:
 - `drawRect` brush rows: `0x12` paints, on even screen rows, the low nibble (2) at even columns and the high nibble (1) at odd columns; on odd rows the other way round (`brushColorAt`). Row 1 (odd): column 1 → 2, column 2 → 1, so `2121`; row 2 (even): `1212`.
 - `drawCircle(r = 3, cx = 4, cy = 4)`: rect `1..6` in both axes. A pixel is inside when its center `(px + 0.5, py + 0.5)` lies within `r` of `(cx, cy)`; the border is every inside pixel with a 4-neighbor outside. This rasterization is our choice (GDI's exact ellipse pixels are not in the binary) and goes to an open question.
 
-- [ ] **Action 8: Run it to make sure it fails**
+- [x] **Action 8: Run it to make sure it fails**
 
 Run: `pnpm exec vitest run src/gfx/gdi/primitives.test.ts`
 Expected: FAIL, cannot resolve `./primitives.js`.
 
-- [ ] **Action 9: Implement `primitives.ts`**
+- [x] **Action 9: Implement `primitives.ts`**
 
 Create `src/gfx/gdi/primitives.ts`:
 
@@ -391,12 +391,12 @@ function fillWithBrush(surface: Surface, clip: ClipRect, left: number, top: numb
 
 Check the diagonal case of the line test by hand before running: `(0, 1) → (2, 3)`: `dx = dy = 2`, `major = minor = 2`, `error = 1`; step 1 plots `(0, 1)`, `error = -1` → minor step, `error = 1`, moves to `(1, 2)`; step 2 plots `(1, 2)`, moves to `(2, 3)`; loop ends, end point left out. Matches rows 1 and 2 of the expectation.
 
-- [ ] **Action 10: Run it to make sure it passes**
+- [x] **Action 10: Run it to make sure it passes**
 
 Run: `pnpm exec vitest run src/gfx/gdi/primitives.test.ts`
 Expected: PASS, 9 tests. If a rect or circle expectation fails, recompute the expected rows by hand from the rules above before touching the code; the rules are the spec here.
 
-- [ ] **Action 11: Commit**
+- [x] **Action 11: Commit**
 
 ```bash
 git add src/gfx/gdi/primitives.ts src/gfx/gdi/primitives.test.ts
@@ -405,7 +405,7 @@ git commit -m "feat(gfx): pixel, line, rect, and circle as the original draws th
 
 ## Part D: Findings
 
-- [ ] **Action 12: Write the findings**
+- [x] **Action 12: Write the findings**
 
 In `docs/re/graphics.md`, replace `None yet.` under `Surfaces and clip`, `Primitives`, and `Text` with one bullet per claim, each starting with its address. At least:
 
@@ -415,7 +415,7 @@ In `docs/re/graphics.md`, replace `None yet.` under `Surfaces and clip`, `Primit
 
 Checklist rows (real line numbers): `1038:1744` → `src/gfx/gdi/surface.ts` `makeDrawState` / `makeSurface`, `fixed`; `1038:194e` → `none (nothing to free)`, `match`; `1038:1ade` → `activeClip`, `fixed`; `1040:0d54` → `setPixel`, `fixed`; `1030:02ef` → `drawLine`, `open`; `1038:1bd8` → `drawRect`, `fixed`; `1040:0688` → `drawCircle`, `open`; `1030:04ee`, `1030:04ce`, `1030:0765` → `none (text not modeled)`, `open`.
 
-- [ ] **Action 13: Log open questions**
+- [x] **Action 13: Log open questions**
 
 Add to `docs/re/open-questions.md` under "Workarounds without a known root cause", with the next free OQ numbers:
 
@@ -445,14 +445,14 @@ Add to `docs/re/open-questions.md` under "Workarounds without a known root cause
 - **Status:** open
 ```
 
-- [ ] **Action 14: Names and status**
+- [x] **Action 14: Names and status**
 
 In `scripts/re/names.json`: name `1038:1ade` `gfx_applyClip`, `1038:194e` `gfx_closeDisplay`, `1030:04ee` `gfx_drawText`, `1030:04ce` `gfx_drawTextNear`, `1030:0765` `gfx_loadFont` (adjust names to what you read). Status `verified` for every in-scope function of this step whose checklist row is `match` or `fixed`; leave `named` for `open` rows (they are listed in `open-questions.md`).
 
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 15: Check and commit**
+- [x] **Action 15: Check and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -467,7 +467,7 @@ git commit -m "docs(re): chunk 4 surfaces, clip, and primitives"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
-- [ ] Only if something could not be finished: record it in
+- [x] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
