@@ -52,6 +52,14 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Resolve in:** chunk 7 (story and main loop)
 - **Status:** open
 
+### OQ-8: Resource lookup is case-sensitive in our code
+
+- **Where:** `src/resource/resource-archive.ts`, callers of `archive.byName.get` (`src/ttm/interpreter.ts:182`, `src/ttm/interpreter.ts:193`, `src/ttm/bmp-slots.ts:6`)
+- **What it does:** exact match on the stored name. The original matches the stored name case-insensitively and refuses a path prefix (`1018:1019`, `1018:195a`, `1000:197e`).
+- **Old guess behind it:** every name in the data is already uppercase with no path. True for ADS sub-resource names (`src/resource/resource-archive.data.test.ts`); not checked for TTM.
+- **Resolve in:** chunk 5 (TTM interpreter), by checking every resource name TTM bytecode loads
+- **Status:** open
+
 ## Past fixes to re-check against the original
 
 Each fix below was made without the decompile. Treat it as a guess until a chunk confirms or replaces it. "Out of scope" rows touch docs, build paths, or sound playback, which have no counterpart in the original.

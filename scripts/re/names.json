@@ -40,6 +40,102 @@
       "signature": null,
       "callingConvention": null
     },
+    "1000:06fc": {
+      "name": "rtl_setbuf",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "setbuf: full buffering of 512 bytes with the given buffer, unbuffered when it is null",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:0a3e": {
+      "name": "rtl_fclose",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "fclose: flushes, closes the DOS handle, resets the FILE; -1 for an unused FILE",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:0cff": {
+      "name": "rtl_fopen",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "fopen(name, mode): takes a free FILE and opens it; returns the FILE pointer or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:0df7": {
+      "name": "rtl_fread",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "fread(buf, size, count, file): returns whole items read",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:0ea1": {
+      "name": "rtl_fseek",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "fseek(file, offsetLo, offsetHi, whence): drops buffered data, returns 0 or -1",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:0f0b": {
+      "name": "rtl_ftell",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "ftell(file): DOS position corrected by buffered bytes, in DX:AX",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:0f5a": {
+      "name": "rtl_fwrite",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "fwrite(buf, size, count, file): returns whole items written",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:1041": {
+      "name": "rtl_fgetc",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "fgetc(file): next byte, or 0xFFFF at end or on error",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:144d": {
+      "name": "rtl_fputc",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "fputc(byte, file): returns the byte, or 0xFFFF on error",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:197e": {
+      "name": "rtl_stricmp",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "stricmp(a, b): string compare that folds a..z to upper case",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:19dc": {
+      "name": "rtl_strncpy",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "strncpy(dst, src, n): copies up to n bytes and pads the rest with zeros",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:22e1": {
+      "name": "rtl_calloc",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "calloc(count, size): LocalAlloc with LMEM_ZEROINIT",
+      "signature": null,
+      "callingConvention": null
+    },
     "1008:0000": {
       "name": "platform_winMain",
       "subsystem": "platform",
@@ -144,6 +240,30 @@
       "signature": null,
       "callingConvention": null
     },
+    "1018:1008": {
+      "name": "resources_diskRetryHook",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Returns its argument; called by the open retry loops, does nothing",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1019": {
+      "name": "resources_openFile",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Opens a resource: loose file first, else by name hash in the archive, then checks the stored name case-insensitively; returns a file slot",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1204": {
+      "name": "resources_closeFile",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Closes a resource handle: frees the file slot (closing a loose file) or fcloses a plain FILE",
+      "signature": null,
+      "callingConvention": null
+    },
     "1018:1287": {
       "name": "resources_readFile",
       "subsystem": "resources",
@@ -168,6 +288,14 @@
       "signature": null,
       "callingConvention": null
     },
+    "1018:14cc": {
+      "name": "resources_rewindFile",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Seeks a resource handle to position 0",
+      "signature": null,
+      "callingConvention": null
+    },
     "1018:14e9": {
       "name": "resources_getFileByte",
       "subsystem": "resources",
@@ -176,11 +304,99 @@
       "signature": null,
       "callingConvention": null
     },
+    "1018:15d2": {
+      "name": "resources_eofFile",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "feof-like: archived resource at or past its size, or the runtime end-of-file flag",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1637": {
+      "name": "resources_writeFile",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "fwrite-like: archived resources write nothing and return 0; loose files go to fwrite",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:16b7": {
+      "name": "resources_putFileByte",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "fputc-like: archived resources return -1; loose files go to fputc",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1720": {
+      "name": "resources_setFileBuffer",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "setbuf-like: no-op for archived resources; loose files go to setbuf",
+      "signature": null,
+      "callingConvention": null
+    },
     "1018:1771": {
       "name": "resources_readResourceMap",
       "subsystem": "resources",
       "status": "named",
       "note": "Reads RESOURCE.MAP once: header, then per archive a 13-byte name and a list of 8-byte entries into a table at 1068:3365",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:18d2": {
+      "name": "resources_freeResourceMap",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Frees every archive entry table and marks the map as not loaded",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1947": {
+      "name": "resources_forceArchiveReopen",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Sets the flag that makes the next open reopen the archive file",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:195a": {
+      "name": "resources_hashName",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Uppercases a name in place, drops any path, and hashes 4 bytes at the map positions plus sum*xor into globals",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1a42": {
+      "name": "resources_findMapEntry",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Finds a map entry by the current name hash, current archive first, and fills a file slot with archive and offset",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1bc3": {
+      "name": "resources_selectArchive",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Makes an archive current, closing the old archive file and opening the new one in a retry loop",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1caf": {
+      "name": "resources_seekArchive",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Seeks the current archive file to an absolute position unless it is already there",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1cfc": {
+      "name": "resources_fileSlotFor",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Maps a handle to its in-use file slot, or 0; caches the last lookup",
       "signature": null,
       "callingConvention": null
     },

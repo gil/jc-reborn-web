@@ -38,7 +38,7 @@
 
 ## Part A: Read the original
 
-- [ ] **Action 1: Read the map, lookup, and file layer**
+- [x] **Action 1: Read the map, lookup, and file layer**
 
 Read the pseudo-C and, where unclear, the assembly of every in-scope `1018` function: `1008 1019 1204 1287 1398 1475 14cc 14e9 15d2 1637 16b7 1720 1771 18d2 1947 195a 1a42 1bc3 1caf 1cfc`. Write the answers in `docs/re/resources.md`, one claim per bullet, each starting with its address, in our own words.
 
@@ -60,7 +60,7 @@ Read the pseudo-C and, where unclear, the assembly of every in-scope `1018` func
 
 Lookup semantics in our code: `archive.byName.get(name)` is an exact, case-sensitive match on the stored name. Write a finding that compares this with the original's lookup (uppercasing, path stripping, hash). If they differ in a way that matters only for names coming from TTM bytecode, add an open question for chunk 5 (Action 3).
 
-- [ ] **Action 2: Name the functions**
+- [x] **Action 2: Name the functions**
 
 Add `names.json` entries for every function in Action 1 not named yet, and for the runtime library helpers they call: `1000:0cff`, `1000:0df7`, `1000:0a3e`, `1000:0ea1`, `1000:0f0b`, `1000:0f5a`, `1000:1041`, `1000:144d`, `1000:06fc`, `1000:197e`, `1000:19dc`, `1000:22e1` (subsystem `rtl`, names like `rtl_fopen`, `rtl_fread`, `rtl_fclose`, `rtl_fseek`, `rtl_ftell`, `rtl_fwrite`, `rtl_strcmp`, `rtl_strncpy`, `rtl_calloc`; check each against its code before naming, a few minutes each, skip any you can't tell). Suggested names for the `1018` functions: `resources_hashName` (`195a`), `resources_findMapEntry` (`1a42`), `resources_openFile` (`1019`), `resources_closeFile` (`1204`), `resources_fileSlotFor` (`1cfc`). Keep the file sorted, status `named`.
 
@@ -70,7 +70,7 @@ Expected: no errors.
 Run: `scripts/re/ghidra-import.sh`
 Expected: ends with `export written to .../re/out`.
 
-- [ ] **Action 3: Open questions, only if needed**
+- [x] **Action 3: Open questions, only if needed**
 
 Add an entry to `docs/re/open-questions.md` (next free `OQ-` number, under a fitting section) for every behavior you could not settle, and for a lookup difference that chunk 5 must check. Format:
 
@@ -84,7 +84,7 @@ Add an entry to `docs/re/open-questions.md` (next free `OQ-` number, under a fit
 - **Status:** open
 ```
 
-- [ ] **Action 4: Commit the findings**
+- [x] **Action 4: Commit the findings**
 
 ```bash
 git add docs/re/resources.md docs/re/open-questions.md scripts/re/names.json docs/re/function-map.md

@@ -111,9 +111,64 @@ All 180 compressed chunks in `RESOURCE.001` decompress to exactly their header s
 
 ## Map and archive
 
+- `1018:1771`: reads `RESOURCE.MAP` once (flag `1068:3360`) with `rtl_fopen(name, "rb")`. If the file is missing nothing is loaded, the archive count stays 0, and every open goes straight to the C runtime.
+- `1018:1771`: the first 4 bytes go to `1068:1cb8`, the hash positions. The image's static default there is `00 01 06 07`; the real map overwrites it with `00 01 05 07`.
+- `1018:1771`: a u16 archive count follows. It is added to the global archive count `1068:3354`, and the new archives are numbered from the old count + 1. Index 0 means "no archive".
+- `1018:1771`: archive record `i` is at `1068:3365 + i * 0x1c`: `+0x00` 13-byte file name, `+0x0e` archive index, `+0x10` open file handle (opened lazily by `1018:1bc3`), `+0x12` u32 cached file position, `+0x18` far pointer to the entry table.
+- `1018:1771`: per archive it reads the 13-byte name, a u16 entry count, then `count` entries of u32 name hash and u32 offset, stored in that order as 8-byte entries.
+- `1018:1771`: the entry table gets `count + 1` slots from `platform_farAlloc` with flag 1, which allocates with `GMEM_ZEROINIT` (`0x40`, set in `1000:2701`). The extra zeroed slot is the end marker for `1018:1a42`: a hash of 0 stops the scan.
+- `1018:1771`: there is no bounds check on the archive count (`1018:18d2` frees 11 records, so 10 archives fit) and no check for bytes after the last entry. The real map has 1 archive and ends exactly after its 180 entries.
+- `1018:1a42`: looks a name up by hash only (the 32-bit value `1018:195a` leaves in `1068:3358`/`1068:335a`). It scans the current archive (`1068:3356`, or archive 1 when none is selected yet) linearly from the first entry until the hash matches or a zero hash ends the table.
+- `1018:1a42`: on a miss it searches the other archives, alternating one above and one below the start, until a hit or all are done. With one archive this is a single linear scan.
+- `1018:1a42`: on a hit it fills the file slot with the archive index and the entry offset, zeroes the position, and returns 1. On a miss it returns 0.
+- `1018:1a42`: the first entry with a matching hash wins. A hash collision would hide the later resource. The 180 real hashes are all distinct.
+- `1018:1019`: far `(name, mode)`, the resource open. If `1068:335d` is set it first deselects the archive (`1018:1bc3(0)`), then loads the map (`1018:1771`, no-op after the first call) and clears the error flag `1068:3551`.
+- `1018:1019`: with no archives it returns `rtl_fopen(name, mode)` itself, a C runtime `FILE` pointer.
+- `1018:1019`: otherwise it takes the first free one of 10 file slots at `1068:3499` (18 bytes each: `+0x00` archive index, `+0x02` u32 file position of the payload, `+0x06` u32 payload size, `+0x0a` u32 position inside the payload, `+0x0e` in-use flag, `+0x10` loose file handle). All 10 in use returns 0. The returned handle is the slot's near address.
+- `1018:1019`: it hashes the name (`1018:195a`, which uppercases the caller's string in place), then tries `rtl_fopen(name, mode)` first. A loose file with that name wins over the archive: the slot gets archive 0, the loose handle at `+0x10`, and every file layer call passes through to the C runtime.
+- `1018:1019`: the open is wrapped in a retry loop on `1068:335e`, calling `1018:1008` when `1068:1ebd` is non-zero. Only `1018:1019` writes `1068:335e` (it clears it), so the loop runs once.
+- `1018:1019`: when no loose file opens, it looks the hash up (`1018:1a42`; miss returns 0), selects the archive (`1018:1bc3`), seeks the archive file to the entry offset (`1018:1caf`), and reads the 13-byte stored name and the u32 payload size into slot `+0x06`.
+- `1018:1019`: the file position after those 17 bytes (`rtl_ftell`) becomes the payload start at slot `+0x02` and the archive's cached position.
+- `1018:1019`: it compares the stored name with the whole name argument using `rtl_stricmp` (`1000:197e`, ASCII case-insensitive). A mismatch returns 0, leaving the slot free and the archive open. So a path prefix fails in the archive, even though the hash ignores it.
+- `1018:1019`: on a match the position becomes 0, the slot is marked in use, and the open-resource count `1068:335c` goes up by one.
+- `1018:1019`: its only caller is `1038:016b` (chunk 3), with mode `1068:256e`. That caller seeks to the end and reads the position back to get the payload size.
+- `1018:1bc3`: selects archive `n`. When no resource is open and `n` is non-zero, it first checks the archive can still be opened (`rtl_fopen` plus `rtl_fclose`); a failure forces a reopen. When `n` differs from the current archive, or the check failed, or `1068:335d` is set, it closes the current archive file, makes `n` current, and opens it with `"rb"` in a loop until it succeeds. `1018:1008` does nothing, so a missing archive file spins forever. It then zeroes the cached position, clears the `1018:1cfc` cache, and clears `1068:335d`.
+- `1018:1caf`: seeks the current archive file to an absolute position (`rtl_fseek`, whence 0), skipped when the cached position already equals it. Every archived read calls it first, so several open resources can share one archive file.
+- `1018:1cfc`: maps a handle to its file slot: the handle must equal the address of one of the 10 slots, and the slot must be in use, otherwise 0. With no archives it returns 0. It caches the last handle and slot in `1068:3350`/`1068:3352`; a 0 argument clears the cache.
+- `1018:1204`: the resource close. A 0 handle returns -1. A handle that is not a slot is passed to `rtl_fclose`. For a slot it clears the `1018:1cfc` cache, closes the loose file if there is one, marks the slot free, and lowers the open count. The archive file stays open. A -1 result sets the error flag `1068:3551`.
+- `1018:18d2`: frees every archive's entry table and clears the map-loaded flag, so the next open rereads `RESOURCE.MAP`. No callers.
+- `1018:1008`: returns its argument and does nothing else. It is the hook the open retry loops call; probably a stub for a "insert disk" prompt.
+- `1018:1947`: sets `1068:335d`, which makes the next open or archive select reopen the archive file. No callers.
+- `1068:3551`: a sticky error flag. `1018:1019` clears it; `1018:1204`, `1018:1637`, and `1018:16b7` set it on failure. No code in this chunk reads it.
+- `1018:1019`, `1018:1a42`: our `archive.byName.get(name)` (`src/resource/resource-archive.ts`) is an exact, case-sensitive match on the stored name, with no loose files and no hash. The original accepts any letter case and also refuses a path prefix. Every name an ADS file asks for is found by its exact stored name (`src/resource/resource-archive.data.test.ts`). Names coming from TTM bytecode are not checked yet (OQ-8).
+- `1018:1019`: our `indexArchive` reads the same 13-byte name and u32 size at each entry offset, but never checks a stored name against a requested one, because it keys the lookup by the stored name itself. The hash is never needed: `src/resource/resource-map.data.test.ts` shows every entry's hash equals the hash of the name stored at its offset, so the two lookups find the same resource.
+
 ## Name hash
 
+- `1018:195a`: far `(name)`. A null pointer sets the hash to 0. Otherwise the result goes to the globals `1068:3358` (low) and `1068:335a` (high); nothing is returned.
+- `1018:195a`: walks the string to its NUL. Each byte in `a`..`z` is uppercased in place (xor `0x20`), so the caller's buffer changes. The range check is on signed bytes, so bytes `0x80` and up are left alone.
+- `1018:195a`: keeps a 16-bit sum and a 16-bit xor of the (uppercased) bytes, each sign-extended from 8 bits.
+- `1018:195a`: at a `\` or `:` it resets both to 0 and restarts the name after it. The separator itself is added first, then wiped by the reset. So only the part after the last separator counts.
+- `1018:195a`: copies the name part with `rtl_strncpy(buffer, name, 13)` into a 14-byte stack buffer. `strncpy` pads with zeros, so positions past the end of a short name read 0. Byte 13 is never written; no real position reaches it.
+- `1018:195a`: `h = 0`, then for each of the 4 positions `p` (signed bytes from `1068:1cb8`): `h = (h << 8) + signExtend(buffer[p])`, in 32 bits.
+- `1018:195a`: last, the low 16 bits of `sum * xor` are sign-extended and added to `h` (32-bit wrap). The overview's algorithm is right, including every width and sign.
+
 ## File layer
+
+- `1018:1287`: fread-like `(buf, size, count, handle)`. For an archived resource it lowers `count` until `size * count` fits in what is left of the payload, so reads never run into the next resource. Then it selects the archive, seeks to payload start + position, reads with `rtl_fread`, and advances the position and the cached archive position by `items * size`. Returns the items read, 0 at the end.
+- `1018:1287`: for a loose file slot, or a handle that is not a slot, it calls `rtl_fread` directly.
+- `1018:1287`, `1018:14e9`: both call `platform_pumpInputMessage` (`1008:13cd`) first, so long loads keep handling mouse and key messages. Nothing in our code needs this; the browser never blocks on a fetch.
+- `1018:14e9`: getc-like `(handle)`. For an archived resource it returns `0xFFFF` when the position has reached the payload size, otherwise one byte via `rtl_fgetc` after the same select and seek, and advances the position by 1. Loose files go to `rtl_fgetc`. It stores the last handle in `1068:3363` and the underlying file in `1068:3361`.
+- `1018:1398`: fseek-like `(handle, offsetLo, offsetHi, whence)`. Positions are relative to the payload start, not to the archive.
+- `1018:1398`: whence 0 sets the position, whence 1 adds the offset (32-bit wrap, so `-1` moves back one byte), whence 2 sets it to `size - offset` (the offset counts backward from the end; an offset at or past the size gives 0).
+- `1018:1398`: the result is clamped to the payload size (unsigned). An archived seek does not touch the file and always returns 0. Loose files go to `rtl_fseek`.
+- `1018:1475`: ftell-like `(handle)`. For an archived resource it returns the position inside the payload in `DX:AX`. Loose files go to `rtl_ftell`.
+- `1018:14cc`: rewind: `1018:1398(handle, 0, 0)`. Its caller is in chunk 3 (`1038:003a`).
+- `1018:15d2`: feof-like `(handle)`. For an archived resource 1 when the position is at or past the size, else 0. Loose files test the runtime's end-of-file flag (`0x20`). No callers.
+- `1018:1637`: fwrite-like `(buf, size, count, handle)`. An archived resource returns 0, which sets the error flag `1068:3551` (the count does not match). Loose files go to `rtl_fwrite`. Only the write paths of `1028:0615` and `1028:0875` call it.
+- `1018:16b7`: fputc-like `(byte, handle)`. An archived resource returns -1 and sets `1068:3551`. Loose files go to `rtl_fputc`. Only the write side (`1028:0384`, `1028:0615`) calls it.
+- `1018:1720`: setbuf-like `(handle, buffer)`. Does nothing for an archived resource; loose files go to `rtl_setbuf`. No callers.
+- `1018:1287`, `1018:14e9`, `1018:1398`: errors and end of data: short or 0 item counts from reads, `0xFFFF` from getc, and clamping instead of failure for seeks. Archived resources can never fail a seek or read past their payload.
 
 ## Side-by-side checklist
 
