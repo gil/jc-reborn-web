@@ -880,10 +880,18 @@
       "signature": null,
       "callingConvention": null
     },
+    "1030:0197": {
+      "name": "gfx_rectBitsSize",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Bytes of a 4-bit bitmap of w x h with rows padded to 16 pixels",
+      "signature": null,
+      "callingConvention": null
+    },
     "1030:01c4": {
       "name": "gfx_saveRectBits",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Copies a rect of the DC at 1068:1eb6 into a caller buffer with GetBitmapBits",
       "signature": null,
       "callingConvention": null
@@ -891,7 +899,7 @@
     "1030:0250": {
       "name": "gfx_restoreRectBits",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Puts a caller buffer back with SetBitmapBits, blits it to the DC at 1068:1eb8, marks the rect dirty",
       "signature": null,
       "callingConvention": null
@@ -1136,6 +1144,22 @@
       "signature": null,
       "callingConvention": null
     },
+    "1038:06ce": {
+      "name": "gfx_copyRect",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Copies a rect widened to 8-pixel columns (always one column extra) from 1068:1eb6 to 1068:1eb8, skipped into A when 1068:429e is set; then presents it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:07e8": {
+      "name": "gfx_presentRect",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Copies a rect to the window (centered) when the target is A or a DC is given: from the target, or from the copy source / B when 1068:429e is set",
+      "signature": null,
+      "callingConvention": null
+    },
     "1038:0ac2": {
       "name": "gfx_drawSpritePlain",
       "subsystem": "gfx",
@@ -1243,8 +1267,16 @@
     "1040:0286": {
       "name": "gfx_blitPixelRows",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Turns a buffer of pixel rows into a bitmap (via 1040:0000) and blits it to the offscreen DC, marking the rect dirty",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:034e": {
+      "name": "gfx_noopLayerStrip",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Empty function; called per strip on the SCR:VGA:/SCR:AMG: path that never runs",
       "signature": null,
       "callingConvention": null
     },

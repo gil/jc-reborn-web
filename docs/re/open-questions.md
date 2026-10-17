@@ -66,7 +66,8 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **What it does:** a screen pixel with index 0 shows black, or whatever a lower layer holds.
 - **Original:** `gfx_blitPixelRows` (`1040:0286`) copies screens with `BitBlt` `SRCCOPY`, and `gfx_buildBitmaps` (`1040:0000`) keeps the palette's color 0 in the color table when `1068:2572` is 0, so index 0 is drawn opaque in palette color 0 (`JOHNCAST.PAL` color 0 is 168, 0, 168). Only bitmaps force color 0 to black and use the mask from `1040:035c`. Index 0 appears in `INTRO.SCR` (1,894 pixels), `ISLETEMP.SCR` (18), `OCEAN00.SCR` (9,917), `OCEAN01.SCR` (9,254), and `OCEAN02.SCR` (10,013).
 - **Old guess behind it:** index 0 is a transparent sentinel never used as a visible color.
-- **Resolve in:** chunk 4 (graphics), after checking whether those pixels are ever visible (later drawing may cover them, for example the island over the ocean)
+- **Model:** `src/gfx/gdi/display.ts` (`blitScreen`) draws screens opaque with index 0 kept, as `1040:0286` does. The old layer pipeline still shows index 0 as black or as a lower layer.
+- **Resolve in:** chunk 5 (TTM interpreter), when the model is wired in; then check in the browser whether palette color 0 shows on the ocean screens (the island may cover those pixels).
 - **Status:** open
 
 ### OQ-10: TTM interpreter frames bytecode and finds tags on its own
@@ -123,7 +124,7 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 ### OQ-17: The original presents only dirty rects, the model presents whole frames
 
-- **Where:** `1038:07e8` callers: `1030:02ef` (width `-a - b` when the line goes left or up), `1040:0688` (right and bottom passed as width and height)
+- **Where:** `1038:07e8` and its callers: `1030:02ef` (width `-a - b` when the line goes left or up), `1040:0688` (right and bottom passed as width and height)
 - **What it does:** the original copies only the dirty rect of each drawing call to the window, so a wrong rect leaves part of a line on screen later than the rest, or presents too much.
 - **Ours:** the browser shows the whole surface every frame.
 - **Resolve in:** chunk 5, when the model is wired in: decide whether any visible difference is worth modeling
@@ -145,6 +146,14 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Found in chunk 4:** only the TTM case `1058:025b` reaches `1030:03d7`, for opcodes `0xa506`, `0xa516`, `0xa526`, `0xa536`; the TTM scripts use none of them (`docs/re/decoders.md`, TTM opcode coverage).
 - **Resolve in:** chunk 5: confirm the opcode mapping in the interpreter; if it holds, close this
 - **Status:** open
+
+### OQ-20: The graphics model is not wired in
+
+- **Where:** `src/gfx/gdi/` (model) versus `src/gfx/{layer,primitives,sprite,clip,zone,compositor}.ts`, `src/ttm/interpreter.ts`, `src/ttm/thread.ts`, `src/ads/scheduler.ts`, `src/island/island.ts`, `src/walk/walk.ts`, `src/story/story.ts`, `src/main.ts` (old pipeline)
+- **What it does:** the running engine draws each TTM thread into its own transparent layer, keeps "saved zones" in one more layer, and composites everything every frame. The original draws into three surfaces and erases with dirty-rect restores (`docs/re/graphics.md`, `Dirty rects`, `Display buffers`).
+- **Old guess behind it:** jc_reborn's SDL layer design.
+- **Resolve in:** chunk 5 (TTM interpreter): find which surface each opcode draws on and when the restore pass runs, switch the interpreter, island, and walk drawing to `src/gfx/gdi/`, then delete the old pipeline and its workarounds (`lingeringLayers`, `clearSavedZones`, the zone layer)
+- **Status:** open (user decision, 2026-10-17: build the model in chunk 4, wire it in chunk 5)
 
 ## Past fixes to re-check against the original
 

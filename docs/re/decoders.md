@@ -78,7 +78,7 @@ Results of the original chunk lookup (`1038:016b`, then `1038:0215` with occurre
 - `1040:035c`: the left pixel of a packed byte is its high nibble.
 - `1040:035c`: builds a 1-bit mask bitmap, bit set where the 4-bit index is not 0, so index 0 is see-through only where the mask is used (bitmaps, not screens). It writes `width / 8` mask bytes per row, with a row stride of `((width + 8) / 16) × 2` bytes.
 - `1040:0462`: swaps rows top to bottom in place, `width / 2` bytes per row, `height / 2` swaps.
-- Ours: `src/decode/` maps index 0 to `TRANSPARENT` for screens and bitmaps alike. For screens the original draws palette color 0 instead; logged as OQ-9 for chunk 4.
+- Ours: `src/decode/` maps index 0 to `TRANSPARENT` for screens and bitmaps alike. The graphics model (`src/gfx/gdi/display.ts`, `blitScreen`) draws screens opaque with index 0 kept, as `1040:0286` does; see `docs/re/graphics.md` `Display buffers`.
 
 ## Bitmap
 

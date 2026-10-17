@@ -137,7 +137,23 @@ The original draws with Windows GDI. The binary tells which GDI call runs with w
 
 ## Display buffers
 
-None yet.
+- `1068:1eb4`, `1eb2`, `1eb0`: three memory DCs (A, B, C) with 640 × 480 bitmaps, made by `1038:1744`. From the code: B is the clean copy that the restore table copies back into A (`(B, A)`), C is copied back into B (`(C, B)`), and the window is painted from A, or from B when `1068:429e` is set. Which TTM drawing goes where is chunk 5.
+- `1068:1eb6` is the copy source and `1068:1eb8` the draw target of every drawing call. `1060:05f9` sets both from a list's head; `1060:03d3` puts them back after its pass.
+- `1068:429e`: 0 in the data segment; `platform_initSaver` (`1008:143c`) sets it to 1. Two effects: `1038:06ce` skips copies whose target is A, and `1038:07e8` presents from B (or from the copy source) instead of A.
+- `1038:06ce`: far cdecl `(x, y, w, h)`. Does nothing when source equals target, or `w` or `h` is 0. Widens to 8-pixel columns: `w += x % 8`, `x -= x % 8`, then `w += 8 - w % 8`, which adds a whole column even when `w` is already a multiple of 8.
+- `1038:06ce`: `StretchBlt` with `SRCCOPY` from the copy source to the draw target at the same `(x, y, w, h)`, skipped when `1068:429e != 0` and the target is A; then `1038:07e8(0, x, y, w, h)` with the widened rect either way. The scale branches never run.
+- `1038:07e8`: far cdecl `(dc, x, y, w, h)`. Runs only when `dc != 0`, or the split debug mode `1068:2e77 == 2` (never), or the target is A. With `dc == 0` it presents to the window `1068:2d84`, using the paint DC `1068:2d82` or `GetDC`.
+- `1038:07e8`: with a window (`1068:2d84 != 0`) and no `dc`, it copies the rect from the draw target, which is A here, or from the copy source when `1068:429e != 0`. With an explicit `dc`, or with no window, it copies from A, or from B when `1068:429e != 0`.
+- `1038:07e8`: when the client area differs from 640 × 480 (`1068:410c`/`410a`, set on `WM_SIZE`), it shifts the rect by half the difference to center the picture (scale mode 3).
+- `1008:0fcd`: `WM_PAINT` and `WM_ERASEBKGND` blit nothing; they add a kind-1 dirty rect `(B, A)` age 0 for the painted area (`WM_ERASEBKGND` first fills the client area black), shifted back by the centering offset. The next restore pass presents it.
+- `1030:01c4`: far cdecl `(buffer offset, buffer segment, x, y, w, h)`. Copies `(x, y, w, h)` of the copy source `1068:1eb6` into a new compatible bitmap and reads its bits into the caller's buffer, `1030:0197(w, h)` bytes.
+- `1030:0197`: far cdecl `(w, h)`: `((w + 15) / 16 × 16) / 2 × h`, the bytes of a 4-bit bitmap with rows padded to 16 pixels.
+- `1030:0250`: far cdecl `(buffer offset, buffer segment, x, y, w, h)`. Writes the buffer into a new compatible bitmap and copies it to `(x, y)` of the draw target `1068:1eb8` with `SRCCOPY`, then presents the rect.
+- `1030:01c4`, `1030:0197`, `1030:0250`: reached from `1058:1510` (`1058:17ae`, `1058:17f8`, `1058:1852`), which the TTM dispatcher `1058:0144` calls for opcodes `0xa014`..`0xa094` and `0xa0b5`; `1030:0250` also from `1060:05f9` (kind-4 rects). Chunk 5 maps the opcodes.
+- `1040:0286`: far cdecl `(buffer offset, buffer segment, x, y, width, rows)`. Wraps the rows in a one-image record, clears `1068:2572` so the color table keeps palette color 0, builds the bitmap with `1040:0000`, and copies it opaque (`SRCCOPY`) to `(x, y)` of the draw target; the mask it gets is deleted unused. Then presents the rect and sets `1068:2572` back to 1.
+- `1040:034e`: an empty function. `decoders_loadScreen` (`1030:16d8`) calls it for each strip of the `SCR:VGA:`/`SCR:AMG:` layers, a path that never runs (`docs/re/decoders.md`, `Screen`).
+- `1068:287e`: the restore table walked by `1060:03d3`, emulated: `(-1, A)`, `(B, A)`, `(-1, B)`, `(C, B)`, `(-1, C)`, `(A, C)`, `(A, B)`, `(B, C)`, `(C, A)`; `1068:2882` is `(B, A)` (`re/fixtures/graphics/restore-table.tsv`, pinned by `src/gfx/gdi/display.data.test.ts`).
+- Ours: `src/gfx/gdi/display.ts` keeps three surfaces, the source and target indices, and `screenIsB` (`1068:429e`). Choices of the model: `saveRect` stores exact pixels under an id instead of a padded buffer, pixels read from outside the source are 0, and the window is presented whole every frame from `shown()` (A, or B when `screenIsB`) instead of rect by rect (OQ-17).
 
 ## Wipes
 
@@ -197,3 +213,10 @@ None yet.
 | `1060:05f9` | `gfx_replayDirtyList` | `src/gfx/gdi/dirty.ts:85` `DirtyLists.replay` | fixed |
 | `1060:06ac` | `gfx_dropDirtyList` | `src/gfx/gdi/dirty.ts:76` `DirtyLists.drop` | fixed |
 | `1060:06f5` | `gfx_copyDirtyList` | none (dead code, endless loop, no callers) | match |
+| `1038:06ce` | `gfx_copyRect` | `src/gfx/gdi/display.ts:41` `Display.copyRect` | fixed |
+| `1038:07e8` | `gfx_presentRect` | `src/gfx/gdi/display.ts:37` `Display.shown` | open |
+| `1030:01c4` | `gfx_saveRectBits` | `src/gfx/gdi/display.ts:50` `Display.saveRect` | fixed |
+| `1030:0250` | `gfx_restoreRectBits` | `src/gfx/gdi/display.ts:56` `Display.restoreRect` | fixed |
+| `1030:0197` | `gfx_rectBitsSize` | none (the model stores exact pixels) | match |
+| `1040:0286` | `gfx_blitPixelRows` | `src/gfx/gdi/display.ts:61` `Display.blitScreen` | fixed |
+| `1040:034e` | `gfx_noopLayerStrip` | none (empty function on a path that never runs) | match |

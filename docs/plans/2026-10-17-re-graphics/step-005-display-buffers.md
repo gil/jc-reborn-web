@@ -31,7 +31,7 @@ The model starts in the state `gfx_initDisplay` (`1038:1744`) leaves: three 640 
 
 ## Part A: Read and confirm
 
-- [ ] **Action 1: Read the functions**
+- [x] **Action 1: Read the functions**
 
 Read `re/out/functions/` for `1038_06ce`, `1038_07e8`, `1030_01c4_gfx_saveRectBits`, `1030_0250_gfx_restoreRectBits`, `1030_0197`, `1040_0286_gfx_blitPixelRows`, `1040_034e`, and the paint branch of `1008_0fcd_platform_screenSaverProc` (what it blits on `WM_PAINT`). Confirm or correct the overview's "Display buffers" reading, in particular:
 
@@ -45,7 +45,7 @@ If a reading differs from the code below, follow the binary and say so in the co
 
 ## Part B: The display model
 
-- [ ] **Action 2: Write the failing test**
+- [x] **Action 2: Write the failing test**
 
 Create `src/gfx/gdi/display.test.ts`:
 
@@ -139,12 +139,12 @@ describe('Display', () => {
 
 How the restore test works: the copy rect `(0, 0, 8, 1)` becomes column 0, width 1; the pass replays it as `copyRect(0, 0, 8, 1)` from `B` to `A`, which widens to 16 pixels. The saved pixel (index 4 at `A` `(0, 0)`, saved before the copy) is put back at `C` `(30, 40)` by the `(NO_SOURCE, C)` pair.
 
-- [ ] **Action 3: Run it to make sure it fails**
+- [x] **Action 3: Run it to make sure it fails**
 
 Run: `pnpm exec vitest run src/gfx/gdi/display.test.ts`
 Expected: FAIL, cannot resolve `./display.js`.
 
-- [ ] **Action 4: Implement `display.ts`**
+- [x] **Action 4: Implement `display.ts`**
 
 Create `src/gfx/gdi/display.ts`:
 
@@ -244,12 +244,12 @@ function copyPixels(from: Surface, fromX: number, fromY: number, to: Surface, to
 
 If Action 1 found `1038:07e8` shows a different surface than `screenIsB ? B : A`, change `shown()` and its test to match.
 
-- [ ] **Action 5: Run it to make sure it passes**
+- [x] **Action 5: Run it to make sure it passes**
 
 Run: `pnpm exec vitest run src/gfx/gdi/display.test.ts`
 Expected: PASS, 7 tests.
 
-- [ ] **Action 6: Write the data test**
+- [x] **Action 6: Write the data test**
 
 Create `src/gfx/gdi/display.data.test.ts`:
 
@@ -298,12 +298,12 @@ describe.skipIf(!hasCorpus)('every SCR resource blitted by the model', () => {
 });
 ```
 
-- [ ] **Action 7: Run the data test**
+- [x] **Action 7: Run the data test**
 
 Run: `pnpm exec vitest run src/gfx/gdi/display.data.test.ts`
 Expected: PASS. The restore table test fails if `restore-table.tsv` lists more or different pairs than `RESTORE_PAIRS`: then copy the pairs from the fixture into `RESTORE_PAIRS` (mapping `161` → `SURFACE_A`, `178` → `SURFACE_B`, `195` → `SURFACE_C`, `-1` → `NO_SOURCE`) and rerun. The snapshot records how many index-0 pixels each screen shows (chunk 3 counted `INTRO.SCR` 1,894, `ISLETEMP.SCR` 18, `OCEAN00.SCR` 9,917, `OCEAN01.SCR` 9,254, `OCEAN02.SCR` 10,013, others 0; if your numbers differ, find out why before accepting the snapshot).
 
-- [ ] **Action 8: Commit**
+- [x] **Action 8: Commit**
 
 ```bash
 git add src/gfx/gdi/display.ts src/gfx/gdi/display.test.ts src/gfx/gdi/display.data.test.ts src/gfx/gdi/__snapshots__
@@ -312,7 +312,7 @@ git commit -m "feat(gfx): three-surface display with 8-pixel copies, saved rects
 
 ## Part C: Findings
 
-- [ ] **Action 9: Write the findings**
+- [x] **Action 9: Write the findings**
 
 In `docs/re/graphics.md`, replace `None yet.` under `Display buffers` with one bullet per claim from Action 1, each starting with its address: the three DCs and bitmaps and their roles as far as the code shows (`A` `1eb4`, `B` `1eb2`, `C` `1eb0`), the source and target globals, `1068:429e` and its two effects, `1038:06ce`, `1038:07e8`, `1030:01c4`, `1030:0250`, `1030:0197`, `1040:0286`, `1040:034e`, the restore table pairs (from `restore-table.tsv`), and the paint path of `1008:0fcd` if Action 1 read it. Say where the model chose something: pixels read from outside the source are 0 in `saveRect`; presenting is whole-frame (`shown()`).
 
@@ -320,7 +320,7 @@ In `docs/re/decoders.md` `Pixels`, replace the last bullet (the OQ-9 pointer) wi
 
 Checklist rows (real line numbers): `1038:06ce` → `Display.copyRect`, `fixed`; `1038:07e8` → `Display.shown`, `open` (whole-frame present; the entry "The original presents only dirty rects, the model presents whole frames" already exists in `docs/re/open-questions.md`; add `1038:07e8` to its **Where** if it is not named there); `1030:01c4` → `saveRect`, `fixed`; `1030:0250` → `restoreRect`, `fixed`; `1030:0197` → `none (the model stores exact pixels)`, `match`; `1040:0286` → `blitScreen`, `fixed`; `1040:034e` → what fits, `match`.
 
-- [ ] **Action 10: Update open questions**
+- [x] **Action 10: Update open questions**
 
 Edit OQ-9 in `docs/re/open-questions.md`:
 
@@ -340,14 +340,14 @@ Add (next free OQ number):
 - **Status:** open (user decision, 2026-10-17: build the model in chunk 4, wire it in chunk 5)
 ```
 
-- [ ] **Action 11: Names and status**
+- [x] **Action 11: Names and status**
 
 In `scripts/re/names.json`: `1038:06ce` `gfx_copyRect`, `1038:07e8` `gfx_presentRect`, `1030:0197` `gfx_rectBitsSize`, `1040:034e` (name from Action 1). Status `verified` for every in-scope row of this step that is `match` or `fixed`; `1038:07e8` stays `named`.
 
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 12: Check and commit**
+- [x] **Action 12: Check and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -362,7 +362,7 @@ git commit -m "docs(re): chunk 4 display buffers, OQ-9 settled for the model"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
-- [ ] Only if something could not be finished: record it in
+- [x] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

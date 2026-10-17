@@ -166,7 +166,7 @@ Read but not in scope (leave as they are): timer callbacks `1040:076a 079e 07e6 
 - [x] `step-002-surfaces-and-primitives.md`: `src/gfx/gdi/surface.ts` and `primitives.ts` (pixel, line, rect, circle, clip, dither fill) from the side-by-side review; text logged.
 - [x] `step-003-sprites.md`: `src/gfx/gdi/sprite.ts` (mask-and-OR blit, mirror, flip, stretch); scaling and matrix code explained; corpus snapshot.
 - [x] `step-004-dirty-rect-lists.md`: `src/gfx/gdi/dirty.ts`, a literal port of the `1060` list code (add, merge, replay, restore pass), compared with the original in Unicorn on random sequences.
-- [ ] `step-005-display-buffers.md`: `src/gfx/gdi/display.ts` (three surfaces, 8-pixel copy, save/restore bits, screen blit, restore pass, presented surface); OQ-9 settled for the model.
+- [x] `step-005-display-buffers.md`: `src/gfx/gdi/display.ts` (three surfaces, 8-pixel copy, save/restore bits, screen blit, restore pass, presented surface); OQ-9 settled for the model.
 - [ ] `step-006-wipes.md`: wipe geometry checked in Unicorn; `src/gfx/fade.ts` draws the original six wipes.
 - [ ] `step-007-chunk-wrap-up.md`: every in-scope function `verified` or logged, comment audit of `src/gfx/`, past-fix review, full test run, smoke test, spec checkbox ticked.
 
