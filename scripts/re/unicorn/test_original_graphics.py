@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 from ne_image import NeImage
-from original_graphics import build_mask_original, create_brush_original, mirror_rows_original
+from original_graphics import DC_A, DC_B, DirtyEmulator, build_mask_original, create_brush_original, mirror_rows_original
 
 REPO = Path(__file__).resolve().parents[3]
 BINARY = REPO / "public/data/SCRANTIC.SCR"
@@ -47,6 +47,32 @@ class MaskTest(unittest.TestCase):
         packed = bytes([0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0]) * 2
         mirrored = mirror_rows_original(self.image, 16, 2, packed)
         self.assertEqual(mirrored, bytes([0x0F, 0xED, 0xCB, 0xA9, 0x87, 0x65, 0x43, 0x21]) * 2)
+
+
+@unittest.skipUnless(BINARY.exists(), "needs public/data/SCRANTIC.SCR")
+class DirtyListTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.image = NeImage.load(BINARY)
+
+    def test_kind_1_rects_become_8_pixel_columns(self):
+        dirty = DirtyEmulator(self.image)
+        dirty.run(["add", 13, 5, 10, 4, 1, DC_B, DC_A, 0, None, 0])
+        self.assertEqual(dirty.lists(), [[0, [[1, 5, 2, 4, DC_B, DC_A, 1, 0, 8, 0]]]])
+
+    def test_neighbours_merge_when_the_union_wastes_at_most_20(self):
+        dirty = DirtyEmulator(self.image)
+        dirty.run(["add", 0, 0, 8, 8, 1, DC_B, DC_A, 0, None, 0])
+        dirty.run(["add", 8, 0, 8, 8, 1, DC_B, DC_A, 0, None, 0])
+        self.assertEqual(dirty.lists(), [[0, [[0, 0, 2, 8, DC_B, DC_A, 1, 0, 16, 0]]]])
+
+    def test_replay_copies_head_to_tail_in_pixels_and_empties_the_list(self):
+        dirty = DirtyEmulator(self.image)
+        dirty.run(["add", 0, 0, 8, 8, 1, DC_B, DC_A, 0, None, 0])
+        dirty.run(["add", 400, 400, 8, 8, 1, DC_B, DC_A, 0, None, 0])
+        events = dirty.run(["replay", DC_B, DC_A, 0])
+        self.assertEqual(events, [["copy", DC_B, DC_A, 400, 400, 8, 8], ["copy", DC_B, DC_A, 0, 0, 8, 8]])
+        self.assertEqual(dirty.lists(), [])
 
 
 if __name__ == "__main__":

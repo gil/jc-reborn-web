@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from emulator import Emulator
 from ne_image import NeImage
 from original_decompress import install_heap
+from original_loaders import read_word
 
 NEAR_MALLOC = "1038:0619"
 COLOR_MODE = 0x1EBD
@@ -164,3 +165,117 @@ def masks_and_mirrors_original(image: NeImage, widths: list[int], heights: list[
         mirrored += emu.read(segment, offset, size)
         position += size
     return bytes(masks), bytes(mirrored)
+
+DIRTY_ADD = "1060:007e"
+DIRTY_OVERLAPS = "1060:04b2"
+DIRTY_CLEAR = "1060:046e"
+DIRTY_REPLAY = "1060:05f9"
+DIRTY_DROP = "1060:06ac"
+RESTORE_PASS = "1060:03d3"
+COPY_RECT = "1038:06ce"
+RESTORE_RECT_BITS = "1030:0250"
+SCREEN_WIDTH = 0x2562
+SCREEN_HEIGHT = 0x2564
+CLIP_ON = 0x1EA3
+CLIP_X1 = 0x1EA4
+CLIP_X2 = 0x1EA6
+CLIP_Y1 = 0x1EA8
+CLIP_Y2 = 0x1EAA
+SOURCE_DC = 0x1EB6
+TARGET_DC = 0x1EB8
+DC_A, DC_B, DC_C = 0xA1, 0xB2, 0xC3
+DC_GLOBALS = {0x1EB4: DC_A, 0x1EB2: DC_B, 0x1EB0: DC_C}
+LIST_HEADS = 0x46F0
+LIST_SLOTS = 20
+NODE_WORDS = 13
+NODE_NEXT = 12
+NODE_SAVED = 10
+RESTORE_TABLE = {0: 0x287E, 1: 0x2882}
+
+
+def signed(word: int) -> int:
+    return word - 0x10000 if word & 0x8000 else word
+
+
+class DirtyEmulator:
+    def __init__(self, image: NeImage):
+        self.emu = new_graphics_emulator(image)
+        set_word(self.emu, SCREEN_WIDTH, 640)
+        set_word(self.emu, SCREEN_HEIGHT, 480)
+        for address, value in DC_GLOBALS.items():
+            set_word(self.emu, address, value)
+        self.events: list[list[object]] = []
+        self.emu.replace_function(COPY_RECT, self._copy)
+        self.emu.replace_function(RESTORE_RECT_BITS, self._bits)
+
+    def _word(self, offset: int) -> int:
+        return read_word(self.emu, self.emu.data_segment, offset)
+
+    def _copy(self, emu: Emulator):
+        x, y, w, h = (signed(emu.arg(i)) for i in range(4))
+        self.events.append(["copy", signed(self._word(SOURCE_DC)), signed(self._word(TARGET_DC)), x, y, w, h])
+        return {"ax": 0}
+
+    def _bits(self, emu: Emulator):
+        saved, _segment, x, y, w, h = (signed(emu.arg(i)) for i in range(6))
+        self.events.append(["bits", signed(self._word(TARGET_DC)), saved, x, y, w, h])
+        return {"ax": 0}
+
+    def run(self, op: list) -> object:
+        name, args = op[0], op[1:]
+        call = self.emu.call_far
+        if name == "add":
+            x, y, w, h, kind, source, target, age, clip, saved = args
+            if clip is None:
+                set_byte(self.emu, CLIP_ON, 0)
+            else:
+                set_byte(self.emu, CLIP_ON, 1)
+                for address, value in zip((CLIP_X1, CLIP_Y1, CLIP_X2, CLIP_Y2), clip):
+                    set_word(self.emu, address, value)
+            call(DIRTY_ADD, stack_words=[0, saved, age, target, source, kind, h, w, y, x])
+            return None
+        if name == "overlaps":
+            x, y, w, h, target, age = args
+            return signed(call(DIRTY_OVERLAPS, stack_words=[age, target, h, w, y, x])["ax"])
+        if name == "drop":
+            source, target, age = args
+            call(DIRTY_DROP, stack_words=[age, target, source])
+            return None
+        if name == "clear":
+            call(DIRTY_CLEAR)
+            return None
+        self.events = []
+        if name == "replay":
+            source, target, age = args
+            call(DIRTY_REPLAY, stack_words=[age, target, source])
+        elif name == "restore":
+            call(RESTORE_PASS, stack_words=[args[0]])
+        else:
+            raise ValueError(f"unknown dirty op {name}")
+        return self.events
+
+    def lists(self) -> list:
+        out = []
+        for slot in range(LIST_SLOTS):
+            node = self._word(LIST_HEADS + 2 * slot)
+            nodes = []
+            while node:
+                words = struct.unpack(f"<{NODE_WORDS}H", self.emu.read(self.emu.data_segment, node, 2 * NODE_WORDS))
+                nodes.append([signed(word) for word in words[:9]] + [signed(words[NODE_SAVED])])
+                node = words[NODE_NEXT]
+            if nodes:
+                out.append([slot, nodes])
+        return out
+
+    def restore_table(self, which: int) -> list[list[int]]:
+        pairs = []
+        entry = RESTORE_TABLE[which]
+        while True:
+            source_pointer, target_pointer = self._word(entry), self._word(entry + 2)
+            if target_pointer == 0:
+                break
+            pairs.append([signed(self._word(source_pointer)), signed(self._word(target_pointer))])
+            if which != 0:
+                break
+            entry += 4
+        return pairs
