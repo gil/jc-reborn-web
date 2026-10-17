@@ -161,7 +161,8 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **Where:** `1028:17d8`, `1028:182c`, `1028:1845`, and the stub group `1028:17c8`, `1028:185e`..`1028:1b0d`
 - **What it does:** three forward to other code: `1038:0ae4` (four words, role unknown), `1030:15fb` (counts a bitmap record list), and `1030:00fe` (frees a loaded bitmap's DIBs, masks, and records). Of the rest, 42 return 0, `1028:196e` returns nothing, and `1028:1afc` and `1028:1b0d` return 1. Only direct `CALLF`s reference them: 20 of the return-0 stubs are called from `1058` code around the TTM interpreter (`1058:0054`..`1058:00e5`, `1058:021d`, `1058:02ec`, `1058:0a93`, `1058:0aa4`, `1058:1725`); the other 25 stubs have no reference. See `Thunks` in `docs/re/decoders.md`.
 - **Why not reviewed:** none of them reaches a decoder; their targets belong to graphics or to the TTM opcode handlers that call the stubs.
-- **Resolve in:** chunk 4 (graphics) for the three forwarders; chunk 5 (TTM interpreter) for the stub group
+- **Chunk 4, step 1:** `1028:182c` (called from `1050:0061`) returns the record count of a bitmap list through `1030:15fb`. `1028:1845` (called from `1050:080c` and twice from `1040:0db0`) frees a loaded bitmap through `1030:00fe`. Both verified; see `Bitmap masks and mirrors` in `docs/re/graphics.md`. `1028:17d8` is left for step 3 (sprites).
+- **Resolve in:** chunk 4 (graphics) for `1028:17d8`; chunk 5 (TTM interpreter) for the stub group
 - **Status:** open, by choice
 
 ## Resolved

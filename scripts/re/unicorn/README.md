@@ -51,3 +51,10 @@ The first runs `1028:0615` / `1028:0a0d` / `1028:0875` on every compressed chunk
     re/.venv/bin/python -I scripts/re/unicorn/dump_loaders.py chunks
 
 Runs the original chunk lookup and loaders on every resource and writes fixtures to `re/fixtures/loaders/` (gitignored). `original_loaders.py` replaces the resource file layer (`1018:1019`, `1018:1204`, `1018:1287`, `1018:1398`, `1018:1475`, `1018:14e9`) with handlers that serve resource payloads by name, plus the allocators. Each loader's drawing or bitmap call is replaced by a handler that captures what the loader hands it.
+
+## Original graphics
+
+    re/.venv/bin/python -I scripts/re/unicorn/dump_graphics.py
+    re/.venv/bin/python -I scripts/re/unicorn/dump_graphics.py brushes masks
+
+Runs original graphics code that needs no drawing (brush and mask builders, row mirror, and later the dirty-rect lists and wipe geometry) and writes fixtures to `re/fixtures/graphics/` (gitignored). `original_graphics.py` stubs the few GDI and KERNEL imports involved with handlers that capture their arguments. Inside a stub, `pascal_args(emu, n)` returns the import's arguments in declared order.

@@ -832,11 +832,43 @@
       "signature": null,
       "callingConvention": null
     },
+    "1028:182c": {
+      "name": "gfx_countBitmapRecordsThunk",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Forwards one word to 1030:15fb (counts the records of a bitmap list)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:1845": {
+      "name": "gfx_freeBitmapsThunk",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Forwards one word to 1030:00fe (frees a loaded bitmap)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:0000": {
+      "name": "gfx_noop",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Empty function; called first by 1030:00fe",
+      "signature": null,
+      "callingConvention": null
+    },
     "1030:000e": {
       "name": "decoders_bmpPixelBytes",
       "subsystem": "decoders",
       "status": "verified",
       "note": "Called through 1068:1e24: sums ((w + 1) / 2) * h over a bitmap record list as a u32 and zeroes its second output",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:00fe": {
+      "name": "gfx_freeBitmaps",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Deletes the image, mask, and mirrored image/mask GDI objects of every record, then frees the record list",
       "signature": null,
       "callingConvention": null
     },
@@ -909,6 +941,14 @@
       "subsystem": "decoders",
       "status": "verified",
       "note": "Frees a bitmap record block (the list's first entry), then the pointer list",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:15fb": {
+      "name": "gfx_countBitmapRecords",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Returns the number of records before the zero terminator of a bitmap list (0 for null)",
       "signature": null,
       "callingConvention": null
     },
@@ -1075,7 +1115,7 @@
     "1038:1d31": {
       "name": "gfx_createColorBrush",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Solid brush for colors below 16 (or in 8-color mode), otherwise an 8x8 dither pattern brush built from the two color nibbles",
       "signature": null,
       "callingConvention": null
@@ -1083,8 +1123,8 @@
     "1040:0000": {
       "name": "gfx_buildBitmaps",
       "subsystem": "gfx",
-      "status": "named",
-      "note": "For each image record: builds the see-through mask, a 4-bit bottom-up DIB with the active palette (color 0 forced black for sprites), flips rows, and advances by (w/2)*h bytes",
+      "status": "verified",
+      "note": "For each image record: builds the mask, a 4-bit bottom-up DIB with the active palette (entry 0 black for BMPs), flips rows; pre-mirrored image/mask only for JOHNWALK.BMP with enough memory",
       "signature": null,
       "callingConvention": null
     },
@@ -1099,16 +1139,24 @@
     "1040:035c": {
       "name": "gfx_buildBitmapMask",
       "subsystem": "gfx",
-      "status": "named",
-      "note": "Builds a 1-bit mask bitmap from packed pixels: bit set where the 4-bit index is not 0, high nibble first",
+      "status": "verified",
+      "note": "Builds a 1-bit mask bitmap: bit set where the 4-bit index is not 0, left pixel in bit 7; width/8 bytes per row, stride ((w+8)/16)*2",
       "signature": null,
       "callingConvention": null
     },
     "1040:0462": {
       "name": "gfx_flipPixelRows",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Swaps packed pixel rows top to bottom in place ((w/2) bytes per row), so a top-down buffer fits a bottom-up DIB",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:054e": {
+      "name": "gfx_mirrorPixelRows",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Mirrors each packed pixel row left to right in place (byte order and nibble order); builds the pre-mirrored JOHNWALK images",
       "signature": null,
       "callingConvention": null
     },
@@ -1136,6 +1184,14 @@
       "signature": null,
       "callingConvention": null
     },
+    "1040:097a": {
+      "name": "gfx_paletteColor",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Returns the COLORREF of palette entry color % 16 (16-color mode) from the active palette 1068:25ae; blue in DX",
+      "signature": null,
+      "callingConvention": null
+    },
     "1040:09eb": {
       "name": "decoders_loadPalette",
       "subsystem": "decoders",
@@ -1147,7 +1203,7 @@
     "1040:0b08": {
       "name": "gfx_selectPalette",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Makes a loaded palette slot active: allocates the active palette (slot 0, pointer at 1068:25ae) on first use and copies the slot's colors into it; 0 returns the current one",
       "signature": null,
       "callingConvention": null
@@ -1155,7 +1211,7 @@
     "1040:0bc7": {
       "name": "gfx_freePalette",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Frees a loaded palette slot (1..9) found by its pointer and clears the slot",
       "signature": null,
       "callingConvention": null

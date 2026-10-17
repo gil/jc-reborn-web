@@ -33,7 +33,7 @@ Corpus fact checked during planning: all 2,392 images in the 117 BMPs have a wid
 
 ## Part A: Python harness
 
-- [ ] **Action 1: Write the harness module**
+- [x] **Action 1: Write the harness module**
 
 Create `scripts/re/unicorn/original_graphics.py`:
 
@@ -208,7 +208,7 @@ def masks_and_mirrors_original(image: NeImage, widths: list[int], heights: list[
 
 Ordinals used: `KERNEL` 15 `GlobalAlloc`, 17 `GlobalFree`, 18 `GlobalLock`, 19 `GlobalUnlock`; `GDI` 48 `CreateBitmap`, 66 `CreateSolidBrush`, 445 `CreateDIBPatternBrush`. If a call raises `UnstubbedImport`, its message names the module and ordinal the binary really uses; fix the number here and say so in the commit message.
 
-- [ ] **Action 2: Write the Python tests**
+- [x] **Action 2: Write the Python tests**
 
 Create `scripts/re/unicorn/test_original_graphics.py`:
 
@@ -268,7 +268,7 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Action 3: Run the Python tests**
+- [x] **Action 3: Run the Python tests**
 
 Run: `re/.venv/bin/python -I -m py_compile scripts/re/unicorn/original_graphics.py scripts/re/unicorn/test_original_graphics.py`
 Expected: no output.
@@ -276,7 +276,7 @@ Expected: no output.
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_graphics.py' -v`
 Expected: 4 tests pass. If one fails, the expectation came from the planning read and may be wrong: read `re/out/functions/1038_1d31_gfx_createColorBrush.asm`, `1040_035c_gfx_buildBitmapMask.asm`, or `1040_054e_FUN_1040_054e.asm`, decide whether the harness or the expectation is wrong, and fix that one. Whatever you settle, it becomes a finding in Part D.
 
-- [ ] **Action 4: Commit**
+- [x] **Action 4: Commit**
 
 ```bash
 git add scripts/re/unicorn/original_graphics.py scripts/re/unicorn/test_original_graphics.py
@@ -285,7 +285,7 @@ git commit -m "test(re): emulate the original brush, mask, and mirror builders"
 
 ## Part B: Corpus fixtures
 
-- [ ] **Action 5: Write the dump CLI**
+- [x] **Action 5: Write the dump CLI**
 
 Create `scripts/re/unicorn/dump_graphics.py`:
 
@@ -364,12 +364,12 @@ if __name__ == "__main__":
 
 Check `scripts/re/unicorn/corpus.py` for the `Resource` field names (`name`, `payload`) and adjust if they differ.
 
-- [ ] **Action 6: Write the fixtures**
+- [x] **Action 6: Write the fixtures**
 
 Run: `re/.venv/bin/python -I scripts/re/unicorn/dump_graphics.py brushes masks`
 Expected: exits 0; `re/fixtures/graphics/brushes.tsv` has 256 rows; `re/fixtures/graphics/masks.tsv` has 117 rows; 234 `.bin` files.
 
-- [ ] **Action 7: Commit**
+- [x] **Action 7: Commit**
 
 ```bash
 git add scripts/re/unicorn/dump_graphics.py
@@ -378,7 +378,7 @@ git commit -m "feat(re): dump original brushes, masks, and mirrored rows"
 
 ## Part C: TypeScript colors and data tests
 
-- [ ] **Action 8: Write the failing color test**
+- [x] **Action 8: Write the failing color test**
 
 Create `src/gfx/gdi/color.test.ts`:
 
@@ -414,12 +414,12 @@ describe('brushColorAt', () => {
 
 The row order follows from two GDI rules, not from the binary: a DIB with a positive height is stored bottom-up (buffer row `k` is screen row `7 - k`), and a pattern brush is aligned to the bitmap's origin (default brush origin 0, 0). Buffer row 0 holds the color byte as is (high nibble = left pixel), so screen rows 7, 5, 3, 1 start with the high nibble and screen rows 0, 2, 4, 6 start with the low nibble.
 
-- [ ] **Action 9: Run it to make sure it fails**
+- [x] **Action 9: Run it to make sure it fails**
 
 Run: `pnpm exec vitest run src/gfx/gdi/color.test.ts`
 Expected: FAIL, cannot resolve `./color.js`.
 
-- [ ] **Action 10: Implement `color.ts`**
+- [x] **Action 10: Implement `color.ts`**
 
 Create `src/gfx/gdi/color.ts`:
 
@@ -439,12 +439,12 @@ export function brushColorAt(color: number, x: number, y: number): number {
 }
 ```
 
-- [ ] **Action 11: Run it to make sure it passes**
+- [x] **Action 11: Run it to make sure it passes**
 
 Run: `pnpm exec vitest run src/gfx/gdi/color.test.ts`
 Expected: PASS, 3 tests.
 
-- [ ] **Action 12: Write the brush data test**
+- [x] **Action 12: Write the brush data test**
 
 Create `src/gfx/gdi/color.data.test.ts`:
 
@@ -478,7 +478,7 @@ describe.skipIf(!hasFixture('graphics/brushes.tsv'))('brushes match the original
 });
 ```
 
-- [ ] **Action 13: Write the mask and mirror data test**
+- [x] **Action 13: Write the mask and mirror data test**
 
 Create `src/gfx/gdi/masks.data.test.ts`:
 
@@ -547,12 +547,12 @@ describe.skipIf(!hasFixture('graphics/masks.tsv'))('masks and mirrors match the 
 });
 ```
 
-- [ ] **Action 14: Run the gdi tests**
+- [x] **Action 14: Run the gdi tests**
 
 Run: `pnpm exec vitest run src/gfx/gdi`
 Expected: PASS. The data tests run (fixtures exist). If the brush test fails on the solid branch, the low word layout differs from `R | G << 8`: read `re/out/functions/1040_097a_FUN_1040_097a.asm` and fix the expectation. If the pattern rows fail, compare buffer rows by hand with Action 2's Python test and fix whichever side is wrong.
 
-- [ ] **Action 15: Commit**
+- [x] **Action 15: Commit**
 
 ```bash
 git add src/gfx/gdi/color.ts src/gfx/gdi/color.test.ts src/gfx/gdi/color.data.test.ts src/gfx/gdi/masks.data.test.ts
@@ -561,7 +561,7 @@ git commit -m "feat(gfx): original color index and dither brush, mask and mirror
 
 ## Part D: Findings
 
-- [ ] **Action 16: Read the remaining functions**
+- [x] **Action 16: Read the remaining functions**
 
 Read the pseudo-C and assembly in `re/out/functions/` for: `1040_097a`, `1038_1d31`, `1040_0000`, `1040_035c`, `1040_0462`, `1040_054e`, `1040_0b08`, `1040_0bc7`, `1030_00fe`, `1030_0000`, and the thunks `1028_182c`, `1028_1845` (and the function at `1030:15fb` that `1028:182c` forwards to; it may sit inside another export, find it with `rg -n "1030:15fb" re/out/functions/*.asm`). Answer these and write each answer as a finding:
 
@@ -570,7 +570,7 @@ Read the pseudo-C and assembly in `re/out/functions/` for: `1040_097a`, `1038_1d
 3. In `1040:0000`: who sets `1068:2572` (only `1040:0286` clears and sets it), and exactly when entry 0 becomes black. Confirm the pre-mirrored path conditions (`1068:1e22`, `1068:4106`) and which record fields it fills.
 4. `1030:00fe`, `1030:0000`, `1030:15fb`: what each frees or counts.
 
-- [ ] **Action 17: Create `docs/re/graphics.md`**
+- [x] **Action 17: Create `docs/re/graphics.md`**
 
 ```markdown
 # Graphics: Colors, Masks, Primitives, Sprites, Dirty Rects, Buffers, Wipes
@@ -640,7 +640,7 @@ Fill `Colors` and `Bitmap masks and mirrors` with one bullet per claim, each sta
 
 Add checklist rows: `1040:097a` → `src/gfx/gdi/color.ts:1` `colorIndex`, `fixed`; `1038:1d31` → `src/gfx/gdi/color.ts:5` `brushColorAt`, `fixed` (the old pipeline masks colors with `& 0x0f` and never dithers); `1040:035c`, `1040:0462`, `1040:054e`, `1040:0000` → `none (the model blits sprites from raw indices; index 0 is see-through, see Sprites)`, `match`; `1040:0b08` / `1040:0bc7` → `src/gfx/palette.ts:7` `setPaletteColors`, `match`; `1030:00fe`, `1030:0000`, `1030:15fb`, `1028:182c`, `1028:1845` → `none (garbage collected)` or what fits, `match`. Use the real line numbers from the files.
 
-- [ ] **Action 18: Log open questions**
+- [x] **Action 18: Log open questions**
 
 In `docs/re/open-questions.md`:
 
@@ -658,7 +658,7 @@ In `docs/re/open-questions.md`:
 
 - Edit OQ-14: the three forwarders `1028:17d8`, `1028:182c`, `1028:1845`: write what `1028:182c` and `1028:1845` reach, and leave `1028:17d8` for step 3.
 
-- [ ] **Action 19: Name the functions**
+- [x] **Action 19: Name the functions**
 
 In `scripts/re/names.json`, entries live under `"functions"`, sorted by address, and look like this:
 
@@ -678,7 +678,7 @@ Add or update: `1040:097a` `gfx_paletteColor`, `1040:054e` `gfx_mirrorPixelRows`
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors; `docs/re/function-map.md` regenerated.
 
-- [ ] **Action 20: README**
+- [x] **Action 20: README**
 
 Append to `scripts/re/unicorn/README.md`:
 
@@ -691,7 +691,7 @@ Append to `scripts/re/unicorn/README.md`:
 Runs original graphics code that needs no drawing (brush and mask builders, row mirror, and later the dirty-rect lists and wipe geometry) and writes fixtures to `re/fixtures/graphics/` (gitignored). `original_graphics.py` stubs the few GDI and KERNEL imports involved with handlers that capture their arguments. Inside a stub, `pascal_args(emu, n)` returns the import's arguments in declared order.
 ```
 
-- [ ] **Action 21: Check and commit**
+- [x] **Action 21: Check and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -709,7 +709,7 @@ git commit -m "docs(re): chunk 4 colors and bitmap masks verified"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
-- [ ] Only if something could not be finished: record it in
+- [x] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
