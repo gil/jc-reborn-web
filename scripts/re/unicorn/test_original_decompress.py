@@ -10,6 +10,7 @@ REPO = Path(__file__).resolve().parents[3]
 DATA = REPO / "public/data"
 BINARY = DATA / "SCRANTIC.SCR"
 
+STORED = 0
 RLE = 1
 LZW = 2
 
@@ -20,16 +21,22 @@ def width_growth_codes() -> list[tuple[int, int]]:
 
 # name -> (chunk body, expected original output)
 EDGE_CASES = {
+    "stored": (chunk_body(STORED, 3, bytes([1, 2, 3])), bytes([1, 2, 3])),
+    "stored truncated": (chunk_body(STORED, 5, bytes([1, 2])), bytes([1, 2])),
     "rle literal": (chunk_body(RLE, 3, bytes([0x03, 1, 2, 3])), bytes([1, 2, 3])),
     "rle run": (chunk_body(RLE, 3, bytes([0x83, 0xAA])), bytes([0xAA] * 3)),
     "rle zero run": (chunk_body(RLE, 2, bytes([0x80, 0xFF, 0x02, 0xDE, 0xAD])), bytes([0xDE, 0xAD])),
     "rle zero literal": (chunk_body(RLE, 2, bytes([0x00, 0x02, 0xDE, 0xAD])), bytes([0xDE, 0xAD])),
     "rle truncated": (chunk_body(RLE, 5, bytes([0x02, 0xDE, 0xAD])), bytes([0xDE, 0xAD])),
     "rle run past size": (chunk_body(RLE, 2, bytes([0x85, 0xAA])), bytes([0xAA] * 2)),
+    "rle run without value": (chunk_body(RLE, 3, bytes([0x83])), bytes([0xFF] * 3)),
     "lzw new entry": (chunk_body(LZW, 4, pack_codes([(65, 9), (66, 9), (257, 9)])), b"ABAB"),
     "lzw kwkwk": (chunk_body(LZW, 3, pack_codes([(65, 9), (257, 9)])), b"AAA"),
     "lzw truncated": (chunk_body(LZW, 10, pack_codes([(65, 9), (66, 9)])), b"AB"),
     "lzw clear": (chunk_body(LZW, 2, pack_codes([(65, 9), (256, 9), (0, 54), (66, 9)])), b"AB"),
+    "lzw code 256 after clear": (chunk_body(LZW, 5, pack_codes([(65, 9), (256, 9), (0, 54), (256, 9)])), b"AAA"),
+    "lzw empty": (chunk_body(LZW, 5, b""), bytes([0xFF])),
+    "lzw first code above 255": (chunk_body(LZW, 5, pack_codes([(300, 9), (65, 9)])), bytes([0x2C, 0x41])),
     "lzw width growth": (chunk_body(LZW, 33153, pack_codes(width_growth_codes())), b"A" * 33153),
 }
 

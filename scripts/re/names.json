@@ -280,6 +280,134 @@
       "signature": null,
       "callingConvention": null
     },
+    "1028:0000": {
+      "name": "resources_storedRead",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Method 0 read: copies input bytes to the output unchanged until input or request runs out; reached only through the method table's zero entry",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0024": {
+      "name": "resources_rleRead",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Method 1 read: control byte bit 7 clear copies control&0x7f literal bytes, set repeats the next byte control&0x7f times",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0072": {
+      "name": "resources_storedWrite",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Method 0 write: sends the bytes in the I/O ring unchanged to the output",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:00b8": {
+      "name": "resources_readFileToFar",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Copies n bytes from the stream's file to a far address through a 50-byte bounce buffer; ignores the chunk length",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0125": {
+      "name": "resources_streamGetByte",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Next input byte of the current stream, 0xFFFF once the chunk length is consumed",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0185": {
+      "name": "resources_streamReadBytes",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Reads up to n input bytes into a near buffer, cut to the rest of the chunk; returns the count",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:022e": {
+      "name": "resources_rleCopyLiteral",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "RLE literal of n bytes: straight to the destination, or to the I/O buffer and pause when the request is shorter",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:02b4": {
+      "name": "resources_rleFillRun",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "RLE run of n copies of a byte: straight to the destination, or to the I/O buffer and pause when the request is shorter",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0331": {
+      "name": "resources_streamPutByte",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Hands one output byte to the caller; returns 0 and buffers it when the request is already full",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0384": {
+      "name": "resources_writeCompressedByte",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Write side: appends one compressed byte to the stream's file or memory buffer",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:03d0": {
+      "name": "resources_selectStream",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Validates a stream id and loads its record into the codec globals; 0 for a bad id",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0458": {
+      "name": "resources_isReadMode",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "1 if the mode string contains 'r'",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0478": {
+      "name": "resources_freeNear",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Null-safe near free",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:048e": {
+      "name": "resources_freeStream",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Frees a stream's I/O buffer, far codec state, and record, and clears its slot; returns 0xFFFF",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:04f8": {
+      "name": "resources_allocStreamSlot",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Takes the first free of 100 stream slots and allocates a zeroed 0x21-byte record; -1 when full",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0547": {
+      "name": "resources_initStreamMethod",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Checks the method (0..2), allocates the I/O buffer and far codec state from the method table, stores the method in the flags",
+      "signature": null,
+      "callingConvention": null
+    },
     "1028:0615": {
       "name": "resources_openStream",
       "subsystem": "resources",
@@ -304,11 +432,147 @@
       "signature": null,
       "callingConvention": null
     },
+    "1028:0951": {
+      "name": "resources_drainBuffered",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Copies bytes left in the I/O buffer to the destination, up to the bytes still requested",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:09ca": {
+      "name": "resources_decodeInto",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Drains buffered bytes, runs the method's read function, drains again; returns bytes produced",
+      "signature": null,
+      "callingConvention": null
+    },
     "1028:0a0d": {
       "name": "resources_readStream",
       "subsystem": "resources",
       "status": "named",
       "note": "Reads up to count decompressed bytes into a far buffer; returns the count produced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0a4b": {
+      "name": "resources_writeStream",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Write side of resources_readStream: feeds bytes to the method's write function through the I/O ring; no callers",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0b0a": {
+      "name": "resources_streamSize",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Uncompressed size from the stream header in DX:AX, 0xFFFFFFFF for a bad id",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0b36": {
+      "name": "resources_seekStream",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Seeks in decompressed bytes by decoding and discarding, rewinding first for backward seeks; no callers",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0c92": {
+      "name": "resources_rewindStream",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Restarts a read-mode stream at body + 5 and reruns the method's read init",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0d44": {
+      "name": "resources_lzwInit",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "LZW read init: zeroes the state, width 9, free code 257, suffix i = i for i < 256",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0e04": {
+      "name": "resources_lzwRead",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "LZW read: decodes codes through the prefix/suffix tables and a stack, handles clear (256), pauses when the request fills",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0fc1": {
+      "name": "resources_lzwReadCode",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Next LZW code, LSB first, from groups of width bytes; grows the width or resets it after a clear; -1 at end of chunk",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:10cb": {
+      "name": "resources_rleReadMemory",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "RLE read for memory streams, working directly on the far source pointer",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:11be": {
+      "name": "resources_lzwWriteInit",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "LZW write init: resets the encoder counters, width 9, free code 257, clears the hash table",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:1233": {
+      "name": "resources_lzwWrite",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "LZW write: hashes prefix+byte pairs, emits codes, adds entries, checks the ratio once the table is full",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:13cf": {
+      "name": "resources_lzwWriteCode",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Packs one LZW code into the output group, grows or resets the width; negative code flushes",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:155d": {
+      "name": "resources_lzwRatioDivide",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Far wrapper around 1000:03da (Borland signed 32-bit divide) for the LZW ratio check",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:157c": {
+      "name": "resources_lzwCheckRatio",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "LZW write: emits a clear and resets the table when the compression ratio drops",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:1654": {
+      "name": "resources_lzwClearHash",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Fills n LZW hash table entries with -1",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:1698": {
+      "name": "resources_rleWrite",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Method 1 write: encodes the I/O ring into RLE runs and literals",
       "signature": null,
       "callingConvention": null
     },

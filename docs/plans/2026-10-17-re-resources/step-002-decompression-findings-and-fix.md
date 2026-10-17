@@ -37,7 +37,7 @@
 
 ## Part A: Read the original
 
-- [ ] **Action 1: Read the stream and codec code**
+- [x] **Action 1: Read the stream and codec code**
 
 Read the pseudo-C (`re/out/functions/<ssss>_<oooo>_*.c`) and, where unclear, the assembly (`.asm`) of every function in `1028:0000`..`1028:1797`. Answer these questions in `docs/re/resources.md`, one claim per bullet, each starting with its address. Our own words, no pasted code.
 
@@ -74,7 +74,7 @@ Read the pseudo-C (`re/out/functions/<ssss>_<oooo>_*.c`) and, where unclear, the
 
 Compress (write) side: `1028:0072`, `1028:0384`, `1028:11be`, `1028:1233`, `1028:13cf`, `1028:155d`, `1028:157c`, `1028:1654`, `1028:1698`, plus whatever else in the range only writes. Read enough to name them. You do not have to understand the encoders; Action 3 logs them.
 
-- [ ] **Action 2: Name every function in the range**
+- [x] **Action 2: Name every function in the range**
 
 Add an entry to `scripts/re/names.json` for every function in `1028:0000`..`1028:1797` (status `named` for now; step 4 promotes to `verified`). Use `resources_` names that say what the function does, e.g. `resources_rleRead`, `resources_lzwInit`, `resources_lzwRead`, `resources_lzwReadCode`, `resources_streamGetByte`, `resources_streamPutByte`, `resources_selectStream`, `resources_allocStreamSlot`, `resources_freeStream`, `resources_initStreamMethod`, `resources_isReadMode`, `resources_rewindStream`. Change any suggested name that does not fit what you read. Keep the file sorted.
 
@@ -84,7 +84,7 @@ Expected: no errors.
 Run: `scripts/re/ghidra-import.sh`
 Expected: ends with `export written to .../re/out`. Needed so the export test (`scripts/re/export.data.test.ts`, "applies every names.json entry") sees the new names.
 
-- [ ] **Action 3: Log the compress side as one open question**
+- [x] **Action 3: Log the compress side as one open question**
 
 It is not a workaround, so it does not go under "Workarounds without a known root cause". Add a new section to `docs/re/open-questions.md`, above `## Resolved`:
 
@@ -101,7 +101,7 @@ It is not a workaround, so it does not go under "Workarounds without a known roo
 
 If you found a call from game code (not from the stream code itself) into a write path, say so in the entry; that changes the reasoning.
 
-- [ ] **Action 4: Commit the findings**
+- [x] **Action 4: Commit the findings**
 
 ```bash
 git add docs/re/resources.md docs/re/open-questions.md scripts/re/names.json docs/re/function-map.md

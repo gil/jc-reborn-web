@@ -94,6 +94,15 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 | `db6d598` | flickering animation sprites | 6 |
 | `d0bc6b6` | transparency | 3 |
 
+## Not reviewed on purpose
+
+### OQ-7: Compression (write) side of the stream code
+
+- **Where:** `1028:0072`, `1028:0384`, `1028:0a4b`, `1028:11be`, `1028:1233`, `1028:13cf`, `1028:155d`, `1028:157c`, `1028:1654`, `1028:1698`, and the write-mode branches of `1028:0615`, `1028:0875`, `1028:0547`
+- **What it does:** the stored, RLE, and LZW encoders and the write-mode stream paths.
+- **Why not reviewed:** the engine only reads `RESOURCE.001`; nothing in the original's runtime writes compressed data that we need to reproduce. All four callers of `1028:0615` pass a mode string `"r"`, and `1028:0a4b` (the only way to feed an encoder) has no callers.
+- **Status:** open, by choice
+
 ## Resolved
 
 None yet.
