@@ -7,7 +7,6 @@ export function putPixel(l: Layer, x: number, y: number, color: number): void {
 }
 
 export function drawLine(l: Layer, x1: number, y1: number, x2: number, y2: number, color: number): void {
-  // Bresenham — port of graphics.c:295-350
   let x = x1, y = y1;
   const dx = Math.abs(x2 - x1), dy = Math.abs(y2 - y1);
   const xinc = x2 > x1 ? 1 : -1;
@@ -30,7 +29,7 @@ export function drawLine(l: Layer, x1: number, y1: number, x2: number, y2: numbe
 }
 
 export function drawRect(l: Layer, x: number, y: number, w: number, h: number, color: number): void {
-  // graphics.c grDrawRect uses SDL_FillRect — filled rectangle
+  // Old pipeline, copied from jc_reborn and not checked against the original; replaced by src/gfx/gdi/ (OQ-20).
   for (let yy = y; yy < y + h; yy++) {
     for (let xx = x; xx < x + w; xx++) {
       putPixel(l, xx, yy, color);
@@ -41,7 +40,7 @@ export function drawRect(l: Layer, x: number, y: number, w: number, h: number, c
 export function drawCircle(
   l: Layer, x1: number, y1: number, w: number, h: number, fg: number, bg: number,
 ): void {
-  // graphics.c:369-453 — only even diameters, only true circles
+  // Old pipeline, copied from jc_reborn and not checked against the original; replaced by src/gfx/gdi/ (OQ-20).
   if (w !== h || (w & 1)) return;
   const r = (w >> 1) - 1;
   const xc = x1 + r, yc = y1 + r;

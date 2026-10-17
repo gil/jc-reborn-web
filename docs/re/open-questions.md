@@ -170,13 +170,13 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 
 | Commit | Summary | Chunk |
 | --- | --- | --- |
-| `85c05ad` | copyZoneToBg skips transparent pixels (colorkey) | 4 |
+| `85c05ad` | copyZoneToBg skips transparent pixels (colorkey) | 4 (reviewed, see docs/re/graphics.md) |
 | `d670686` | SET_DELAY missing timer | 5 |
 | `5f4e3a0` | DRAW_RECT/DRAW_CIRCLE no longer add ctx.dx/dy to args 3&4 (width/height) | 5 |
 | `0e7cd64` | getUint16/getInt16 mistake | 3 |
 | `eb46290` | force-stop orphan TTM threads after ADS END | 6 |
 | `6b0be68` | audio playback | out of scope |
-| `b631319` | animation sprites sometimes get cut | 4 |
+| `b631319` | animation sprites sometimes get cut | 4 (reviewed, see docs/re/graphics.md) |
 | `8adc66a` | various consistency fixes | 6, 7 |
 | `1204c0d` | hain instant phase transitions so a scene-end → walk-start (or walk-end → new-scene-start) completes in one tick. | 7 |
 | `c037b5f` | swapped order: storyTick → adsTick → storyAnimateBg | 7 |
@@ -201,7 +201,7 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 | `27684eb` | problem with threads rendering on top of each other | 6 |
 | `c126833` | problem where nothing would start after certain scenes | 6 |
 | `d808ee0` | correct file | out of scope |
-| `43ef25b` | better color and transparency handling | 3, 4 |
+| `43ef25b` | better color and transparency handling | 3, 4 (4 reviewed, see docs/re/graphics.md) |
 | `e6287e1` | correct original repo | out of scope |
 | `db6d598` | flickering animation sprites | 6 |
 | `d0bc6b6` | transparency | 3 |

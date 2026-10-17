@@ -13,7 +13,6 @@ export function drawSprite(l: Layer, sp: Sprite, dx: number, dy: number): void {
   }
 }
 
-// Column-by-column right-to-left flip, matching graphics.c:472-491
 export function drawSpriteFlip(l: Layer, sp: Sprite, dx: number, dy: number): void {
   for (let i = 0; i < sp.width; i++) {
     for (let y = 0; y < sp.height; y++) {

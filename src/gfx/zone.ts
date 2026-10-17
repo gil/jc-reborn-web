@@ -12,8 +12,8 @@ function ensureSaved(): Uint8Array {
   return savedZonesLayer;
 }
 
-// Copies a rect of srcLayer into the saved-zones layer (grCopyZoneToBg).
-// Width is extended by 2 to match the +2 glitch fix in graphics.c:248.
+// Old pipeline, copied from jc_reborn and not checked against the original (the +2 width, the no-op save,
+// the whole-layer restore); replaced by src/gfx/gdi/ (OQ-20).
 export function copyZoneToBg(srcLayer: Layer, x: number, y: number, w: number, h: number): void {
   const buf = ensureSaved();
   const W = w + 2;
@@ -22,16 +22,14 @@ export function copyZoneToBg(srcLayer: Layer, x: number, y: number, w: number, h
       const X = x + xx, Y = y + yy;
       if (X < 0 || X >= SCREEN_W || Y < 0 || Y >= SCREEN_H) continue;
       const v = srcLayer.indexed[Y * SCREEN_W + X]!;
-      if (v === TRANSPARENT) continue; // C SDL blit colorkey skips transparent source
+      if (v === TRANSPARENT) continue;
       buf[Y * SCREEN_W + X] = v;
     }
   }
 }
 
-// grSaveZone: no-op — we rely on restoreZone to clear the whole layer
 export function saveZone(_l: Layer, _x: number, _y: number, _w: number, _h: number): void {}
 
-// grRestoreZone: clears the ENTIRE saved-zones layer regardless of rect args
 export function restoreZone(_l: Layer, _x: number, _y: number, _w: number, _h: number): void {
   savedZonesLayer = null;
 }

@@ -173,7 +173,9 @@ The original draws with Windows GDI. The binary tells which GDI call runs with w
 
 ## Past fixes reviewed
 
-None yet.
+- `85c05ad` (copyZoneToBg skips transparent pixels): `src/gfx/zone.ts` stopped copying `TRANSPARENT` pixels into the saved-zones layer. Original: there is no single counterpart; the closest paths (`1038:06ce` copy rect, `1030:01c4`/`1030:0250` saved bits) copy with `SRCCOPY`, opaque, and every surface holds real indices, so there is nothing to skip. Verdict: only matters in the old pipeline, where thread layers start transparent; settled by the model in `src/gfx/gdi/display.ts` (OQ-20).
+- `b631319` (animation sprites sometimes get cut): `src/gfx/clip.ts` `setClip` now cuts a clip rect with a negative origin to the screen instead of growing its width; the same commit added `dx`/`dy` to TTM clip and copy-zone arguments. Original: the clip is an inclusive rect selected as a GDI region (`1038:1ade`), and nothing outside the 640 × 480 bitmaps can be drawn, so cutting to the screen gives the same pixels. Verdict: the clamp matches the original; the `dx`/`dy` part is TTM argument handling, left for chunk 5.
+- `43ef25b` (better color and transparency handling): changed the VGA level expansion to `(v << 2) | (v >> 4)`, made the screen decoder map index 0 to `TRANSPARENT`, and documented that in the compositor. Original: levels come from the table at `1068:25b0` (`v × 4`, 63 → 255; `docs/re/decoders.md`, `Palette`, already fixed in chunk 3); screens keep index 0 opaque in palette color 0 (`1040:0286`, `1040:0000`). Verdict: differs for screens; settled by the model in `src/gfx/gdi/display.ts` (`blitScreen`), the old pipeline stays as OQ-9 until chunk 5.
 
 ## Side-by-side checklist
 
