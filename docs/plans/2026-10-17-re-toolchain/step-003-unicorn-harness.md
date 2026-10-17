@@ -48,7 +48,7 @@ Every stub slot holds `RETF` (`0xCB`). A code hook on the stub segment runs the 
 
 `call_far` pushes a return address that points at a sentinel (stub offset 0) and runs until the linear PC equals the sentinel. If the limit runs out first, it raises `EmulationLimit`.
 
-- [ ] **Action 1: Create the venv and install Unicorn**
+- [x] **Action 1: Create the venv and install Unicorn**
 
 Create `scripts/re/unicorn/requirements.txt`:
 
@@ -63,7 +63,7 @@ Expected: `Successfully installed unicorn-2.1.4`.
 Run: `re/.venv/bin/python -I -c "import unicorn; print(unicorn.__version__)"`
 Expected: `2.1.4`
 
-- [ ] **Action 2: Write the failing NE parser tests**
+- [x] **Action 2: Write the failing NE parser tests**
 
 Create `scripts/re/unicorn/test_ne_image.py`. The expected numbers come from "Binary facts" in the overview.
 
@@ -123,12 +123,12 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Action 3: Run the tests, confirm they fail**
+- [x] **Action 3: Run the tests, confirm they fail**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_ne_image.py' -v`
 Expected: ERROR, `ModuleNotFoundError: No module named 'ne_image'`.
 
-- [ ] **Action 4: Write `scripts/re/unicorn/ne_image.py`**
+- [x] **Action 4: Write `scripts/re/unicorn/ne_image.py`**
 
 NE format reference: segment table entries are 8 bytes (sector, length, flags, min alloc). A length or min alloc of 0 means 64 KB. Relocation records follow the segment data: a `u16` count, then 8-byte records (source type, flags, offset, two target words). The entry table is a list of bundles: count, type (`0` unused, `0xFF` movable with 6-byte entries, else a fixed segment number with 3-byte entries).
 
@@ -269,19 +269,19 @@ def _parse_entry_table(raw: bytes, pos: int, length: int) -> dict[int, InternalT
     return entries
 ```
 
-- [ ] **Action 5: Run the NE tests, confirm they pass**
+- [x] **Action 5: Run the NE tests, confirm they pass**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_ne_image.py' -v`
 Expected: 5 tests OK. `test_relocation_sites_match_ghidra` is skipped if `re/out/relocations.tsv` is missing. If it is missing, run `scripts/re/ghidra-import.sh` first and re-run, so the check really runs.
 
-- [ ] **Action 6: Commit**
+- [x] **Action 6: Commit**
 
 ```bash
 git add scripts/re/unicorn/requirements.txt scripts/re/unicorn/ne_image.py scripts/re/unicorn/test_ne_image.py
 git commit -m "feat(re): NE image parser for SCRANTIC.SCR, checked against Ghidra relocations"
 ```
 
-- [ ] **Action 7: Write the failing emulator tests**
+- [x] **Action 7: Write the failing emulator tests**
 
 Create `scripts/re/unicorn/test_emulator.py`. The two runtime library functions are described under "Binary facts" in the overview.
 
@@ -364,12 +364,12 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Action 8: Run the emulator tests, confirm they fail**
+- [x] **Action 8: Run the emulator tests, confirm they fail**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_emulator.py' -v`
 Expected: ERROR, `ModuleNotFoundError: No module named 'emulator'`.
 
-- [ ] **Action 9: Write `scripts/re/unicorn/emulator.py`**
+- [x] **Action 9: Write `scripts/re/unicorn/emulator.py`**
 
 ```python
 import struct
@@ -621,7 +621,7 @@ class Emulator:
         self.uc.mem_write(address, struct.pack("<H", value & 0xFFFF))
 ```
 
-- [ ] **Action 10: Run the emulator tests, confirm they pass**
+- [x] **Action 10: Run the emulator tests, confirm they pass**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_emulator.py' -v`
 Expected: 6 tests OK.
@@ -633,7 +633,7 @@ If a test hangs, stops early, or `rtl_lxmul` gives wrong values, check these ass
 
 To test an assumption on its own, write a 2-instruction snippet (`mov ax, 0x1234` then `retf`) into `emu.alloc(16)` and call it. Fix `emulator.py` to match what Unicorn really does. Don't weaken the tests.
 
-- [ ] **Action 11: Write `scripts/re/unicorn/README.md`**
+- [x] **Action 11: Write `scripts/re/unicorn/README.md`**
 
 ```markdown
 # Unicorn Harness
@@ -671,7 +671,7 @@ Every import is a far pointer into the stub segment. Calling one with no stub ra
 Only stub what a test needs. Functions that need many stubs belong in side-by-side review, not here.
 ```
 
-- [ ] **Action 12: Compile-check and run all harness tests**
+- [x] **Action 12: Compile-check and run all harness tests**
 
 Run: `re/.venv/bin/python -I -m py_compile scripts/re/unicorn/ne_image.py scripts/re/unicorn/emulator.py scripts/re/unicorn/test_ne_image.py scripts/re/unicorn/test_emulator.py`
 Expected: no output.
@@ -682,7 +682,7 @@ Expected: 11 tests OK, 0 skipped (run `scripts/re/ghidra-import.sh` first if the
 Run: `pnpm test`
 Expected: all tests pass (nothing on the TS side changed).
 
-- [ ] **Action 13: Commit**
+- [x] **Action 13: Commit**
 
 Python writes `scripts/re/unicorn/__pycache__/` when the tests import the modules. Append to `.gitignore`:
 
@@ -700,7 +700,7 @@ git commit -m "feat(re): Unicorn real-mode harness for calling single SCRANTIC.S
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
-- [ ] Only if something could not be finished: record it in
+- [x] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

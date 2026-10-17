@@ -106,7 +106,7 @@ Produced by `scripts/re/ghidra-import.sh`:
 
 - [x] `step-001-ghidra-import-export.md`: decompiler built, `re/` ignored, `names.json` seeded, headless import + apply names + export working, export test passing.
 - [x] `step-002-function-map-docs.md`: `names.json` validator and `docs/re/function-map.md` renderer with tests, `docs/re/README.md`, `docs/re/open-questions.md` seeded with known workarounds.
-- [ ] `step-003-unicorn-harness.md`: venv with Unicorn, NE loader with relocations checked against Ghidra, emulator that calls original functions, tests on two runtime library functions.
+- [x] `step-003-unicorn-harness.md`: venv with Unicorn, NE loader with relocations checked against Ghidra, emulator that calls original functions, tests on two runtime library functions.
 - [ ] `step-004-seed-function-map.md`: functions behind the anchor strings and key imports named in `names.json`, map regenerated.
 
 Order: step 1 first. Steps 2 and 3 depend only on step 1 and can run in either order. Step 4 needs 1 and 2.
