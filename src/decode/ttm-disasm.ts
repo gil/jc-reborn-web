@@ -1,28 +1,14 @@
+import { readTtmInstruction } from './ttm-bytecode.js';
+
 export function disasmTtm(bytecode: Uint8Array, opcodeNames?: Record<number, string>): string {
-  const dv = new DataView(bytecode.buffer, bytecode.byteOffset);
   const lines: string[] = [];
-  let p = 0;
-  while (p < bytecode.length) {
-    const offset = p;
-    const op = dv.getUint16(p, true); p += 2;
-    const argCount = op & 0x000f;
-    const args: number[] = [];
-    let str: string | undefined;
-    if (argCount === 0x0f) {
-      const sb: number[] = [];
-      while (p < bytecode.length) {
-        const b = dv.getUint8(p++); if (b === 0) break; sb.push(b);
-      }
-      if (p & 1) p++;
-      str = new TextDecoder('latin1').decode(new Uint8Array(sb));
-    } else {
-      for (let i = 0; i < argCount; i++) { args.push(dv.getInt16(p, true)); p += 2; }
-    }
-    const name = opcodeNames?.[op] ?? '???';
-    let line = `${offset.toString(16).padStart(6, '0')}  ${op.toString(16).padStart(4, '0')} ${name}`;
-    if (args.length) line += ` ${args.join(' ')}`;
-    if (str !== undefined) line += ` "${str}"`;
+  for (let offset = 0; offset < bytecode.length; ) {
+    const { opcode, args, text, next } = readTtmInstruction(bytecode, offset);
+    let line = `${offset.toString(16).padStart(6, '0')}  ${opcode.toString(16).padStart(4, '0')} ${opcodeNames?.[opcode] ?? '???'}`;
+    if (args.length) line += ` ${args.map((arg) => (arg << 16) >> 16).join(' ')}`;
+    if (text !== undefined) line += ` "${text}"`;
     lines.push(line);
+    offset = next;
   }
   return lines.join('\n');
 }
