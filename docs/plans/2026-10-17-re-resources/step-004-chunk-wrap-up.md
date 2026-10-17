@@ -82,7 +82,7 @@ git commit -m "docs(re): chunk 2 functions verified, comments audited"
 
 ## Full verification
 
-- [ ] **Action 6: Rebuild everything from scratch and run every test**
+- [x] **Action 6: Rebuild everything from scratch and run every test**
 
 Run: `scripts/re/ghidra-import.sh`
 Expected: ends with `export written to .../re/out`.
@@ -99,7 +99,7 @@ Expected: no errors.
 Run: `pnpm test`
 Expected: all pass, and none of these is reported as skipped: `src/resource/uncompress.data.test.ts`, `src/resource/resource-map.data.test.ts`, `src/resource/resource-archive.data.test.ts`, `scripts/re/export.data.test.ts`. If one is skipped, its input is missing; fix that before going on.
 
-- [ ] **Action 7: Smoke test in the browser**
+- [x] **Action 7: Smoke test in the browser**
 
 Run in the background: `pnpm dev`
 Expected: Vite prints a local URL, usually `http://localhost:5173/`.
@@ -111,11 +111,11 @@ Ask the user to open both pages and confirm: the island scene draws and animates
 
 Stop the dev server by the job id or PID you started it with. Never kill by name.
 
-- [ ] **Action 8: Tick the spec**
+- [x] **Action 8: Tick the spec**
 
 In `docs/specs/2026-10-17-reverse-engineering-validation-design.md`, tick `- [ ] **2. Resources.**` to `- [x]`. If `- [ ] **1. Toolchain.**` is still unticked, tick it too (chunk 1 is done). Change nothing else in that file.
 
-- [ ] **Action 9: Commit**
+- [x] **Action 9: Commit**
 
 ```bash
 git add docs/specs/2026-10-17-reverse-engineering-validation-design.md
@@ -124,7 +124,7 @@ git commit -m "docs: chunk 2 (resources) done"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
