@@ -580,7 +580,7 @@ git commit -m "fix(decode): screens use chunk lookup and the original 320x400 de
 
 ## Part E: Checklist
 
-- [ ] **Action 17: Fill the checklist rows and open questions**
+- [x] **Action 17: Fill the checklist rows and open questions**
 
 In `docs/re/decoders.md` under `Side-by-side checklist`, add rows:
 
@@ -596,7 +596,7 @@ For any behavior you could not settle (for example screen transparency from Acti
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 18: Run every check and commit**
+- [x] **Action 18: Run every check and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -614,7 +614,7 @@ git commit -m "docs(re): side-by-side checklist for the palette and screen loade
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

@@ -60,6 +60,15 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Resolve in:** chunk 5 (TTM interpreter), by checking every resource name TTM bytecode loads
 - **Status:** open
 
+### OQ-9: Screen pixels with index 0 are see-through in our code
+
+- **Where:** `src/decode/nibbles.ts:10` (`unpackNibbles` maps index 0 to `TRANSPARENT` for screens and bitmaps), `src/gfx/compositor.ts:31` (draws `TRANSPARENT` as black)
+- **What it does:** a screen pixel with index 0 shows black, or whatever a lower layer holds.
+- **Original:** `gfx_blitPixelRows` (`1040:0286`) copies screens with `BitBlt` `SRCCOPY`, and `gfx_buildBitmaps` (`1040:0000`) keeps the palette's color 0 in the color table when `1068:2572` is 0, so index 0 is drawn opaque in palette color 0 (`JOHNCAST.PAL` color 0 is 168, 0, 168). Only bitmaps force color 0 to black and use the mask from `1040:035c`. Index 0 appears in `INTRO.SCR` (1,894 pixels), `ISLETEMP.SCR` (18), `OCEAN00.SCR` (9,917), `OCEAN01.SCR` (9,254), and `OCEAN02.SCR` (10,013).
+- **Old guess behind it:** index 0 is a transparent sentinel never used as a visible color.
+- **Resolve in:** chunk 4 (graphics), after checking whether those pixels are ever visible (later drawing may cover them, for example the island over the ocean)
+- **Status:** open
+
 ## Past fixes to re-check against the original
 
 Each fix below was made without the decompile. Treat it as a guess until a chunk confirms or replaces it. "Out of scope" rows touch docs, build paths, or sound playback, which have no counterpart in the original.

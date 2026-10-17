@@ -78,7 +78,7 @@ Results of the original chunk lookup (`1038:016b`, then `1038:0215` with occurre
 - `1040:035c`: the left pixel of a packed byte is its high nibble.
 - `1040:035c`: builds a 1-bit mask bitmap, bit set where the 4-bit index is not 0, so index 0 is see-through only where the mask is used (bitmaps, not screens). It writes `width / 8` mask bytes per row, with a row stride of `((width + 8) / 16) × 2` bytes.
 - `1040:0462`: swaps rows top to bottom in place, `width / 2` bytes per row, `height / 2` swaps.
-- Ours: `src/decode/` maps index 0 to `TRANSPARENT` for screens and bitmaps alike. For screens the original draws palette color 0 instead; logged as an open question for chunk 4.
+- Ours: `src/decode/` maps index 0 to `TRANSPARENT` for screens and bitmaps alike. For screens the original draws palette color 0 instead; logged as OQ-9 for chunk 4.
 
 ## Bitmap
 
@@ -110,3 +110,5 @@ Results of the original chunk lookup (`1038:016b`, then `1038:0215` with occurre
 | `1038:054b` | `decoders_closeChunkFile` | none (we hold each payload in memory and search it whole; no reader records, rewinds, or backups are needed) | match |
 | `1038:0584` | `decoders_isChunkFile` | none (we hold each payload in memory and search it whole; no reader records, rewinds, or backups are needed) | match |
 | `1038:0619` | `platform_nearMalloc` | none (allocation) | match |
+| `1040:09eb` | `decoders_loadPalette` | `src/decode/pal.ts:8` (`decodePal`; 16 colors through the level table) | fixed |
+| `1030:16d8` | `decoders_loadScreen` | `src/decode/scr.ts:10` (`decodeScr`); strips: none (we decode the whole screen at once; the only visible difference, the uncut first strip, needs a screen under 64 rows, and the data has none) | fixed |
