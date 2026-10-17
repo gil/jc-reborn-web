@@ -86,7 +86,7 @@ git commit -m "docs(re): palette, screen, and pixel findings"
 
 ## Part B: Run the original loaders
 
-- [ ] **Action 5: Write the failing Python tests**
+- [x] **Action 5: Write the failing Python tests**
 
 Append to `scripts/re/unicorn/test_original_loaders.py`, before the `if __name__ == "__main__":` block, and add `load_palette_original, load_screen_original` to its `from original_loaders import ...` line:
 
@@ -144,7 +144,7 @@ class ScreenTest(unittest.TestCase):
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_loaders.py' -v`
 Expected: FAIL with `ImportError: cannot import name 'load_palette_original'`.
 
-- [ ] **Action 6: Add the loaders to the harness**
+- [x] **Action 6: Add the loaders to the harness**
 
 Append to `scripts/re/unicorn/original_loaders.py`:
 
@@ -200,7 +200,7 @@ Expected: all pass. If one fails because the original does something else (for e
 Run: `re/.venv/bin/python -I -m py_compile scripts/re/unicorn/original_loaders.py scripts/re/unicorn/test_original_loaders.py`
 Expected: no output.
 
-- [ ] **Action 7: Dump the fixtures**
+- [x] **Action 7: Dump the fixtures**
 
 In `scripts/re/unicorn/dump_loaders.py`, add `load_palette_original, load_screen_original` to the `from original_loaders import ...` line, add these functions after `dump_chunks`:
 
@@ -239,7 +239,7 @@ Expected: no output.
 Run: `re/.venv/bin/python -I scripts/re/unicorn/dump_loaders.py palette screens`
 Expected: `palette.tsv: 16 rows` and `screens.tsv: 10 rows`. Every `screens.tsv` row has status `1`, width `640`, and rows `350` or `480`.
 
-- [ ] **Action 8: Commit**
+- [x] **Action 8: Commit**
 
 ```bash
 git add scripts/re/unicorn/original_loaders.py scripts/re/unicorn/dump_loaders.py scripts/re/unicorn/test_original_loaders.py

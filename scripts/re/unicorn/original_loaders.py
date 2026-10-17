@@ -143,3 +143,46 @@ def find_chunks_original(image: NeImage, name: str, payload: bytes, paths: list[
         size = emu.call_far(CHUNK_SIZE, stack_words=[handle])["ax"]
         results.append((regs["dx"] << 16 | regs["ax"], size))
     return results
+
+
+LOAD_PALETTE = "1040:09eb"
+COLOR_MODE = 0x1EBD
+SIXTEEN_COLOR_MODE = 2
+LOAD_SCREEN = "1030:16d8"
+BLIT_PIXEL_ROWS = "1040:0286"
+
+
+def load_palette_original(image: NeImage, name: str, payload: bytes, color_mode: int = SIXTEEN_COLOR_MODE) -> bytes:
+    emu = new_loader_emulator(image, {name: payload})
+    emu.write(emu.data_segment, COLOR_MODE, bytes([color_mode]))
+    colors = emu.call_far(LOAD_PALETTE, stack_words=[put_string(emu, name)])["ax"]
+    if colors == 0:
+        raise RuntimeError(f"{name}: palette load failed")
+    count = 16 if color_mode == SIXTEEN_COLOR_MODE else 256
+    return emu.read(emu.data_segment, colors, count * 3)
+
+
+@dataclass
+class ScreenStrips:
+    status: int
+    widths: set[int]
+    strips: list[tuple[int, int]]
+    pixels: bytes
+
+
+def load_screen_original(image: NeImage, name: str, payload: bytes) -> ScreenStrips:
+    emu = new_loader_emulator(image, {name: payload})
+    widths: set[int] = set()
+    strips: list[tuple[int, int]] = []
+    pixels = bytearray()
+
+    def blit(emu: Emulator):
+        offset, segment, y, width, rows = emu.arg(0), emu.arg(1), emu.arg(3), emu.arg(4), emu.arg(5)
+        widths.add(width)
+        strips.append((y, rows))
+        pixels.extend(emu.read(segment, offset, rows * (width // 2)))
+        return {"ax": 0}
+
+    emu.replace_function(BLIT_PIXEL_ROWS, blit)
+    status = emu.call_far(LOAD_SCREEN, stack_words=[put_string(emu, name)])["ax"]
+    return ScreenStrips(status, widths, strips, bytes(pixels))

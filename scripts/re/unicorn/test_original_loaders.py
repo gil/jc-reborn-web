@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 from ne_image import NeImage
-from original_loaders import find_chunks_original
+from original_loaders import find_chunks_original, load_palette_original, load_screen_original
 
 REPO = Path(__file__).resolve().parents[3]
 BINARY = REPO / "public/data/SCRANTIC.SCR"
@@ -56,6 +56,56 @@ class FindChunkTest(unittest.TestCase):
 
     def test_a_failed_search_leaves_the_reader_where_it_was(self):
         self.assertEqual(self.find("VER:", "XYZ:", "PAG:"), [(8, 5), None, (41, 2)])
+
+
+PALETTE = chunk("PAL:", chunk("VGA:", bytes(range(64)) * 12), container=True)
+
+
+def level(value: int) -> int:
+    return 0xFF if value == 63 else value * 4
+
+
+def screen(width: int, height: int, packed: bytes, with_dim: bool = True) -> bytes:
+    dim = chunk("DIM:", words(width, height)) if with_dim else b""
+    return chunk("SCR:", dim + chunk("BIN:", stored(packed)), container=True)
+
+
+@unittest.skipUnless(BINARY.exists(), "needs public/data/SCRANTIC.SCR")
+class PaletteTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.image = NeImage.load(BINARY)
+
+    def test_sixteen_color_mode_reads_16_colors_through_the_level_table(self):
+        self.assertEqual(load_palette_original(self.image, "TEST.PAL", PALETTE), bytes(level(v) for v in range(48)))
+
+    def test_other_modes_read_256_colors(self):
+        colors = load_palette_original(self.image, "TEST.PAL", PALETTE, color_mode=0)
+        self.assertEqual(len(colors), 768)
+        self.assertEqual(colors[60:65], bytes([240, 244, 248, 255, 0]))
+
+
+@unittest.skipUnless(BINARY.exists(), "needs public/data/SCRANTIC.SCR")
+class ScreenTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.image = NeImage.load(BINARY)
+
+    def test_strips_of_64_rows_cut_to_the_height(self):
+        packed = bytes(range(140))
+        result = load_screen_original(self.image, "TEST.SCR", screen(4, 70, packed))
+        self.assertEqual((result.status, result.widths, result.strips), (1, {4}, [(0, 64), (64, 6)]))
+        self.assertEqual(result.pixels, packed)
+
+    def test_first_strip_is_not_cut_to_a_short_height(self):
+        result = load_screen_original(self.image, "TEST.SCR", screen(4, 2, bytes([0x12, 0x34, 0x56, 0x78])))
+        self.assertEqual(result.strips, [(0, 64)])
+        self.assertEqual(result.pixels[:4], bytes([0x12, 0x34, 0x56, 0x78]))
+
+    def test_default_size_is_320_by_400(self):
+        result = load_screen_original(self.image, "TEST.SCR", screen(0, 0, bytes(160 * 400), with_dim=False))
+        self.assertEqual(result.widths, {320})
+        self.assertEqual(sum(rows for _, rows in result.strips), 400)
 
 
 if __name__ == "__main__":

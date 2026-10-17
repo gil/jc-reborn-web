@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from corpus import CHUNKED_TYPES, Resource, load_resources, walk_chunks  # noqa: E402
 from ne_image import NeImage  # noqa: E402
-from original_loaders import find_chunks_original  # noqa: E402
+from original_loaders import find_chunks_original, load_palette_original, load_screen_original  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[3]
 DATA = REPO / "public/data"
@@ -42,8 +42,28 @@ def dump_chunks(image: NeImage, resources: list[Resource]):
     write_tsv("chunks.tsv", ["resource", "path", "position", "size"], rows)
 
 
+def dump_palette(image: NeImage, resources: list[Resource]):
+    [palette] = chunked(resources, ".PAL")
+    colors = load_palette_original(image, palette.name, palette.payload)
+    write_tsv("palette.tsv", ["index", "red", "green", "blue"], [[i, *colors[i * 3:i * 3 + 3]] for i in range(16)])
+
+
+def dump_screens(image: NeImage, resources: list[Resource]):
+    OUT.mkdir(parents=True, exist_ok=True)
+    rows = []
+    for resource in chunked(resources, ".SCR"):
+        result = load_screen_original(image, resource.name, resource.payload)
+        file = f"{resource.name}.pixels.bin"
+        (OUT / file).write_bytes(result.pixels)
+        width = ",".join(str(w) for w in sorted(result.widths))
+        rows.append([resource.name, result.status, width, sum(count for _, count in result.strips), file])
+    write_tsv("screens.tsv", ["resource", "status", "width", "rows", "file"], rows)
+
+
 COMMANDS = {
     "chunks": dump_chunks,
+    "palette": dump_palette,
+    "screens": dump_screens,
 }
 
 
