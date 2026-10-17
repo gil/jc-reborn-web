@@ -93,7 +93,7 @@ git commit -m "docs(re): resource map, name hash, and file layer findings"
 
 ## Part B: Pin and fix the map
 
-- [ ] **Action 5: Write the failing unit tests**
+- [x] **Action 5: Write the failing unit tests**
 
 Create `src/resource/resource-map.test.ts`. Expected hashes were computed from the algorithm in the overview; `JOHNWALK.BMP` and `JOHNCAST.PAL` are also the values stored in the real `RESOURCE.MAP`.
 
@@ -165,7 +165,7 @@ If your `Name hash` findings differ from the overview's algorithm, change the ex
 Run: `pnpm exec vitest run src/resource/resource-map.test.ts`
 Expected: FAIL (`resourceNameHash` is not exported; `parseMap` returns the old shape).
 
-- [ ] **Action 6: Implement**
+- [x] **Action 6: Implement**
 
 Replace `src/resource/types.ts` line 1 (`export interface MapEntry { name: string; length: number; offset: number; }`) with:
 
@@ -233,7 +233,7 @@ Expected: all pass.
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors. Nothing outside `src/resource/` reads `MapEntry.name`, `MapEntry.length`, or `MapFile` fields other than `entries[].offset` (checked with `rg -n "\.entries|MapEntry|resFileName" src`; re-run it to be sure).
 
-- [ ] **Action 7: Commit**
+- [x] **Action 7: Commit**
 
 ```bash
 git add src/resource/types.ts src/resource/resource-map.ts src/resource/resource-map.test.ts

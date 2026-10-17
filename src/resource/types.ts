@@ -1,4 +1,4 @@
-export interface MapEntry { name: string; length: number; offset: number; }
+export interface MapEntry { nameHash: number; offset: number; }
 
 export interface ParsedArchive {
   byName: Map<string, RawResource>;
