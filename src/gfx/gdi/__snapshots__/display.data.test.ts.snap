@@ -1,0 +1,16 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`every SCR resource blitted by the model > keeps index 0 opaque where the decoder marks it see-through 1`] = `
+{
+  "INTRO.SCR": 1894,
+  "ISLAND2.SCR": 0,
+  "ISLETEMP.SCR": 18,
+  "JOFFICE.SCR": 0,
+  "NIGHT.SCR": 0,
+  "OCEAN00.SCR": 9917,
+  "OCEAN01.SCR": 9254,
+  "OCEAN02.SCR": 10013,
+  "SUZBEACH.SCR": 0,
+  "THEEND.SCR": 0,
+}
+`;
