@@ -2,7 +2,7 @@ import { OP } from './opcodes.js';
 import type { TtmThread } from './thread.js';
 import type { ParsedArchive } from '../resource/types.js';
 import type { Palette } from '../types.js';
-import { setPaletteFromVga } from '../gfx/palette.js';
+import { setPaletteColors } from '../gfx/palette.js';
 import { decodePal } from '../decode/pal.js';
 import { decodeScr } from '../decode/scr.js';
 import { drawLine, drawRect, drawCircle, putPixel } from '../gfx/primitives.js';
@@ -191,7 +191,7 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
       case OP.LOAD_PALETTE: {
         const name = ins.str!.endsWith('.PAL') ? ins.str! : ins.str! + '.PAL';
         const res = ctx.archive.byName.get(name);
-        if (res) setPaletteFromVga(ctx.palette, decodePal(res.payload).vga);
+        if (res) setPaletteColors(ctx.palette, decodePal(res.payload).colors);
         break;
       }
       default:

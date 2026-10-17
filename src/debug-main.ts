@@ -7,7 +7,7 @@ import { decodeBmp } from './decode/bmp.js';
 import { decodeTtm } from './decode/ttm-loader.js';
 import { decodeAds } from './decode/ads-loader.js';
 import { disasmTtm } from './decode/ttm-disasm.js';
-import { makePalette, setPaletteFromVga } from './gfx/palette.js';
+import { makePalette, setPaletteColors } from './gfx/palette.js';
 import { makeLayer } from './gfx/layer.js';
 import { drawLine, drawRect, drawCircle } from './gfx/primitives.js';
 import { drawSprite, drawSpriteFlip } from './gfx/sprite.js';
@@ -20,7 +20,7 @@ const archive = indexArchive(map, arcBuf);
 
 const palResRaw = archive.list.find(r => r.type === '.PAL')!;
 const pal = makePalette();
-setPaletteFromVga(pal, decodePal(palResRaw.payload).vga);
+setPaletteColors(pal, decodePal(palResRaw.payload).colors);
 
 const picker = document.getElementById('picker') as HTMLSelectElement;
 for (const r of archive.list) {

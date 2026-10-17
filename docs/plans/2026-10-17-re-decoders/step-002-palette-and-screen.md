@@ -248,7 +248,7 @@ git commit -m "feat(re): run the original palette and screen loaders"
 
 ## Part C: Fix our palette
 
-- [ ] **Action 9: Write the failing tests**
+- [x] **Action 9: Write the failing tests**
 
 Create `src/decode/pal.test.ts`:
 
@@ -307,7 +307,7 @@ describe('setPaletteColors', () => {
 Run: `pnpm exec vitest run src/decode/pal.test.ts src/gfx/palette.test.ts`
 Expected: FAIL (`colors` is undefined; `setPaletteColors` is not exported).
 
-- [ ] **Action 10: Implement**
+- [x] **Action 10: Implement**
 
 Replace the whole of `src/decode/pal.ts` with:
 
@@ -360,7 +360,7 @@ Expected: all pass.
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 11: Write the palette corpus tests**
+- [x] **Action 11: Write the palette corpus tests**
 
 Create `src/decode/pal.data.test.ts`:
 
@@ -397,7 +397,7 @@ describe.skipIf(!hasFixture('loaders/palette.tsv'))('palette matches the origina
 Run: `pnpm exec vitest run src/decode/pal.data.test.ts`
 Expected: 3 tests pass; a new snapshot is written to `src/decode/__snapshots__/pal.data.test.ts.snap`.
 
-- [ ] **Action 12: Commit**
+- [x] **Action 12: Commit**
 
 ```bash
 git add src/decode/pal.ts src/decode/pal.test.ts src/decode/pal.data.test.ts src/decode/__snapshots__ src/gfx/palette.ts src/gfx/palette.test.ts src/main.ts src/debug-main.ts src/ttm/interpreter.ts

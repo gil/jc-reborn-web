@@ -3,7 +3,7 @@ import { parseMap } from './resource/resource-map.js';
 import { indexArchive } from './resource/resource-archive.js';
 import { decodePal } from './decode/pal.js';
 import { decodeAds } from './decode/ads-loader.js';
-import { makePalette, setPaletteFromVga } from './gfx/palette.js';
+import { makePalette, setPaletteColors } from './gfx/palette.js';
 import { makeAdsState, adsTick, adsThreadLayers, adsActiveThreadCount } from './ads/scheduler.js';
 import { composite } from './gfx/compositor.js';
 import { startLoop } from './engine/loop.js';
@@ -33,7 +33,7 @@ const archive = indexArchive(map, arcBuf);
 
 const palResRaw = archive.list.find(r => r.type === '.PAL')!;
 const pal = makePalette();
-setPaletteFromVga(pal, decodePal(palResRaw.payload).vga);
+setPaletteColors(pal, decodePal(palResRaw.payload).colors);
 
 const islandState = randomIslandState();
 const islandRt = islandInit(archive, islandState);
