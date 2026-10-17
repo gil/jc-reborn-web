@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 from ne_image import NeImage
-from original_loaders import TtmIndex, find_chunks_original, load_bmp_original, load_palette_original, load_screen_original, load_ttm_original
+from original_loaders import AdsFraming, TtmIndex, find_chunks_original, load_bmp_original, load_palette_original, load_screen_original, load_ttm_original
 
 REPO = Path(__file__).resolve().parents[3]
 BINARY = REPO / "public/data/SCRANTIC.SCR"
@@ -165,6 +165,23 @@ class TtmTest(unittest.TestCase):
 
     def test_af1f_takes_a_count_and_that_many_word_pairs(self):
         self.assertEqual(self.load(2, words(0xAF1F, 2, 1, 2, 3, 4, 0x0FF0, 0x0FF0)).page_offsets, [0, 14])
+
+
+@unittest.skipUnless(BINARY.exists(), "needs public/data/SCRANTIC.SCR")
+class AdsFramingTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.framing = AdsFraming(NeImage.load(BINARY))
+
+    def test_opcodes_in_the_table(self):
+        for opcode, args in {0x2005: 4, 0x2010: 3, 0x4000: 3, 0x1350: 2, 0xF010: 1, 0xF200: 1, 0x3020: 1, 0xF000: 0}.items():
+            with self.subTest(opcode=hex(opcode)):
+                self.assertEqual(self.framing.arg_count(opcode), args)
+
+    def test_opcodes_outside_the_table_take_no_args(self):
+        for opcode in (0x1520, 0x1510, 0x2014, 0xFFFF, 0x0001):
+            with self.subTest(opcode=hex(opcode)):
+                self.assertEqual(self.framing.arg_count(opcode), 0)
 
 
 if __name__ == "__main__":

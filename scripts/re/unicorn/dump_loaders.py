@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from corpus import CHUNKED_TYPES, Resource, load_resources, walk_chunks  # noqa: E402
 from ne_image import NeImage  # noqa: E402
-from original_loaders import find_chunks_original, load_bmp_original, load_palette_original, load_screen_original, load_ttm_original  # noqa: E402
+from original_loaders import AdsFraming, find_chunks_original, load_bmp_original, load_palette_original, load_screen_original, load_ttm_original  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[3]
 DATA = REPO / "public/data"
@@ -81,7 +81,14 @@ def dump_ttm(image: NeImage, resources: list[Resource]):
     write_tsv("ttm.tsv", ["resource", "status", "pageCount", "pageOffsets", "tags"], rows)
 
 
+def dump_ads_arg_counts(image: NeImage, resources: list[Resource]):
+    framing = AdsFraming(image)
+    rows = [[f"{opcode:04x}", args] for opcode in range(0x10000) if (args := framing.arg_count(opcode))]
+    write_tsv("ads-arg-counts.tsv", ["opcode", "args"], rows)
+
+
 COMMANDS = {
+    "ads-arg-counts": dump_ads_arg_counts,
     "bitmaps": dump_bitmaps,
     "chunks": dump_chunks,
     "palette": dump_palette,

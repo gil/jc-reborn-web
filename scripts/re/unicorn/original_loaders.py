@@ -266,3 +266,30 @@ def load_ttm_original(image: NeImage, name: str, payload: bytes, ttm_id: int = 1
         tags.append((read_word(emu, data, node + 2), read_word(emu, data, node + 4)))
         node = read_word(emu, data, node + TAG_NEXT)
     return TtmIndex(status, page_count, page_offsets, tags)
+
+
+ADS_NEXT_INSTRUCTION = "1048:0303"
+CURRENT_ADS_SLOT = 0x2608
+ADS_SLOTS = 0x460C
+ADS_RECORD_SIZE = 0x472
+ADS_RECORD_END = 8
+OPCODE_OFFSET = 0x100
+
+
+class AdsFraming:
+    def __init__(self, image: NeImage):
+        self.emu = Emulator(image)
+        record, _ = self.emu.alloc(ADS_RECORD_SIZE)
+        self.emu.write(record, 0, bytes(ADS_RECORD_SIZE))
+        self.emu.write(record, ADS_RECORD_END, struct.pack("<H", 0xFFFF))
+        data = self.emu.data_segment
+        self.emu.write(data, CURRENT_ADS_SLOT, struct.pack("<H", 0))
+        self.emu.write(data, ADS_SLOTS, struct.pack("<HH", 0, record))
+        self.code, _ = self.emu.alloc(OPCODE_OFFSET + 2)
+
+    def arg_count(self, opcode: int) -> int:
+        self.emu.write(self.code, OPCODE_OFFSET, struct.pack("<H", opcode))
+        regs = self.emu.call_far(ADS_NEXT_INSTRUCTION, stack_words=[self.code, OPCODE_OFFSET])
+        if regs["dx"] != self.code:
+            raise RuntimeError(f"opcode {opcode:#06x}: next instruction in segment {regs['dx']:#x}, expected {self.code:#x}")
+        return (regs["ax"] - OPCODE_OFFSET - 2) // 2
