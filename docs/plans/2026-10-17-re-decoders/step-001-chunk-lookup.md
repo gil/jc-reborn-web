@@ -475,7 +475,7 @@ git commit -m "feat(re): run the original chunk lookup on edge cases and every r
 
 ## Part C: Our chunk lookup
 
-- [ ] **Action 11: Write the test helpers**
+- [x] **Action 11: Write the test helpers**
 
 Create `src/testing/build-chunks.ts`:
 
@@ -519,7 +519,7 @@ export function storedBody(data: Uint8Array): Uint8Array {
 
 `storedBody` uses method 0, which `unpackChunk` and the original both copy unchanged (chunk 2, `1028:0000`).
 
-- [ ] **Action 12: Write the failing unit tests**
+- [x] **Action 12: Write the failing unit tests**
 
 Create `src/decode/chunks.test.ts`. It uses the same payload as the Python tests.
 
@@ -569,7 +569,7 @@ If Action 7 changed an expected value, change it here the same way.
 Run: `pnpm exec vitest run src/decode/chunks.test.ts`
 Expected: FAIL (`./chunks.js` does not exist).
 
-- [ ] **Action 13: Implement `src/decode/chunks.ts`**
+- [x] **Action 13: Implement `src/decode/chunks.ts`**
 
 Move the walker out of `src/testing/corpus.ts` into `src/decode/chunks.ts` and add the lookup. Our lookup always searches from the start; the original searches forward from the last chunk it found. Both agree whenever the chunks are asked for in file order, which the data test in Action 15 checks for every loader.
 
@@ -666,7 +666,7 @@ Expected: all pass.
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 14: Commit**
+- [x] **Action 14: Commit**
 
 ```bash
 git add src/decode/chunks.ts src/decode/chunks.test.ts src/testing/build-chunks.ts src/testing/corpus.ts
