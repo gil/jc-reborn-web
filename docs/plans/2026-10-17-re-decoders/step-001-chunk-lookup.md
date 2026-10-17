@@ -33,7 +33,7 @@
 
 ## Part A: Read the original
 
-- [ ] **Action 1: Create the findings file**
+- [x] **Action 1: Create the findings file**
 
 Create `docs/re/decoders.md`:
 
@@ -72,7 +72,7 @@ Findings for chunk 3. One claim per address. Our own words; no decompiled code.
 | --- | --- | --- | --- |
 ```
 
-- [ ] **Action 2: Read the chunk reader**
+- [x] **Action 2: Read the chunk reader**
 
 Read the pseudo-C (`re/out/functions/1038_<oooo>_*.c`) and, where unclear, the assembly (`.asm`) of `1038:0000 003a 0091 00d2 0119 016b 01da 0215 0517 054b 0584 0619`. Write the answers under `Chunk reader` in `docs/re/decoders.md`, one claim per bullet, each starting with its address, in our own words. Start from the overview's "Chunk reader" facts and confirm or correct each one. Answer at least:
 
@@ -85,7 +85,7 @@ Read the pseudo-C (`re/out/functions/1038_<oooo>_*.c`) and, where unclear, the a
 - `1038:00d2`, `1038:0119`: who calls them (`1040:0db0` only) and what they read.
 - `1038:0619`: a far wrapper around `1000:229c` (near malloc). Check `1000:229c` for a few minutes; name it `rtl_malloc` if it is plainly `LocalAlloc` without zeroing, else leave it.
 
-- [ ] **Action 3: Name the functions**
+- [x] **Action 3: Name the functions**
 
 Add a `scripts/re/names.json` entry (subsystem `decoders`, status `named`, one-line note in our words, keep the file sorted by address) for each. Suggested names, adjust to what you found:
 
@@ -120,7 +120,7 @@ An entry looks like this (copy the shape of the existing ones):
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 4: Commit the findings**
+- [x] **Action 4: Commit the findings**
 
 ```bash
 git add docs/re/decoders.md scripts/re/names.json docs/re/function-map.md

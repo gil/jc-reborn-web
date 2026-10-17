@@ -128,6 +128,14 @@
       "signature": null,
       "callingConvention": null
     },
+    "1000:229c": {
+      "name": "rtl_malloc",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "malloc(size): LocalAlloc with LMEM_FIXED, no zeroing",
+      "signature": null,
+      "callingConvention": null
+    },
     "1000:22e1": {
       "name": "rtl_calloc",
       "subsystem": "rtl",
@@ -877,6 +885,102 @@
       "subsystem": "platform",
       "status": "named",
       "note": "Frees a far block",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0000": {
+      "name": "decoders_chunkReaderFor",
+      "subsystem": "decoders",
+      "status": "named",
+      "note": "Returns the reader record (one of 4 at 1068:414e) whose file handle equals the argument; 0 finds a free record",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:003a": {
+      "name": "decoders_resetChunkReader",
+      "subsystem": "decoders",
+      "status": "named",
+      "note": "Clears a reader record except its handle and payload end, then rewinds the file",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0091": {
+      "name": "decoders_tagPathEquals",
+      "subsystem": "decoders",
+      "status": "named",
+      "note": "Compares two strings for up to n characters, stopping when both reach a NUL; 1 when equal",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:00d2": {
+      "name": "decoders_saveChunkReader",
+      "subsystem": "decoders",
+      "status": "named",
+      "note": "Copies the reader record of a handle into a caller buffer; returns the buffer or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0119": {
+      "name": "decoders_loadChunkReader",
+      "subsystem": "decoders",
+      "status": "named",
+      "note": "Copies a saved reader record back over the live one and seeks the file to its position",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:016b": {
+      "name": "decoders_openChunkFile",
+      "subsystem": "decoders",
+      "status": "named",
+      "note": "Opens a resource in mode rb on a free reader record, stores the payload end as a container; returns the handle or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:01da": {
+      "name": "decoders_restoreChunkReader",
+      "subsystem": "decoders",
+      "status": "named",
+      "note": "Failure exit of the chunk search: restores the record from the backup at 1068:425a, seeks back, returns -1",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0215": {
+      "name": "decoders_findChunk",
+      "subsystem": "decoders",
+      "status": "named",
+      "note": "Finds a chunk by its full tag path, forward from the current chunk; returns the body position or -1",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0517": {
+      "name": "decoders_chunkSize",
+      "subsystem": "decoders",
+      "status": "named",
+      "note": "Low 16 bits of the current chunk size, or -1 for an unknown handle",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:054b": {
+      "name": "decoders_closeChunkFile",
+      "subsystem": "decoders",
+      "status": "named",
+      "note": "Frees the reader record of a handle and closes the file; 1 on success",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0584": {
+      "name": "decoders_isChunkFile",
+      "subsystem": "decoders",
+      "status": "named",
+      "note": "1 when the argument is the handle of an open reader record",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0619": {
+      "name": "platform_nearMalloc",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Far wrapper around rtl_malloc (no zeroing)",
       "signature": null,
       "callingConvention": null
     },
