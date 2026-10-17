@@ -71,6 +71,30 @@ class EmulatorTest(unittest.TestCase):
             self.emu.call_far(self.emu.import_address("KERNEL", 15))
         self.assertEqual(raised.exception.target, ImportTarget("KERNEL", 15))
 
+    def test_replaced_function_runs_the_handler_with_its_arguments(self):
+        seen = []
+
+        def handler(emu):
+            seen.append([emu.arg(i) for i in range(3)])
+            return {"ax": 0x4242}
+
+        self.emu.replace_function("1000:0302", handler)
+        regs = self.emu.call_far("1000:0302", stack_words=[3, 2, 1])
+        self.assertEqual(seen, [[1, 2, 3]])
+        self.assertEqual(regs["ax"], 0x4242)
+        self.assertEqual(regs["sp"], INITIAL_SP - 6)
+
+    def test_near_alloc_hands_out_disjoint_words_after_the_data(self):
+        first = self.emu.near_alloc(3)
+        second = self.emu.near_alloc(4)
+        self.assertEqual(first, 0x47C0)
+        self.assertEqual(second, first + 4)
+        with self.assertRaises(MemoryError):
+            self.emu.near_alloc(0x10000)
+
+    def test_data_segment_is_the_auto_data_paragraph(self):
+        self.assertEqual(self.emu.data_segment, self.emu.paragraphs[self.image.auto_data_segment])
+
 
 if __name__ == "__main__":
     unittest.main()
