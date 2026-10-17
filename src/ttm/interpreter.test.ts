@@ -27,7 +27,7 @@ const fakeCtx: TtmContext = {
 describe('ttmPlay', () => {
   it('honors SET_DELAY and SET_COLORS, yields on UPDATE', () => {
     const t = makeThread();
-    t.slot.ttm = { version: 'x', numPages: 1, bytecode: makeBytecode(), tags: [{ id: 1, description: '', offset: 0 }] };
+    t.slot.ttm = { pageCount: 1, bytecode: makeBytecode(), pageOffsets: [0], tags: [{ id: 1, page: 0 }] };
     ttmStartScene(t, 1);
     ttmPlay(t, fakeCtx);
     expect(t.delay).toBe(8);
@@ -45,7 +45,7 @@ describe('ttmPlay', () => {
     w(OP.PURGE);
     const bc = new Uint8Array(buf, 0, p);
     const t = makeThread();
-    t.slot.ttm = { version: 'x', numPages: 1, bytecode: bc, tags: [] };
+    t.slot.ttm = { pageCount: 1, bytecode: bc, pageOffsets: [0], tags: [] };
     ttmStartScene(t, 1);
     ttmPlay(t, fakeCtx);
     expect(t.isRunning).toBe(2);

@@ -1,45 +1,40 @@
-import { BinaryReader } from '../io/binary-reader.js';
 import { unpackChunk } from '../resource/uncompress.js';
+import { OP } from '../ttm/opcodes.js';
+import { chunkBody } from './chunks.js';
+import { readTtmInstruction } from './ttm-bytecode.js';
 
-export interface TtmTag { id: number; description: string; offset: number; }
+const DEFAULT_PAGE_COUNT = 330;
+
+export interface TtmTag { id: number; page: number; }
 export interface TtmResource {
-  version: string;
-  numPages: number;
+  pageCount: number;
   bytecode: Uint8Array;
+  pageOffsets: number[];
   tags: TtmTag[];
 }
 
 export function decodeTtm(payload: Uint8Array): TtmResource {
-  const r = new BinaryReader(payload.buffer, payload.byteOffset);
-  r.expect('VER:');
-  r.u32();                      // versionSize
-  const version = new TextDecoder('latin1').decode(r.bytes(5));
-  r.expect('PAG:');
-  const numPages = r.u32();
-  r.u8(); r.u8();
-  r.expect('TT3:');
-  const bytecode = unpackChunk(r.bytes(r.u32()));
-
-  r.expect('TTI:');
-  r.u8(); r.u8(); r.u8(); r.u8();
-  r.expect('TAG:');
-  r.u32();                      // tagSize
-  const numTags = r.u16();
-  const tags: TtmTag[] = [];
-  for (let i = 0; i < numTags; i++) {
-    const id = r.u16();
-    const description = readUntilNul(r); // getString(f,40): variable-length null-terminated
-    tags.push({ id, description, offset: 0 });
-  }
-  return { version, numPages, bytecode, tags };
+  const pag = chunkBody(payload, 'PAG:');
+  const pageCount = pag ? new DataView(pag.buffer, pag.byteOffset, pag.byteLength).getUint16(0, true) : DEFAULT_PAGE_COUNT;
+  const tt3 = chunkBody(payload, 'TT3:');
+  if (!tt3) throw new Error('TT3: missing');
+  const bytecode = unpackChunk(tt3);
+  return { pageCount, bytecode, ...indexPages(bytecode, pageCount) };
 }
 
-function readUntilNul(r: BinaryReader): string {
-  const bytes: number[] = [];
-  while (true) {
-    const b = r.u8();
-    if (b === 0) break;
-    bytes.push(b);
+function indexPages(bytecode: Uint8Array, pageCount: number): Pick<TtmResource, 'pageOffsets' | 'tags'> {
+  const pageOffsets: number[] = [];
+  const tags: TtmTag[] = [];
+  let offset = 0;
+  for (let page = 0; page < pageCount; page++) {
+    pageOffsets.push(offset);
+    for (;;) {
+      if (offset >= bytecode.length - 1) return { pageOffsets, tags };
+      const instruction = readTtmInstruction(bytecode, offset);
+      offset = instruction.next;
+      if (instruction.opcode === OP.UPDATE) break;
+      if (instruction.opcode === OP.TAG) tags.push({ id: instruction.args[0]!, page });
+    }
   }
-  return new TextDecoder('latin1').decode(new Uint8Array(bytes));
+  return { pageOffsets, tags };
 }
