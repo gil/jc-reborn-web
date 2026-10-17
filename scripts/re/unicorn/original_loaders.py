@@ -217,3 +217,52 @@ def load_bmp_original(image: NeImage, name: str, payload: bytes) -> BitmapImages
     if handle == 0 or len(captured) != 1:
         raise RuntimeError(f"{name}: bitmap load returned {handle:#x} after {len(captured)} bitmap builds")
     return captured[0]
+
+
+LOAD_TTM = "1050:0177"
+INDEX_TTM_PAGES = "1050:04d6"
+TTM_GLOBALS = 0x2634
+TTM_GLOBALS_SIZE = 12
+CURRENT_TTM = 0x2638
+TTM_TAG_LIST = 0x263C
+TAG_NEXT = 0x3B
+
+
+@dataclass
+class TtmIndex:
+    status: int
+    page_count: int
+    page_offsets: list[int]
+    tags: list[tuple[int, int]]
+
+
+def load_ttm_original(image: NeImage, name: str, payload: bytes, ttm_id: int = 1) -> TtmIndex:
+    emu = new_loader_emulator(image, {name: payload})
+    data = emu.data_segment
+    emu.write(data, TTM_GLOBALS, bytes(TTM_GLOBALS_SIZE))
+    loaded = emu.call_far(LOAD_TTM, stack_words=[put_string(emu, name)])["ax"]
+    if loaded != 1:
+        raise RuntimeError(f"{name}: TTM load returned {loaded:#x}")
+    record_offset, record_segment = read_word(emu, data, CURRENT_TTM), read_word(emu, data, CURRENT_TTM + 2)
+    emu.write(record_segment, record_offset, struct.pack("<H", ttm_id))
+    status = emu.call_far(INDEX_TTM_PAGES, stack_words=[ttm_id])["ax"]
+
+    def field(index: int) -> int:
+        return read_word(emu, record_segment, record_offset + 2 * index)
+
+    page_count = field(1)
+    bytecode = field(3) * 16 + field(2)
+    table_offset, table_segment = field(0x68), field(0x69)
+    page_offsets = []
+    for page in range(page_count):
+        offset = read_word(emu, table_segment, table_offset + 4 * page)
+        segment = read_word(emu, table_segment, table_offset + 4 * page + 2)
+        if offset == 0 and segment == 0:
+            break
+        page_offsets.append(segment * 16 + offset - bytecode)
+    tags = []
+    node = read_word(emu, data, TTM_TAG_LIST)
+    while node:
+        tags.append((read_word(emu, data, node + 2), read_word(emu, data, node + 4)))
+        node = read_word(emu, data, node + TAG_NEXT)
+    return TtmIndex(status, page_count, page_offsets, tags)
