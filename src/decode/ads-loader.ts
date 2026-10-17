@@ -1,5 +1,5 @@
 import { BinaryReader } from '../io/binary-reader.js';
-import { uncompress } from '../resource/uncompress.js';
+import { unpackChunk } from '../resource/uncompress.js';
 
 export interface AdsSubResource { slot: number; name: string; }
 export interface AdsTag { id: number; description: string; }
@@ -28,12 +28,7 @@ export function decodeAds(payload: Uint8Array): AdsResource {
     subResources.push({ slot, name });
   }
   r.expect('SCR:');
-  const compSize = r.u32() - 5;
-  const method = r.u8();
-  const uncompSize = r.u32();
-  const compInput = payload.subarray(r.pos, r.pos + compSize);
-  const bytecode = uncompress(method, compInput, uncompSize);
-  r.pos += compSize;
+  const bytecode = unpackChunk(r.bytes(r.u32()));
 
   r.expect('TAG:');
   r.u32();

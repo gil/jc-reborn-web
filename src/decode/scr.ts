@@ -1,5 +1,5 @@
 import { BinaryReader } from '../io/binary-reader.js';
-import { uncompress } from '../resource/uncompress.js';
+import { unpackChunk } from '../resource/uncompress.js';
 import { TRANSPARENT } from '../types.js';
 
 export interface ScrResource { width: number; height: number; indexed: Uint8Array; }
@@ -13,11 +13,7 @@ export function decodeScr(payload: Uint8Array): ScrResource {
   const width = r.u16();
   const height = r.u16();
   r.expect('BIN:');
-  const compSize = r.u32() - 5;
-  const method = r.u8();
-  const uncompSize = r.u32();
-  const compInput = payload.subarray(r.pos, r.pos + compSize);
-  const packed = uncompress(method, compInput, uncompSize);
+  const packed = unpackChunk(r.bytes(r.u32()));
   // 4-bit packed → indexed (high nibble first).
   // Index 0 is the game's transparent sentinel (PAL stores magenta there by convention,
   // never used as a visible color). Converted to TRANSPARENT here, same as bmp.ts.

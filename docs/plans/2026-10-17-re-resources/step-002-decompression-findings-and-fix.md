@@ -505,7 +505,7 @@ git commit -m "fix(resources): RLE and LZW match the original byte for byte on t
 
 Each decoder repeats the same five lines: read the chunk size, subtract 5, read the method byte and the u32 size, slice the input, call `uncompress`. The original reads the same header inside its stream open (`1028:0615`). Replace those lines with `unpackChunk`. Change nothing else in the decoders; they belong to chunk 3.
 
-- [ ] **Action 16: Switch the decoders**
+- [x] **Action 16: Switch the decoders**
 
 In `src/decode/scr.ts` replace
 
@@ -558,7 +558,7 @@ Expected: no errors.
 Run: `pnpm test`
 Expected: all pass.
 
-- [ ] **Action 17: Commit**
+- [x] **Action 17: Commit**
 
 ```bash
 git add src/decode/scr.ts src/decode/bmp.ts src/decode/ttm-loader.ts src/decode/ads-loader.ts

@@ -1,5 +1,5 @@
 import { BinaryReader } from '../io/binary-reader.js';
-import { uncompress } from '../resource/uncompress.js';
+import { unpackChunk } from '../resource/uncompress.js';
 
 export interface TtmTag { id: number; description: string; offset: number; }
 export interface TtmResource {
@@ -18,12 +18,7 @@ export function decodeTtm(payload: Uint8Array): TtmResource {
   const numPages = r.u32();
   r.u8(); r.u8();
   r.expect('TT3:');
-  const compSize = r.u32() - 5;
-  const method = r.u8();
-  const uncompSize = r.u32();
-  const compInput = payload.subarray(r.pos, r.pos + compSize);
-  const bytecode = uncompress(method, compInput, uncompSize);
-  r.pos += compSize;
+  const bytecode = unpackChunk(r.bytes(r.u32()));
 
   r.expect('TTI:');
   r.u8(); r.u8(); r.u8(); r.u8();

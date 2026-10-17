@@ -1,5 +1,5 @@
 import { BinaryReader } from '../io/binary-reader.js';
-import { uncompress } from '../resource/uncompress.js';
+import { unpackChunk } from '../resource/uncompress.js';
 import { TRANSPARENT, type Sprite } from '../types.js';
 
 export interface BmpResource { sprites: Sprite[]; }
@@ -14,11 +14,7 @@ export function decodeBmp(payload: Uint8Array): BmpResource {
   const widths: number[] = []; for (let i = 0; i < numImages; i++) widths.push(r.u16());
   const heights: number[] = []; for (let i = 0; i < numImages; i++) heights.push(r.u16());
   r.expect('BIN:');
-  const compSize = r.u32() - 5;
-  const method = r.u8();
-  const uncompSize = r.u32();
-  const compInput = payload.subarray(r.pos, r.pos + compSize);
-  const packed = uncompress(method, compInput, uncompSize);
+  const packed = unpackChunk(r.bytes(r.u32()));
 
   const sprites: Sprite[] = [];
   let off = 0;
