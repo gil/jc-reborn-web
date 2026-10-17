@@ -406,7 +406,7 @@ git commit -m "fix(decode): palette reads 16 colors through the original level t
 
 ## Part D: Fix our screen decoder
 
-- [ ] **Action 13: Write the failing tests**
+- [x] **Action 13: Write the failing tests**
 
 Create `src/decode/scr.test.ts`:
 
@@ -447,7 +447,7 @@ If Action 2 found that the left pixel is the low nibble, change the first expect
 Run: `pnpm exec vitest run src/decode/scr.test.ts`
 Expected: FAIL (the 320 × 400 default and the short-data check are missing; the old decoder also throws on the missing `DIM:` chunk).
 
-- [ ] **Action 14: Implement**
+- [x] **Action 14: Implement**
 
 Create `src/decode/nibbles.ts`:
 
@@ -511,7 +511,7 @@ Expected: all pass.
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 15: Write the screen corpus tests**
+- [x] **Action 15: Write the screen corpus tests**
 
 Create `src/decode/scr.data.test.ts`:
 
@@ -571,7 +571,7 @@ describe.skipIf(!hasFixture('loaders/screens.tsv'))('screens match the original 
 Run: `pnpm exec vitest run src/decode/scr.data.test.ts`
 Expected: 3 tests pass; a snapshot is written.
 
-- [ ] **Action 16: Commit**
+- [x] **Action 16: Commit**
 
 ```bash
 git add src/decode/nibbles.ts src/decode/scr.ts src/decode/scr.test.ts src/decode/scr.data.test.ts src/decode/__snapshots__ src/testing/nibbles.ts

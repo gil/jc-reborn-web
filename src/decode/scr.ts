@@ -1,28 +1,18 @@
-import { BinaryReader } from '../io/binary-reader.js';
 import { unpackChunk } from '../resource/uncompress.js';
-import { TRANSPARENT } from '../types.js';
+import { chunkBody } from './chunks.js';
+import { unpackNibbles } from './nibbles.js';
+
+const DEFAULT_WIDTH = 320;
+const DEFAULT_HEIGHT = 400;
 
 export interface ScrResource { width: number; height: number; indexed: Uint8Array; }
 
 export function decodeScr(payload: Uint8Array): ScrResource {
-  const r = new BinaryReader(payload.buffer, payload.byteOffset);
-  r.expect('SCR:');
-  r.u16(); r.u16();         // totalSize, flags
-  r.expect('DIM:');
-  r.u32();                  // dimSize
-  const width = r.u16();
-  const height = r.u16();
-  r.expect('BIN:');
-  const packed = unpackChunk(r.bytes(r.u32()));
-  // 4-bit packed → indexed (high nibble first).
-  // Index 0 is the game's transparent sentinel (PAL stores magenta there by convention,
-  // never used as a visible color). Converted to TRANSPARENT here, same as bmp.ts.
-  const indexed = new Uint8Array(width * height);
-  for (let i = 0, o = 0; i < packed.length; i++) {
-    const hi = (packed[i]! >> 4) & 0x0f;
-    const lo = packed[i]! & 0x0f;
-    indexed[o++] = hi === 0 ? TRANSPARENT : hi;
-    indexed[o++] = lo === 0 ? TRANSPARENT : lo;
-  }
-  return { width, height, indexed };
+  const dim = chunkBody(payload, 'SCR:DIM:');
+  const view = dim && new DataView(dim.buffer, dim.byteOffset, dim.byteLength);
+  const width = view ? view.getUint16(0, true) : DEFAULT_WIDTH;
+  const height = view ? view.getUint16(2, true) : DEFAULT_HEIGHT;
+  const bin = chunkBody(payload, 'SCR:BIN:');
+  if (!bin) throw new Error('SCR:BIN: missing');
+  return { width, height, indexed: unpackNibbles(unpackChunk(bin), width * height) };
 }
