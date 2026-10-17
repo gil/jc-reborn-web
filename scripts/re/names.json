@@ -1,0 +1,44 @@
+{
+  "functions": {
+    "1000:0302": {
+      "name": "rtl_lxmul",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Borland RTL 32-bit multiply: DX:AX * CX:BX -> DX:AX (low 32 bits)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:033a": {
+      "name": "rtl_scopy",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Borland RTL far struct copy: CX bytes from far [BP+6] to far [BP+0xa], callee pops 8",
+      "signature": "void rtl_scopy(void * src, void * dst)",
+      "callingConvention": "__stdcall16far"
+    },
+    "1000:0488": {
+      "name": "rtl_lxlsh",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Borland RTL 32-bit shift left of DX:AX by CL",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:04a9": {
+      "name": "rtl_lxrsh",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Borland RTL 32-bit arithmetic shift right of DX:AX by CL",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:04c9": {
+      "name": "rtl_lxursh",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Borland RTL 32-bit logical shift right of DX:AX by CL",
+      "signature": null,
+      "callingConvention": null
+    }
+  }
+}

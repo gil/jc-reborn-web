@@ -31,7 +31,7 @@
   - The `re/out/` layout described in the overview (`functions/`, `index.tsv`, `strings.tsv`, `imports.tsv`, `relocations.tsv`).
   - `scripts/re/names.json` in the overview's schema, with five runtime library entries.
 
-- [ ] **Action 1: Build the Ghidra decompiler for macOS ARM**
+- [x] **Action 1: Build the Ghidra decompiler for macOS ARM**
 
 This changes the Ghidra install, not the repo. It downloads Gradle 9.7.1 on first run.
 
@@ -43,7 +43,7 @@ Expected: the file exists and is executable.
 
 If the build fails, record it in `step-999-leftovers.md` with the exact error and stop. Every later step needs the decompiler.
 
-- [ ] **Action 2: Ignore `re/`**
+- [x] **Action 2: Ignore `re/`**
 
 Append to `.gitignore`:
 
@@ -51,7 +51,7 @@ Append to `.gitignore`:
 re/
 ```
 
-- [ ] **Action 3: Let Vitest find tests under `scripts/`**
+- [x] **Action 3: Let Vitest find tests under `scripts/`**
 
 Replace `vitest.config.ts` with:
 
@@ -65,7 +65,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Action 4: Seed `scripts/re/names.json`**
+- [x] **Action 4: Seed `scripts/re/names.json`**
 
 The addresses and behavior come from reading the assembly (see "Binary facts" in the overview). `rtl_scopy` carries a signature and calling convention so the apply path gets exercised.
 
@@ -116,7 +116,7 @@ The addresses and behavior come from reading the assembly (see "Binary facts" in
 }
 ```
 
-- [ ] **Action 5: Write the failing export test**
+- [x] **Action 5: Write the failing export test**
 
 Create `scripts/re/export.data.test.ts`. It skips when `re/out/` doesn't exist, the same way data tests skip without `public/data/`.
 
@@ -194,12 +194,12 @@ describe.skipIf(!existsSync(OUT))('Ghidra export of SCRANTIC.SCR', () => {
 });
 ```
 
-- [ ] **Action 6: Run the test, confirm it skips**
+- [x] **Action 6: Run the test, confirm it skips**
 
 Run: `pnpm exec vitest run scripts/re/export.data.test.ts`
 Expected: the suite is reported as skipped, 0 failures (`re/out/` doesn't exist yet).
 
-- [ ] **Action 7: Write `scripts/re/ghidra/ApplyNames.java`**
+- [x] **Action 7: Write `scripts/re/ghidra/ApplyNames.java`**
 
 Arg 0: path to `names.json`. Prints `JCR_FAIL ...` lines on problems. The shell script treats those as failure.
 
@@ -260,7 +260,7 @@ public class ApplyNames extends GhidraScript {
 
 The calling convention is set after the signature on purpose: applying a signature resets it.
 
-- [ ] **Action 8: Write `scripts/re/ghidra/ExportFunctions.java`**
+- [x] **Action 8: Write `scripts/re/ghidra/ExportFunctions.java`**
 
 Arg 0: output folder (`re/out`). Writes the files described under "`re/out/` export layout" in the overview.
 
@@ -453,7 +453,7 @@ public class ExportFunctions extends GhidraScript {
 }
 ```
 
-- [ ] **Action 9: Write `scripts/re/ghidra-import.sh`**
+- [x] **Action 9: Write `scripts/re/ghidra-import.sh`**
 
 ```bash
 #!/usr/bin/env bash
@@ -488,7 +488,7 @@ echo "export written to $out_dir"
 
 Run: `chmod +x scripts/re/ghidra-import.sh`
 
-- [ ] **Action 10: Run the import**
+- [x] **Action 10: Run the import**
 
 Run: `scripts/re/ghidra-import.sh` (allow up to 10 minutes)
 Expected: prints `export written to .../re/out`, exit code 0.
@@ -498,20 +498,20 @@ If it fails, read `re/ghidra-import.log` around the matched line. Common causes:
 - `JCR_FAIL bad signature`: the signature string didn't parse. It must have no calling convention keyword.
 - A Java compile error: Ghidra compiles scripts itself. The error names the line.
 
-- [ ] **Action 11: Run the export test, confirm it passes**
+- [x] **Action 11: Run the export test, confirm it passes**
 
 Run: `pnpm exec vitest run scripts/re/export.data.test.ts`
 Expected: 7 tests pass.
 
 If `links strings to the code` fails, open `re/out/strings.tsv` and check the `RESOURCE.MAP` row. Expected hit: `1018:179b@1018:1771`. If `lists callers of imported Windows functions` fails, open `re/out/imports.tsv` and check the `import` column format, then fix the exporter, not the test's intent.
 
-- [ ] **Action 12: Spot-check the pseudo-C**
+- [x] **Action 12: Spot-check the pseudo-C**
 
 Run: `ls re/out/functions/1000_0302_rtl_lxmul.c re/out/functions/1000_033a_rtl_scopy.c`
 Then read `re/out/functions/1000_033a_rtl_scopy.c`.
 Expected: both files exist. The copy function shows the name `rtl_scopy` and the two parameters.
 
-- [ ] **Action 13: Run the full suite and type check**
+- [x] **Action 13: Run the full suite and type check**
 
 Run: `pnpm test`
 Expected: all tests pass.
@@ -519,7 +519,7 @@ Expected: all tests pass.
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 14: Confirm nothing under `re/` is staged, then commit**
+- [x] **Action 14: Confirm nothing under `re/` is staged, then commit**
 
 Run: `git status --short`
 Expected: no paths under `re/`.
@@ -531,7 +531,7 @@ git commit -m "feat(re): Ghidra headless import, names, and export of SCRANTIC.S
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
