@@ -40,7 +40,7 @@
 
 ## Part A: Read the original
 
-- [ ] **Action 1: Read the TTM loader**
+- [x] **Action 1: Read the TTM loader**
 
 Read `1050:0177`, `1048:0044`, `1050:04d6`, `1050:042a`, `1050:04a8`, `1050:013e`, `1050:03e2`, and the two RTL helpers `1050:042a` calls (`1000:121a`, probably `memset`; `1048:040f` uses `1000:11d0`, probably `memcpy`). Write under `TTM loader` in `docs/re/decoders.md`, one claim per bullet:
 
@@ -53,14 +53,14 @@ Read `1050:0177`, `1048:0044`, `1050:04d6`, `1050:042a`, `1050:04a8`, `1050:013e
 - `1050:04a8`: string field length rounded up to even, counted from the start of the string.
 - `1050:013e`: reads one word through a far pointer.
 
-- [ ] **Action 2: Name the functions**
+- [x] **Action 2: Name the functions**
 
 Add `scripts/re/names.json` entries (sorted, status `named`). Suggested: `1050:0177` `ttm_loadTtm`, `1048:0044` `ttm_loadTtmWithId` (subsystem `ttm`; it lives in the ADS segment), `1050:04d6` `ttm_indexPages`, `1050:042a` `ttm_addTagRecord`, `1050:04a8` `ttm_skipStringArg`, `1050:013e` `ttm_readWord`, `1050:03e2` `ttm_selectTtm`, `1000:121a` `rtl_memset` and `1000:11d0` `rtl_memcpy` (subsystem `rtl`, only after checking their code for a few minutes).
 
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 3: Commit the findings**
+- [x] **Action 3: Commit the findings**
 
 ```bash
 git add docs/re/decoders.md scripts/re/names.json docs/re/function-map.md
@@ -69,7 +69,7 @@ git commit -m "docs(re): TTM loader and page index findings"
 
 ## Part B: Run the original loader
 
-- [ ] **Action 4: Write the failing Python tests**
+- [x] **Action 4: Write the failing Python tests**
 
 Append to `scripts/re/unicorn/test_original_loaders.py`, before the `if __name__ == "__main__":` block, and add `TtmIndex, load_ttm_original` to its `from original_loaders import ...` line:
 
@@ -114,7 +114,7 @@ The `TTI:TAG:` entry (id 9) is there to show the original ignores it: the only t
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_loaders.py' -v`
 Expected: FAIL with `ImportError: cannot import name 'TtmIndex'`.
 
-- [ ] **Action 5: Add the loader to the harness**
+- [x] **Action 5: Add the loader to the harness**
 
 Append to `scripts/re/unicorn/original_loaders.py`:
 
@@ -176,7 +176,7 @@ Expected: all pass. If the original disagrees with an expectation on purpose, it
 Run: `re/.venv/bin/python -I -m py_compile scripts/re/unicorn/original_loaders.py scripts/re/unicorn/test_original_loaders.py`
 Expected: no output.
 
-- [ ] **Action 6: Dump the fixture**
+- [x] **Action 6: Dump the fixture**
 
 In `scripts/re/unicorn/dump_loaders.py`, add `load_ttm_original` to the `from original_loaders import ...` line, add before `COMMANDS`:
 
@@ -199,7 +199,7 @@ Expected: no output.
 Run: `re/.venv/bin/python -I scripts/re/unicorn/dump_loaders.py ttm`
 Expected: `ttm.tsv: 41 rows`, every row with status `1`.
 
-- [ ] **Action 7: Commit**
+- [x] **Action 7: Commit**
 
 ```bash
 git add scripts/re/unicorn/original_loaders.py scripts/re/unicorn/dump_loaders.py scripts/re/unicorn/test_original_loaders.py
@@ -208,7 +208,7 @@ git commit -m "feat(re): run the original TTM loader and page index on every TTM
 
 ## Part C: Our TTM instruction reader
 
-- [ ] **Action 8: Write the failing tests**
+- [x] **Action 8: Write the failing tests**
 
 Create `src/decode/ttm-bytecode.test.ts`:
 
@@ -257,7 +257,7 @@ describe('readTtmInstruction', () => {
 Run: `pnpm exec vitest run src/decode/ttm-bytecode.test.ts`
 Expected: FAIL (`./ttm-bytecode.js` does not exist).
 
-- [ ] **Action 9: Implement `src/decode/ttm-bytecode.ts`**
+- [x] **Action 9: Implement `src/decode/ttm-bytecode.ts`**
 
 ```ts
 const MAX_WORD_ARGS = 7;
@@ -322,7 +322,7 @@ Expected: all pass.
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 10: Commit**
+- [x] **Action 10: Commit**
 
 ```bash
 git add src/decode/ttm-bytecode.ts src/decode/ttm-bytecode.test.ts src/decode/ttm-disasm.ts
@@ -331,7 +331,7 @@ git commit -m "feat(decode): TTM instruction reader with the original framing ru
 
 ## Part D: Our TTM loader
 
-- [ ] **Action 11: Write the failing tests**
+- [x] **Action 11: Write the failing tests**
 
 Create `src/decode/ttm-loader.test.ts`:
 
@@ -373,7 +373,7 @@ describe('decodeTtm', () => {
 Run: `pnpm exec vitest run src/decode/ttm-loader.test.ts`
 Expected: FAIL (`pageCount` and `pageOffsets` are missing; `tags` holds the `TTI:TAG:` entry).
 
-- [ ] **Action 12: Implement**
+- [x] **Action 12: Implement**
 
 Replace the whole of `src/decode/ttm-loader.ts` with:
 
@@ -434,7 +434,7 @@ Expected: all pass.
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 13: Write the TTM corpus tests**
+- [x] **Action 13: Write the TTM corpus tests**
 
 Create `src/decode/ttm-loader.data.test.ts`:
 
@@ -530,7 +530,7 @@ describe.skipIf(!hasFixture('loaders/ttm.tsv'))('TTM loading matches the origina
 Run: `pnpm exec vitest run src/decode/ttm-loader.data.test.ts`
 Expected: 6 tests pass; snapshots are written.
 
-- [ ] **Action 14: Commit**
+- [x] **Action 14: Commit**
 
 ```bash
 git add src/decode/ttm-loader.ts src/decode/ttm-loader.test.ts src/decode/ttm-loader.data.test.ts src/decode/__snapshots__ src/ttm/interpreter.test.ts
@@ -539,7 +539,7 @@ git commit -m "fix(decode): TTM loader reads the PAG: count and indexes pages an
 
 ## Part E: Coverage, open question, checklist
 
-- [ ] **Action 15: Write the TTM opcode coverage table**
+- [x] **Action 15: Write the TTM opcode coverage table**
 
 Under `TTM opcode coverage` in `docs/re/decoders.md`, add one row per opcode the data uses. Counts come from the snapshot written in Action 13 (`src/decode/__snapshots__/ttm-loader.data.test.ts.snap`, the `keeps its opcode counts` entry). The name comes from `src/ttm/opcodes.ts`. The handler column says how `src/ttm/interpreter.ts` treats it: find the `case OP.<NAME>:` lines with `rg -n "case OP\." src/ttm/interpreter.ts`; an opcode with no `case` is "no case (ignored)".
 
@@ -551,7 +551,7 @@ Under `TTM opcode coverage` in `docs/re/decoders.md`, add one row per opcode the
 
 Below the table, one line: whether the meaning of each opcode is checked against the original is chunk 5's job; this table only proves the data needs nothing we lack a name for. List every "no case (ignored)" opcode in a sentence so chunk 5 sees the gaps.
 
-- [ ] **Action 16: Log the interpreter's framing for chunk 5**
+- [x] **Action 16: Log the interpreter's framing for chunk 5**
 
 Add to `docs/re/open-questions.md` under "Workarounds without a known root cause" (next free `OQ-` number):
 
@@ -568,7 +568,7 @@ Add to `docs/re/open-questions.md` under "Workarounds without a known root cause
 
 Use real line numbers in **Where** if you add them.
 
-- [ ] **Action 17: Fill the checklist rows**
+- [x] **Action 17: Fill the checklist rows**
 
 In `docs/re/decoders.md` under `Side-by-side checklist`, add rows (real line numbers):
 
@@ -585,7 +585,7 @@ In `docs/re/decoders.md` under `Side-by-side checklist`, add rows (real line num
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 18: Run every check and commit**
+- [x] **Action 18: Run every check and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -603,7 +603,7 @@ git commit -m "docs(re): TTM opcode coverage, interpreter framing question, chec
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

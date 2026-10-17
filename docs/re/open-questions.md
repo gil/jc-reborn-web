@@ -69,6 +69,15 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Resolve in:** chunk 4 (graphics), after checking whether those pixels are ever visible (later drawing may cover them, for example the island over the ocean)
 - **Status:** open
 
+### OQ-10: TTM interpreter frames bytecode and finds tags on its own
+
+- **Where:** `src/ttm/interpreter.ts:26` (`step`), `src/ttm/interpreter.ts:46` (`findTagOffset`), `src/ttm/interpreter.ts:56` (`findPreviousTagOffset`), `src/ads/scheduler.ts:201` (`findTtmTag`)
+- **What it does:** re-reads instructions with its own framer (signed args, no `0xAF1F`/`0xAF2F` case, no arg code check) and finds a tag by scanning the bytecode for `0x1111 <id>` each time, starting right after it.
+- **Old guess behind it:** a tag is a jump label inside the bytecode.
+- **Original:** the loader indexes the bytecode once (`1050:04d6`): pages split after each `0x0FF0`, and each `0x1111` is recorded with the page it sits on (`1050:042a`). `decodeTtm` now returns `pageOffsets` and `tags` built the same way, and `readTtmInstruction` (`src/decode/ttm-bytecode.ts`) frames exactly like the original.
+- **Resolve in:** chunk 5 (TTM interpreter): find how the original interpreter uses the page table and tag records, then switch `src/ttm/` and `findTtmTag` to `readTtmInstruction`, `pageOffsets`, and `tags`.
+- **Status:** open
+
 ## Past fixes to re-check against the original
 
 Each fix below was made without the decompile. Treat it as a guess until a chunk confirms or replaces it. "Out of scope" rows touch docs, build paths, or sound playback, which have no counterpart in the original.
