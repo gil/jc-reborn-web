@@ -196,7 +196,7 @@ git commit -m "feat(re): run the original bitmap loader on every BMP"
 
 ## Part C: Fix our bitmap decoder
 
-- [ ] **Action 9: Write the failing tests**
+- [x] **Action 9: Write the failing tests**
 
 Create `src/decode/bmp.test.ts`:
 
@@ -244,7 +244,7 @@ Adjust the expected pixel order if step 2's `Pixels` finding says the low nibble
 Run: `pnpm exec vitest run src/decode/bmp.test.ts`
 Expected: the `BMP:VGA:` test and the short-data test may already pass or fail by luck of the old parser; at least the short-data test FAILS (the old decoder reads past the buffer as `undefined` instead of throwing).
 
-- [ ] **Action 10: Implement**
+- [x] **Action 10: Implement**
 
 Replace the whole of `src/decode/bmp.ts` with:
 
@@ -282,7 +282,7 @@ Expected: all pass.
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 11: Write the bitmap corpus tests**
+- [x] **Action 11: Write the bitmap corpus tests**
 
 Create `src/decode/bmp.data.test.ts`:
 
@@ -346,7 +346,7 @@ describe.skipIf(!hasFixture('loaders/bitmaps.tsv'))('bitmaps match the original 
 Run: `pnpm exec vitest run src/decode/bmp.data.test.ts`
 Expected: 3 tests pass; a snapshot is written.
 
-- [ ] **Action 12: Commit**
+- [x] **Action 12: Commit**
 
 ```bash
 git add src/decode/bmp.ts src/decode/bmp.test.ts src/decode/bmp.data.test.ts src/decode/__snapshots__
