@@ -262,6 +262,18 @@ Original and scheduler differ for `0xf010` (1 against 0), `0x1520` (0 against 5)
 
 ## Thunks
 
+`1028:17c8`..`1028:1b0d` are 50 small far functions. Each references a callee only through a direct `CALLF` (25 relocations, all checked by opcode byte `0x9a`); none is in a table or exported.
+
+- `1028:17fa`: passes its one argument to `decoders_loadBmp` (`1030:124a`) and returns its result. Called from `decoders_loadBmpMatrix` (`1040:0f2a`) and the TTM interpreter (`1058:07cf`).
+- `1028:1813`: passes its one argument to `decoders_loadScreen` (`1030:16d8`) and returns its result. Called only from the TTM interpreter (`1058:06d3`).
+- `1028:17d8`: passes four words to `1038:0ae4`. Called from `1050:0061` (`1050:00fa`) and `1058:02ce`.
+- `1028:182c`: passes one argument to `1030:15fb`, which counts the entries of a zero-terminated bitmap record list. Called from `1050:0061` (`1050:0052`, `1050:0093`).
+- `1028:1845`: passes one argument to `1030:00fe`, which deletes every record's DIBs and masks (`+2`, `+4`, `+0x0a`, `+0x0c`) and then frees the records with `1030:15cc`. Called from `1040:0db0` (`1040:0f9f`, `1040:10dd`), `1050:080c` (`1050:0890`), and `1058:079a`, `1058:0837`.
+- `1028:17c8`, `1028:185e`..`1028:195e`, `1028:197c`..`1028:1aec`: 42 stubs that return 0. 20 of them are called: `1028:17c8` (`1058:1725`), `1028:187e` (`1058:021d`), `1028:188e` (`1058:0a93`), `1028:18ae` (`1058:0aa4`), `1028:195e` (`1058:02ec`), and the 15 stubs `1028:19ec`..`1028:1acc` from a run of calls at `1058:0054`..`1058:00e5`. The other 22 have no reference.
+- `1028:196e`: returns without setting a result (`AX` holds `DS`). No reference.
+- `1028:1afc`, `1028:1b0d`: return 1. No reference.
+- `1058`: the TTM interpreter `1058:040c` keeps the current opcode at `1068:46da` and dispatches through jump tables in its code segment, as does `1058:0144`. Ghidra does not follow those tables, so the callers at `1058:0054`..`1058:00e5`, `1058:02ce`, `1058:02ec`, `1058:079a`..`1058:0aa4`, and `1058:1725` sit outside any function. Which opcode reaches which stub is chunk 5's job.
+
 ## Side-by-side checklist
 
 | Original | Name | Ours | Status |

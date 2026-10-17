@@ -816,10 +816,26 @@
       "signature": null,
       "callingConvention": null
     },
+    "1028:17fa": {
+      "name": "decoders_callLoadBmp",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Thunk: passes its one argument to decoders_loadBmp (1030:124a) and returns its result; called from 1040:0db0 and the TTM interpreter (1058:07cf)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:1813": {
+      "name": "decoders_callLoadScreen",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Thunk: passes its one argument to decoders_loadScreen (1030:16d8) and returns its result; called only from the TTM interpreter (1058:06d3)",
+      "signature": null,
+      "callingConvention": null
+    },
     "1030:000e": {
       "name": "decoders_bmpPixelBytes",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Called through 1068:1e24: sums ((w + 1) / 2) * h over a bitmap record list as a u32 and zeroes its second output",
       "signature": null,
       "callingConvention": null
@@ -875,7 +891,7 @@
     "1030:1112": {
       "name": "decoders_readBmpInfo",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Finds BMP:INF:, reads the u16 image count, every width, then every height into 14-byte near records (+6 width, +8 height) behind a zero-terminated pointer list",
       "signature": null,
       "callingConvention": null
@@ -883,7 +899,7 @@
     "1030:124a": {
       "name": "decoders_loadBmp",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Loads a BMP resource: records from BMP:INF:, BMP:BIN: unpacked into one far buffer, images built by 1040:0000 through 1068:2574; BMP:VGA:/BMP:AMG: layers never run; returns the record list or 0",
       "signature": null,
       "callingConvention": null
@@ -891,7 +907,7 @@
     "1030:15cc": {
       "name": "decoders_freeBmpInfo",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Frees a bitmap record block (the list's first entry), then the pointer list",
       "signature": null,
       "callingConvention": null
@@ -899,7 +915,7 @@
     "1030:1624": {
       "name": "decoders_expandAmgBits",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Expands 1-bit pixels into 4-bit indices 0 or 1, from the end backward so it works in place; only reached from the dead BMP:AMG: branch",
       "signature": null,
       "callingConvention": null
@@ -907,7 +923,7 @@
     "1030:16d8": {
       "name": "decoders_loadScreen",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Loads a SCR resource: size from SCR:DIM: (default 320x400), SCR:BIN: decoded in strips of 64 rows and blitted opaque; SCR:VGA:/SCR:AMG: layers never run",
       "signature": null,
       "callingConvention": null
@@ -931,7 +947,7 @@
     "1038:0000": {
       "name": "decoders_chunkReaderFor",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Returns the reader record (one of 4 at 1068:414e) whose file handle equals the argument; 0 finds a free record",
       "signature": null,
       "callingConvention": null
@@ -939,7 +955,7 @@
     "1038:003a": {
       "name": "decoders_resetChunkReader",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Clears a reader record except its handle and payload end, then rewinds the file",
       "signature": null,
       "callingConvention": null
@@ -947,7 +963,7 @@
     "1038:0091": {
       "name": "decoders_tagPathEquals",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Compares two strings for up to n characters, stopping when both reach a NUL; 1 when equal",
       "signature": null,
       "callingConvention": null
@@ -955,7 +971,7 @@
     "1038:00d2": {
       "name": "decoders_saveChunkReader",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Copies the reader record of a handle into a caller buffer; returns the buffer or 0",
       "signature": null,
       "callingConvention": null
@@ -963,7 +979,7 @@
     "1038:0119": {
       "name": "decoders_loadChunkReader",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Copies a saved reader record back over the live one and seeks the file to its position",
       "signature": null,
       "callingConvention": null
@@ -971,7 +987,7 @@
     "1038:016b": {
       "name": "decoders_openChunkFile",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Opens a resource in mode rb on a free reader record, stores the payload end as a container; returns the handle or 0",
       "signature": null,
       "callingConvention": null
@@ -979,7 +995,7 @@
     "1038:01da": {
       "name": "decoders_restoreChunkReader",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Failure exit of the chunk search: restores the record from the backup at 1068:425a, seeks back, returns -1",
       "signature": null,
       "callingConvention": null
@@ -987,7 +1003,7 @@
     "1038:0215": {
       "name": "decoders_findChunk",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Finds a chunk by its full tag path, forward from the current chunk; returns the body position or -1",
       "signature": null,
       "callingConvention": null
@@ -995,7 +1011,7 @@
     "1038:0517": {
       "name": "decoders_chunkSize",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Low 16 bits of the current chunk size, or -1 for an unknown handle",
       "signature": null,
       "callingConvention": null
@@ -1003,7 +1019,7 @@
     "1038:054b": {
       "name": "decoders_closeChunkFile",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Frees the reader record of a handle and closes the file; 1 on success",
       "signature": null,
       "callingConvention": null
@@ -1011,7 +1027,7 @@
     "1038:0584": {
       "name": "decoders_isChunkFile",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "1 when the argument is the handle of an open reader record",
       "signature": null,
       "callingConvention": null
@@ -1019,7 +1035,7 @@
     "1038:0619": {
       "name": "platform_nearMalloc",
       "subsystem": "platform",
-      "status": "named",
+      "status": "verified",
       "note": "Far wrapper around rtl_malloc (no zeroing)",
       "signature": null,
       "callingConvention": null
@@ -1123,7 +1139,7 @@
     "1040:09eb": {
       "name": "decoders_loadPalette",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Takes a free palette slot (1..9), finds PAL:VGA:, reads 16 (color mode 2) or 256 RGB triplets byte by byte through the level table at 1068:25b0; returns the slot pointer or 0",
       "signature": null,
       "callingConvention": null
@@ -1155,7 +1171,7 @@
     "1040:0db0": {
       "name": "decoders_loadBmpMatrix",
       "subsystem": "decoders",
-      "status": "named",
+      "status": "verified",
       "note": "Reads a BMP:MTX: grid (u16 columns, u16 rows, u16 image indices column by column), loads the same BMP's images, and composes them into one bitmap at 1068:45f8; only TTM opcode 0xF08F calls it, and no resource has BMP:MTX:",
       "signature": null,
       "callingConvention": null
@@ -1171,7 +1187,7 @@
     "1048:0044": {
       "name": "ttm_loadTtmWithId",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Loads a TTM with 1050:0177, stores the id in record word [0], runs the page index 1050:04d6; returns the id, or 0xFFFF when the load fails",
       "signature": null,
       "callingConvention": null
@@ -1179,7 +1195,7 @@
     "1048:0079": {
       "name": "ads_loadAds",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Loads an ADS resource into one of 10 slots: ADS:RES: id/name pairs, then the ADS:SCR: script data; returns slot + 1 or 0",
       "signature": null,
       "callingConvention": null
@@ -1187,7 +1203,7 @@
     "1048:0303": {
       "name": "ads_nextInstruction",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Returns the far pointer past one ADS instruction, sized by the 35-entry code-segment table at 1048:0383 (0 to 4 args, 0 for any other word); null past the bytecode end",
       "signature": null,
       "callingConvention": null
@@ -1203,7 +1219,7 @@
     "1048:04fc": {
       "name": "ads_indexSections",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "With slot n: selects it and, on first use, indexes its sections (starts after each tag word, count = number of 0xFFFF) and per-section scene lists; with 0: restores the TTM list head of the current slot",
       "signature": null,
       "callingConvention": null
@@ -1211,7 +1227,7 @@
     "1050:013e": {
       "name": "ttm_readWord",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Returns the word at a far pointer",
       "signature": null,
       "callingConvention": null
@@ -1219,7 +1235,7 @@
     "1050:0177": {
       "name": "ttm_loadTtm",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Loads a TTM: PAG: page count (330 when missing), TT3: bytecode decompressed whole, appends a 0xd4-byte record with a page table of count + 1 far pointers; returns 1 or 0xFFFF",
       "signature": null,
       "callingConvention": null
@@ -1227,7 +1243,7 @@
     "1050:03e2": {
       "name": "ttm_selectTtm",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Finds the TTM record with the given id in the list at 1068:2634 and makes it current (1068:2638); returns 1, or 0 when none matches",
       "signature": null,
       "callingConvention": null
@@ -1235,7 +1251,7 @@
     "1050:042a": {
       "name": "ttm_addTagRecord",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Appends a zeroed 0x3d-byte near tag node (TTM id, tag id, page) at the tail of the list at 1068:263c",
       "signature": null,
       "callingConvention": null
@@ -1243,7 +1259,7 @@
     "1050:04a8": {
       "name": "ttm_skipStringArg",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Returns the far pointer past a NUL-terminated string field, padded to an even length from the string start",
       "signature": null,
       "callingConvention": null
@@ -1251,7 +1267,7 @@
     "1050:04d6": {
       "name": "ttm_indexPages",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Builds the page table of a TTM: pages end at 0x0FF0, 0x1111 tags are recorded with their page; returns 1 when all pages are found, 0 at the end of the bytecode, 0xFFFF on arg codes 8..14",
       "signature": null,
       "callingConvention": null

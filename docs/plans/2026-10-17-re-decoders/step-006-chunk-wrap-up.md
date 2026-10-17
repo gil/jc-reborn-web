@@ -33,7 +33,7 @@ The spec's done rule for a chunk:
 
 ## Part A: Thunks left from chunk 2
 
-- [ ] **Action 1: Read the `1028` thunks**
+- [x] **Action 1: Read the `1028` thunks**
 
 Chunk 2 left `1028:17c8`..`1028:1b0d` (50 small functions) for this chunk. A planning look found: `1028:17fa` forwards to `decoders_loadBmp`, `1028:1813` to `decoders_loadScreen`, `1028:17d8` to `1038:0ae4`, `1028:182c` to `1030:15fb`, `1028:1845` to `1030:00fe`, and the rest (`1028:17c8` and `1028:185e`..`1028:1b0d`) only return 0. List them:
 
@@ -47,7 +47,7 @@ Expected: rows for `1028:17c8` (6088), `1028:185e` (6238), `1028:186e` (6254), i
 
 Write under `Thunks` in `docs/re/decoders.md`: one bullet per forwarder (what it forwards to, who calls it), one bullet for the return-0 group (how many, who references them: a table at which address, or nothing).
 
-- [ ] **Action 2: Name the thunks**
+- [x] **Action 2: Name the thunks**
 
 In `scripts/re/names.json`: `1028:17fa` `decoders_callLoadBmp` and `1028:1813` `decoders_callLoadScreen`, status `verified` (they only forward their argument; the loaders behind them are checked). Leave the other three forwarders and the return-0 group unnamed or `named` with a `gfx_`/`platform_` name if their target's role is plain from the code. Add one entry to `docs/re/open-questions.md` under "Not reviewed on purpose":
 
@@ -66,7 +66,7 @@ Expected: no errors.
 
 ## Part B: Promote and check
 
-- [ ] **Action 3: Promote checked functions to `verified`**
+- [x] **Action 3: Promote checked functions to `verified`**
 
 `verified` means: fully read, findings written in `docs/re/decoders.md`, and its checklist row is `match` or `fixed`. For every in-scope function that meets that, set `"status": "verified"` in `scripts/re/names.json`. In scope (from the overview):
 
@@ -81,7 +81,7 @@ Leave `named` anything whose checklist row is `open`. Functions named along the 
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 4: List what is still not verified**
+- [x] **Action 4: List what is still not verified**
 
 Run:
 
@@ -98,7 +98,7 @@ for (const a of addresses.filter(inScope)) if (names[a]?.status !== 'verified') 
 
 Expected: only addresses that appear in `docs/re/open-questions.md`. Check each printed address with `rg -n "<address>" docs/re/open-questions.md` (the return-0 group is covered by the range `1028:185e`..`1028:1b0d` in its entry). For any that is missing from both, go back and read it, write its finding and checklist row, and mark it `verified`; or add an open-questions entry saying exactly what is unknown.
 
-- [ ] **Action 5: Check the carry-over notes for chunks 5 and 6**
+- [x] **Action 5: Check the carry-over notes for chunks 5 and 6**
 
 The user asked that everything this chunk leaves in the scheduler be noted for chunk 6.
 
@@ -112,7 +112,7 @@ If one is missing, add it now from the step file's text (step 4 Action 16, step 
 
 ## Part C: Comments and dead code
 
-- [ ] **Action 6: Audit the comments in chunk 3 files**
+- [x] **Action 6: Audit the comments in chunk 3 files**
 
 Run: `rg -n "//|/\*" src/decode src/testing src/gfx/palette.ts`
 
@@ -124,7 +124,7 @@ For each comment, apply the rule from the overview: keep it only if a competent 
 
 Comments in `src/ads/` and `src/ttm/` are chunks 5 and 6; leave them.
 
-- [ ] **Action 7: Remove dead code**
+- [x] **Action 7: Remove dead code**
 
 Run: `rg -n "\.expect\(" src`
 Expected: no matches (every decoder now uses `chunkBody`). If so, delete the `expect` method from `src/io/binary-reader.ts`.
@@ -135,7 +135,7 @@ Expected: no matches.
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 8: Update the segment overview**
+- [x] **Action 8: Update the segment overview**
 
 In `docs/re/segments.md`, update the rows for Code7 (`1030`), Code8 (`1038`), Code9 (`1040`), Code10 (`1048`), Code11 (`1050`), and Code6 (`1028`, the thunks) with what chunk 3 learned: `1030` holds the BMP and SCR loaders; `1038:0000`..`1038:0619` is the chunk reader every loader uses; `1040` holds the palette loader, the bitmap matrix loader, and the bitmap builder; `1048` starts with the ADS loader and its size table; `1050` starts with the TTM loader and page index. Add under "Tables found", one line each: `1068:414e` (4 chunk reader records, `0x43` bytes), `1068:425a` (chunk reader backup), `1068:25b0` (palette level table), `1068:45e4` (palette slots), `1068:460c` (10 ADS slots), `1068:2634` / `1068:2638` (TTM record list and current record), `1068:263c` (TTM tag records), `1048:0383` (ADS size table, in the code segment), `1068:260a` (ADS scene opcodes), `1068:1e24`, `1068:2574`, `1068:2578` (bitmap function pointers).
 

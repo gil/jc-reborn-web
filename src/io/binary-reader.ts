@@ -23,8 +23,4 @@ export class BinaryReader {
     if (end < 0) end = n;
     return new TextDecoder('latin1').decode(raw.subarray(0, end));
   }
-  expect(magic: string): void {
-    const got = new TextDecoder('latin1').decode(this.bytes(magic.length));
-    if (got !== magic) throw new Error(`expected ${magic} got ${got} @${this.offset - magic.length}`);
-  }
 }
