@@ -673,7 +673,7 @@ git add src/decode/chunks.ts src/decode/chunks.test.ts src/testing/build-chunks.
 git commit -m "feat(decode): chunk lookup by tag path, as the original loaders do"
 ```
 
-- [ ] **Action 15: Write the corpus tests**
+- [x] **Action 15: Write the corpus tests**
 
 Create `src/decode/chunks.data.test.ts`:
 
@@ -734,7 +734,7 @@ describe.skipIf(!hasCorpus)('chunk order in the real data', () => {
 Run: `pnpm exec vitest run src/decode/chunks.data.test.ts`
 Expected: 3 tests pass. If the first fails, each line names a resource and path where our lookup and the original disagree: read `1038:0215` again for that case, fix `findChunk`, and write the finding. Never change the fixture by hand.
 
-- [ ] **Action 16: Commit**
+- [x] **Action 16: Commit**
 
 ```bash
 git add src/decode/chunks.data.test.ts
