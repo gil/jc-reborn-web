@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from corpus import CHUNKED_TYPES, Resource, load_resources, walk_chunks  # noqa: E402
 from ne_image import NeImage  # noqa: E402
-from original_loaders import find_chunks_original, load_palette_original, load_screen_original  # noqa: E402
+from original_loaders import find_chunks_original, load_bmp_original, load_palette_original, load_screen_original  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[3]
 DATA = REPO / "public/data"
@@ -60,7 +60,19 @@ def dump_screens(image: NeImage, resources: list[Resource]):
     write_tsv("screens.tsv", ["resource", "status", "width", "rows", "file"], rows)
 
 
+def dump_bitmaps(image: NeImage, resources: list[Resource]):
+    OUT.mkdir(parents=True, exist_ok=True)
+    rows = []
+    for resource in chunked(resources, ".BMP"):
+        result = load_bmp_original(image, resource.name, resource.payload)
+        file = f"{resource.name}.packed.bin"
+        (OUT / file).write_bytes(result.packed)
+        rows.append([resource.name, ",".join(map(str, result.widths)), ",".join(map(str, result.heights)), file])
+    write_tsv("bitmaps.tsv", ["resource", "widths", "heights", "file"], rows)
+
+
 COMMANDS = {
+    "bitmaps": dump_bitmaps,
     "chunks": dump_chunks,
     "palette": dump_palette,
     "screens": dump_screens,

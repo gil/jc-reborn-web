@@ -186,3 +186,34 @@ def load_screen_original(image: NeImage, name: str, payload: bytes) -> ScreenStr
     emu.replace_function(BLIT_PIXEL_ROWS, blit)
     status = emu.call_far(LOAD_SCREEN, stack_words=[put_string(emu, name)])["ax"]
     return ScreenStrips(status, widths, strips, bytes(pixels))
+
+
+LOAD_BMP = "1030:124a"
+BUILD_BITMAPS = "1040:0000"
+
+
+@dataclass
+class BitmapImages:
+    widths: list[int]
+    heights: list[int]
+    packed: bytes
+
+
+def load_bmp_original(image: NeImage, name: str, payload: bytes) -> BitmapImages:
+    emu = new_loader_emulator(image, {name: payload})
+    captured: list[BitmapImages] = []
+
+    def build(emu: Emulator):
+        records, offset, segment = emu.arg(0), emu.arg(1), emu.arg(2)
+        sizes: list[tuple[int, int]] = []
+        while (record := read_word(emu, emu.data_segment, records + 2 * len(sizes))) != 0:
+            sizes.append((read_word(emu, emu.data_segment, record + 6), read_word(emu, emu.data_segment, record + 8)))
+        total = sum((width + 1) // 2 * height for width, height in sizes)
+        captured.append(BitmapImages([w for w, _ in sizes], [h for _, h in sizes], emu.read(segment, offset, total)))
+        return {"ax": 0}
+
+    emu.replace_function(BUILD_BITMAPS, build)
+    handle = emu.call_far(LOAD_BMP, stack_words=[put_string(emu, name)])["ax"]
+    if handle == 0 or len(captured) != 1:
+        raise RuntimeError(f"{name}: bitmap load returned {handle:#x} after {len(captured)} bitmap builds")
+    return captured[0]

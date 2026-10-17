@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 from ne_image import NeImage
-from original_loaders import find_chunks_original, load_palette_original, load_screen_original
+from original_loaders import find_chunks_original, load_bmp_original, load_palette_original, load_screen_original
 
 REPO = Path(__file__).resolve().parents[3]
 BINARY = REPO / "public/data/SCRANTIC.SCR"
@@ -106,6 +106,30 @@ class ScreenTest(unittest.TestCase):
         result = load_screen_original(self.image, "TEST.SCR", screen(0, 0, bytes(160 * 400), with_dim=False))
         self.assertEqual(result.widths, {320})
         self.assertEqual(sum(rows for _, rows in result.strips), 400)
+
+
+BMP_PIXELS = bytes([0x12, 0x34, 0x56, 0x78, 0x9A])
+
+
+def bitmap(widths: list[int], heights: list[int], packed: bytes, extra: bytes = b"") -> bytes:
+    info = chunk("INF:", words(len(widths), *widths, *heights))
+    return chunk("BMP:", info + chunk("BIN:", stored(packed)) + extra, container=True)
+
+
+@unittest.skipUnless(BINARY.exists(), "needs public/data/SCRANTIC.SCR")
+class BitmapTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.image = NeImage.load(BINARY)
+
+    def test_info_lists_widths_then_heights_and_one_buffer_holds_every_image(self):
+        result = load_bmp_original(self.image, "TEST.BMP", bitmap([2, 4], [1, 2], BMP_PIXELS))
+        self.assertEqual((result.widths, result.heights, result.packed), ([2, 4], [1, 2], BMP_PIXELS))
+
+    def test_vga_layer_is_ignored_in_16_color_mode(self):
+        vga = chunk("VGA:", stored(bytes([0xFF] * len(BMP_PIXELS))))
+        result = load_bmp_original(self.image, "TEST.BMP", bitmap([2, 4], [1, 2], BMP_PIXELS, vga))
+        self.assertEqual(result.packed, BMP_PIXELS)
 
 
 if __name__ == "__main__":

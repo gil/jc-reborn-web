@@ -87,7 +87,7 @@ git commit -m "docs(re): bitmap and bitmap matrix loader findings"
 
 ## Part B: Run the original loader
 
-- [ ] **Action 5: Write the failing Python tests**
+- [x] **Action 5: Write the failing Python tests**
 
 Append to `scripts/re/unicorn/test_original_loaders.py`, before the `if __name__ == "__main__":` block, and add `load_bmp_original` to its `from original_loaders import ...` line:
 
@@ -119,7 +119,7 @@ class BitmapTest(unittest.TestCase):
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_loaders.py' -v`
 Expected: FAIL with `ImportError: cannot import name 'load_bmp_original'`.
 
-- [ ] **Action 6: Add the loader to the harness**
+- [x] **Action 6: Add the loader to the harness**
 
 Append to `scripts/re/unicorn/original_loaders.py`:
 
@@ -163,7 +163,7 @@ Expected: all pass. If the widths come out wrong, the argument indices are off. 
 Run: `re/.venv/bin/python -I -m py_compile scripts/re/unicorn/original_loaders.py scripts/re/unicorn/test_original_loaders.py`
 Expected: no output.
 
-- [ ] **Action 7: Dump the fixtures**
+- [x] **Action 7: Dump the fixtures**
 
 In `scripts/re/unicorn/dump_loaders.py`, add `load_bmp_original` to the `from original_loaders import ...` line, add after `dump_screens`:
 
@@ -187,7 +187,7 @@ Expected: no output.
 Run: `re/.venv/bin/python -I scripts/re/unicorn/dump_loaders.py bitmaps`
 Expected: `bitmaps.tsv: 117 rows`.
 
-- [ ] **Action 8: Commit**
+- [x] **Action 8: Commit**
 
 ```bash
 git add scripts/re/unicorn/original_loaders.py scripts/re/unicorn/dump_loaders.py scripts/re/unicorn/test_original_loaders.py
