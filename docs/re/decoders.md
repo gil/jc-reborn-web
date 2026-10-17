@@ -69,3 +69,15 @@ Results of the original chunk lookup (`1038:016b`, then `1038:0215` with occurre
 
 | Original | Name | Ours | Status |
 | --- | --- | --- | --- |
+| `1038:0000` | `decoders_chunkReaderFor` | none (we hold each payload in memory and search it whole; no reader records, rewinds, or backups are needed) | match |
+| `1038:003a` | `decoders_resetChunkReader` | none (we hold each payload in memory and search it whole; no reader records, rewinds, or backups are needed) | match |
+| `1038:0091` | `decoders_tagPathEquals` | `src/decode/chunks.ts:35` (`chunk.path === path`) | match |
+| `1038:00d2` | `decoders_saveChunkReader` | none (only the `BMP:MTX:` loader uses it, and the data has no `BMP:MTX:`) | match |
+| `1038:0119` | `decoders_loadChunkReader` | none (only the `BMP:MTX:` loader uses it, and the data has no `BMP:MTX:`) | match |
+| `1038:016b` | `decoders_openChunkFile` | none (we hold each payload in memory and search it whole; no reader records, rewinds, or backups are needed) | match |
+| `1038:01da` | `decoders_restoreChunkReader` | none (we hold each payload in memory and search it whole; no reader records, rewinds, or backups are needed) | match |
+| `1038:0215` | `decoders_findChunk` | `src/decode/chunks.ts:33` (`findChunk`; searches from the start, which agrees with the forward-only original because every loader asks for its chunks in file order) | fixed |
+| `1038:0517` | `decoders_chunkSize` | `src/decode/chunks.ts:33` (`findChunk` `size`; the full size equals the low 16 bits because every leaf chunk is under 64 KB) | match |
+| `1038:054b` | `decoders_closeChunkFile` | none (we hold each payload in memory and search it whole; no reader records, rewinds, or backups are needed) | match |
+| `1038:0584` | `decoders_isChunkFile` | none (we hold each payload in memory and search it whole; no reader records, rewinds, or backups are needed) | match |
+| `1038:0619` | `platform_nearMalloc` | none (allocation) | match |

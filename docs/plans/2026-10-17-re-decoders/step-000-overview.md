@@ -167,7 +167,7 @@ Python (`scripts/re/unicorn/`):
 
 ## Steps
 
-- [ ] `step-001-chunk-lookup.md`: Unicorn loader harness, original chunk lookup on edge cases and every resource, `src/decode/chunks.ts` with `findChunk`, findings file created.
+- [x] `step-001-chunk-lookup.md`: Unicorn loader harness, original chunk lookup on edge cases and every resource, `src/decode/chunks.ts` with `findChunk`, findings file created.
 - [ ] `step-002-palette-and-screen.md`: palette and screen loaders checked; `decodePal` returns 16 colors through the original level table; `decodeScr` uses path lookup and the 320 × 400 default; pixel unpacking settled.
 - [ ] `step-003-bitmaps.md`: bitmap loader checked on every BMP; `decodeBmp` uses path lookup; `BMP:VGA:` and `BMP:MTX:` explained.
 - [ ] `step-004-ttm-loader.md`: TTM loader and page index checked on every TTM; `decodeTtm` returns the page count, page offsets, and tags the way the original builds them; shared TTM instruction reader; TTM opcode coverage table.

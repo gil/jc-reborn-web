@@ -743,7 +743,7 @@ git commit -m "test(decode): chunk lookup matches the original on every resource
 
 ## Part D: Checklist
 
-- [ ] **Action 17: Fill the checklist rows**
+- [x] **Action 17: Fill the checklist rows**
 
 In `docs/re/decoders.md` under `Side-by-side checklist`, add one row per in-scope `1038` function. Expected mapping, adjust to your findings:
 
@@ -761,11 +761,11 @@ Use real line numbers (`file:line`).
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 18: Open questions, only if needed**
+- [x] **Action 18: Open questions, only if needed**
 
 For any behavior you could not settle, add an entry to `docs/re/open-questions.md` (next free `OQ-` number, under "Workarounds without a known root cause" or a fitting section). Use the existing entry format (`Where`, `What it does`, `Old guess behind it`, `Resolve in`, `Status`).
 
-- [ ] **Action 19: Run every check and commit**
+- [x] **Action 19: Run every check and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -783,7 +783,7 @@ git commit -m "docs(re): side-by-side checklist for the chunk reader"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
