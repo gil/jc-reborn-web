@@ -47,9 +47,38 @@ Results of the original chunk lookup (`1038:016b`, then `1038:0215` with occurre
 
 ## Palette
 
+- `1040:09eb`: far cdecl `(name or handle)`. Takes the first free palette slot 1..9 in the word table at `1068:45e4` (slot 0 is the active palette). With no free slot it returns 0 without opening anything.
+- `1040:09eb`: finds `PAL:VGA:` with occurrence 0. When it is missing, the slot stays free and it returns 0.
+- `1040:09eb`: reads 16 colors when the color mode `1068:1ebd` is 2, else 256. The count never depends on the chunk size: a 768-byte `PAL:VGA:` gives only its first 48 bytes in mode 2.
+- `1040:09eb`: allocates `count × 3` zeroed near bytes (`1038:06a8`) into the slot, then reads red, green, blue one byte at a time with `resources_getFileByte` and stores each through the level table `1068:25b0`. Returns the slot pointer (RGB triplets), or 0 when the allocation fails.
+- `1040:09eb`: when it opened the file itself, it closes with the name it was given, not the handle it opened, so the close fails and the reader record stays taken.
+- `1068:25b0`: 64-byte level table: level `v` gives `v × 4` for 0..62, and 63 gives 255. A level above 63 would read past the table into the current palette word at `1068:25f0` and the `PAL:VGA:` string at `1068:25f2`.
+- `1068:1ebd`: `1038:1744` (display setup) always sets it to 2. `platform_initSaver` (`1008:143c`) calls `1038:1744` with mode 2 before it loads `JOHNCAST.PAL` (`1068:024a`), so the original only ever reads 16 colors.
+- `1008:143c`: startup loads `JOHNCAST.PAL` with `1040:09eb`, makes it active with `1040:0b08`, frees the loaded slot with `1040:0bc7`, then loads `INTRO.SCR` (`1068:0257`) with `1030:16d8`.
+- `1040:0b08`: makes a loaded palette active. On first use it allocates the active palette (slot 0) and points `1068:25ae` at it; if that fails, `1068:25ae` points at a built-in 16-color table at `1068:257e`. It copies the given slot's colors, 3 bytes each, into slot 0 and remembers the pointer at `1068:25f0`. Argument 0 returns the remembered pointer; an unknown pointer returns 0.
+- `1040:0bc7`: frees the palette slot (1..9) holding the given pointer and clears it. The active copy in slot 0 stays.
+- Ours, before this step: `src/gfx/palette.ts` expanded levels with `(v << 2) | (v >> 4)`, which differs from the table for every level except 0 and 63 (32 gave 130, the original gives 128), and kept 256 colors. Fixed in this step.
+
 ## Screen
 
+- `1030:16d8`: far cdecl `(name or handle)`. Width and height start at 320 × 400 (`0x140`, `0x190`). When `SCR:DIM:` exists, it reads a u16 width, then a u16 height, over them.
+- `1030:16d8`: finds `SCR:BIN:` and opens a decompression stream on it with the low 16 bits of its size (`1038:0517`, `1028:0615`).
+- `1030:16d8`: strips are `(width >> 1) << 6` bytes (64 rows). While the near allocation fails it halves the strip size, giving up when it drops below one row. An odd width loses its last column: a row is `width >> 1` bytes.
+- `1030:16d8`: each strip is read from the stream into the near buffer and handed to `gfx_blitPixelRows` (`1040:0286`) as `(buffer offset, segment, x = 0, y, width, rows)`. The read count is not checked.
+- `1030:16d8`: the row count is cut only after a strip, when the next one would pass the height. The first strip is never cut, so a screen under 64 rows still reads and blits 64 rows.
+- `1030:16d8`: returns 1 after the pixels are drawn. The `SCR:VGA:` (5) and `SCR:AMG:` (6) layers are only tried when `1068:1ebf` is non-zero, and nothing writes `1068:1ebf`, so they never run.
+- `1030:16d8`: when `SCR:BIN:` is missing, the stream fails, or no buffer can be allocated, the return value is an uninitialized stack word.
+
 ## Pixels
+
+- `1040:0286`: wraps the buffer in a one-image record (width, rows), clears `1068:2572`, builds the bitmaps with `1040:0000`, and copies the bitmap to the offscreen DC at `(x, y)` with `BitBlt` `SRCCOPY`. The mask it gets is deleted unused, so screens are drawn opaque.
+- `1040:0000`: for each image record in a zero-terminated list, builds a 4-bit DIB: header size `0x28`, positive height (bottom-up rows), 1 plane, 4 bits, no compression. The color table is the 16 RGB colors at `1068:25ae` (the active palette).
+- `1040:0000`: when `1068:2572` is non-zero (bitmap loads), color table entry 0 is forced to black; when it is 0 (screens through `1040:0286`), entry 0 is the palette's color 0.
+- `1040:0000`: builds the mask with `1040:035c` from the top-down buffer, then flips the rows with `1040:0462` so they fit the bottom-up DIB. The image advances by `(width / 2) × height` bytes.
+- `1040:035c`: the left pixel of a packed byte is its high nibble.
+- `1040:035c`: builds a 1-bit mask bitmap, bit set where the 4-bit index is not 0, so index 0 is see-through only where the mask is used (bitmaps, not screens). It writes `width / 8` mask bytes per row, with a row stride of `((width + 8) / 16) × 2` bytes.
+- `1040:0462`: swaps rows top to bottom in place, `width / 2` bytes per row, `height / 2` swaps.
+- Ours: `src/decode/` maps index 0 to `TRANSPARENT` for screens and bitmaps alike. For screens the original draws palette color 0 instead; logged as an open question for chunk 4.
 
 ## Bitmap
 

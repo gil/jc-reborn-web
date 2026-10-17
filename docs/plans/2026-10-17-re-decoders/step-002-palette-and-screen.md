@@ -43,7 +43,7 @@
 
 ## Part A: Read the original
 
-- [ ] **Action 1: Read the palette loader**
+- [x] **Action 1: Read the palette loader**
 
 Read `1040:09eb` (`decoders_loadPalette`), the table at `1068:25b0`, and the order of calls in `platform_initSaver` (`1008:143c`): is `1038:1744` (which sets `1068:1ebd = 2`) called before `1040:09eb`? Dump the table:
 
@@ -58,7 +58,7 @@ Also read `1040:0b08` and `1040:0bc7` far enough to say how a loaded palette slo
 - `1040:0b08` / `1040:0bc7`: one claim each, from what you read.
 - Ours: `src/gfx/palette.ts` expands with `(v << 2) | (v >> 4)`, which differs from the table for every level except 0 and 63 (for example 32 → 130, the original gives 128). This step fixes it.
 
-- [ ] **Action 2: Read the screen loader and the pixel path**
+- [x] **Action 2: Read the screen loader and the pixel path**
 
 Read `1030:16d8` (`decoders_loadScreen`), the call site of `gfx_blitPixelRows` (`1040:0286`) in its assembly (which argument is the buffer offset, the segment, x, y, width, row count), and `1040:0286` itself. Then read `1040:0000` and `1040:035c` far enough to answer: which nibble of a packed byte is the left pixel, and which color index the original treats as see-through (the mask `1040:035c` builds, if any). Write under `Screen`:
 
@@ -70,14 +70,14 @@ Write under `Pixels`:
 - Nibble order (high nibble = left pixel, or not).
 - `1040:035c`: what it builds, and which index is see-through. If the original draws index 0 opaque for screens (backgrounds) but see-through for sprites, say so. Our decoders map index 0 to `TRANSPARENT` for both; if that is wrong for screens, add an open question for chunk 4 (graphics) in Action 13 rather than changing `src/gfx/` here.
 
-- [ ] **Action 3: Name the functions**
+- [x] **Action 3: Name the functions**
 
 Add or update `scripts/re/names.json` entries (sorted, status `named`, notes in our words). `1040:09eb` and `1030:16d8` exist; correct their notes if the findings changed them (`decoders_loadScreen`'s note says "default 320x200"; it is 320 × 400). New names, adjust to what you found: `1040:0000` `gfx_buildBitmaps`, `1040:035c` `gfx_buildBitmapMask`, `1040:0462` `gfx_prepareBitmapRows` (rename after reading), `1040:0b08` and `1040:0bc7` (`gfx_` names for palette selection), `1038:1744` `gfx_initDisplay`.
 
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 4: Commit the findings**
+- [x] **Action 4: Commit the findings**
 
 ```bash
 git add docs/re/decoders.md scripts/re/names.json docs/re/function-map.md

@@ -868,7 +868,7 @@
       "name": "decoders_loadScreen",
       "subsystem": "decoders",
       "status": "named",
-      "note": "Loads a SCR resource: size from SCR:DIM: (default 320x200), SCR:BIN: decoded in strips, optional SCR:VGA: or SCR:AMG: layer",
+      "note": "Loads a SCR resource: size from SCR:DIM: (default 320x400), SCR:BIN: decoded in strips of 64 rows and blitted opaque; SCR:VGA:/SCR:AMG: layers never run",
       "signature": null,
       "callingConvention": null
     },
@@ -1000,6 +1000,14 @@
       "signature": null,
       "callingConvention": null
     },
+    "1038:1744": {
+      "name": "gfx_initDisplay",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Display setup: accepts color mode 0, 2, or 8, always sets color mode 1068:1ebd to 2, fails when a non-zero request differs, then sets screen size and DCs",
+      "signature": null,
+      "callingConvention": null
+    },
     "1038:1bd8": {
       "name": "gfx_drawRect",
       "subsystem": "gfx",
@@ -1016,11 +1024,35 @@
       "signature": null,
       "callingConvention": null
     },
+    "1040:0000": {
+      "name": "gfx_buildBitmaps",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "For each image record: builds the see-through mask, a 4-bit bottom-up DIB with the active palette (color 0 forced black for sprites), flips rows, and advances by (w/2)*h bytes",
+      "signature": null,
+      "callingConvention": null
+    },
     "1040:0286": {
       "name": "gfx_blitPixelRows",
       "subsystem": "gfx",
       "status": "named",
       "note": "Turns a buffer of pixel rows into a bitmap (via 1040:0000) and blits it to the offscreen DC, marking the rect dirty",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:035c": {
+      "name": "gfx_buildBitmapMask",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Builds a 1-bit mask bitmap from packed pixels: bit set where the 4-bit index is not 0, high nibble first",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0462": {
+      "name": "gfx_flipPixelRows",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Swaps packed pixel rows top to bottom in place ((w/2) bytes per row), so a top-down buffer fits a bottom-up DIB",
       "signature": null,
       "callingConvention": null
     },
@@ -1052,7 +1084,23 @@
       "name": "decoders_loadPalette",
       "subsystem": "decoders",
       "status": "named",
-      "note": "Takes a free palette slot (1..9), seeks PAL:VGA:, reads 16 or 256 RGB triplets through a lookup table at 1068:25b0",
+      "note": "Takes a free palette slot (1..9), finds PAL:VGA:, reads 16 (color mode 2) or 256 RGB triplets byte by byte through the level table at 1068:25b0; returns the slot pointer or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0b08": {
+      "name": "gfx_selectPalette",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Makes a loaded palette slot active: allocates the active palette (slot 0, pointer at 1068:25ae) on first use and copies the slot's colors into it; 0 returns the current one",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0bc7": {
+      "name": "gfx_freePalette",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Frees a loaded palette slot (1..9) found by its pointer and clears the slot",
       "signature": null,
       "callingConvention": null
     },
