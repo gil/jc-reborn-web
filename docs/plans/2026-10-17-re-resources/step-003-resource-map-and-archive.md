@@ -242,7 +242,7 @@ git commit -m "fix(resources): RESOURCE.MAP entries hold a name hash, not a leng
 
 ## Part C: Corpus tests for map and archive
 
-- [ ] **Action 8: Write the map corpus test**
+- [x] **Action 8: Write the map corpus test**
 
 Create `src/resource/resource-map.data.test.ts`:
 
@@ -289,7 +289,7 @@ describe.skipIf(!hasCorpus)('the real RESOURCE.MAP', () => {
 Run: `pnpm exec vitest run src/resource/resource-map.data.test.ts`
 Expected: 3 tests pass (Part B already fixed the parser). If the hash test fails, the TS hash differs from the original; fix `resourceNameHash` against your `Name hash` findings.
 
-- [ ] **Action 9: Write the archive corpus test**
+- [x] **Action 9: Write the archive corpus test**
 
 Create `src/resource/resource-archive.data.test.ts`:
 
@@ -351,7 +351,7 @@ Expected: 4 tests pass.
 
 If your findings showed that the original reads or checks something `indexArchive` does not (for example it rejects an entry whose stored name doesn't match), decide with this rule: if the corpus never triggers the difference, write a finding saying so and leave the code; if it does, change `src/resource/resource-archive.ts` to the original's behavior and add a unit test citing the address.
 
-- [ ] **Action 10: Commit**
+- [x] **Action 10: Commit**
 
 ```bash
 git add src/resource/resource-map.data.test.ts src/resource/resource-archive.data.test.ts
