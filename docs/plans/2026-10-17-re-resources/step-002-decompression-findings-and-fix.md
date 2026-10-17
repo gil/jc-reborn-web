@@ -110,7 +110,7 @@ git commit -m "docs(re): decompression stream, RLE, and LZW findings"
 
 ## Part B: Corpus test helper
 
-- [ ] **Action 5: Write the failing helper test**
+- [x] **Action 5: Write the failing helper test**
 
 Create `src/testing/corpus.test.ts`:
 
@@ -145,7 +145,7 @@ describe('walkChunks', () => {
 Run: `pnpm exec vitest run src/testing/corpus.test.ts`
 Expected: FAIL, cannot resolve `./corpus.js`.
 
-- [ ] **Action 6: Implement the helper**
+- [x] **Action 6: Implement the helper**
 
 Create `src/testing/corpus.ts`. It mirrors `scripts/re/unicorn/corpus.py`; keep the two in step.
 
@@ -205,7 +205,7 @@ export function walkChunks(payload: Uint8Array, start = 0, end = payload.length,
 Run: `pnpm exec vitest run src/testing/corpus.test.ts`
 Expected: 3 tests pass.
 
-- [ ] **Action 7: Commit**
+- [x] **Action 7: Commit**
 
 ```bash
 git add src/testing/corpus.ts src/testing/corpus.test.ts
