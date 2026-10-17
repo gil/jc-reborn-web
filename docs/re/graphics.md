@@ -157,7 +157,19 @@ The original draws with Windows GDI. The binary tells which GDI call runs with w
 
 ## Wipes
 
-None yet.
+- `1020:0364`: far cdecl `(dc)`. With a non-zero `dc` it sets the draw target to A and the copy source to `dc`, copies the whole screen (`1038:06ce`), and returns; no wipe. Its only caller, `1018:0673` (chunk 7), passes 0.
+- `1020:0364`: with 0 it draws on the window DC (paint DC `1068:2d82` or `GetDC`), selects the stock black brush (4) and black pen (7), and centers a 640 × 480 area in the client rect: `left + (client width - 640) / 2`, same for top.
+- `1020:0364`: picks the wipe from the counter `1068:361a` (0 in the data segment) and adds 1: 0 ellipse, 1 rect, 2 right to left, 3 left to right, 4 top to bottom, 5 bottom to top. Any other value runs the ellipse and sets the counter to 1. So the order is ellipse, rect, right to left, left to right, top to bottom, bottom to top, then again from the ellipse.
+- `1020:0364`: after the wipe it fills with the black brush the rect from the centered top-left corner to the client's bottom-right corner (the whole client area when it is 640 × 480), restores the old brush and pen, and releases the DC.
+- `1020:0512`: ellipse out. Half sizes `hw = w / 2`, `hh = h / 2`, center `(x + hw, y + hh)`; step and radius start at 1. While `hw > 0` or `hh > 0`: `hw -= step`, `hh -= step`, `radius += step`, `step += 1`, `Ellipse(cx - radius, cy - radius, cx + radius, cy + radius)`. 25 circles for 640 × 480.
+- `1020:05a0`: rect out. Steps `sx = cx / 50`, `sy = cy / 50` from the center coordinates, not the half sizes, so the steps grow when the area is offset in a larger client rect. Each round `Rectangle(cx - ix, cy - iy, cx + ix, cy + iy)` with `ix`, `iy` growing by `sx`, `sy`, while `hw > 0` or `hh > 0` (both shrink by the steps). 60 rects for 640 × 480 at the origin.
+- `1020:0637`: right to left. Strip `s = w / 100`; first strip at `x + w - s`; each round `Rectangle(left, y, left + s, y + h)`, `left -= s`, `w -= s`, while `w > 0`. 107 strips for 640, the last at `-2`.
+- `1020:0688`: left to right: the same strips from `x` moving right.
+- `1020:06d2`: top to bottom. Strip `s = h / 200`; `Rectangle(x, top, x + w, top + s)` from `top = y` moving down while `h > 0`. 240 strips for 480.
+- `1020:071c`: bottom to top: the same strips from `y + h - s` moving up.
+- `1008:13cd`: every wipe calls it after each shape. It removes and dispatches at most one pending keyboard or mouse message (so input can end the saver mid-wipe). There is no timer: a wipe runs as fast as the machine draws.
+- Emulated: `re/fixtures/graphics/wipes.tsv`, 6 wipes × 2 areas (at the origin and centered in 800 × 600), equal to `wipeShapes` in `src/gfx/fade.ts` (`src/gfx/fade.data.test.ts`).
+- Ours: `src/gfx/fade.ts` runs the same six wipes in the same order and ends black, spread over `WIPE_TICKS` story ticks (OQ-21).
 
 ## Past fixes reviewed
 
@@ -220,3 +232,10 @@ None yet.
 | `1030:0197` | `gfx_rectBitsSize` | none (the model stores exact pixels) | match |
 | `1040:0286` | `gfx_blitPixelRows` | `src/gfx/gdi/display.ts:61` `Display.blitScreen` | fixed |
 | `1040:034e` | `gfx_noopLayerStrip` | none (empty function on a path that never runs) | match |
+| `1020:0364` | `gfx_wipeScreen` | `src/gfx/fade.ts:29` `nextFadeState`, `src/gfx/fade.ts:89` `applyFade` | fixed |
+| `1020:0512` | `gfx_wipeEllipseOut` | `src/gfx/fade.ts:39` `wipeShapes` | fixed |
+| `1020:05a0` | `gfx_wipeRectOut` | `src/gfx/fade.ts:39` `wipeShapes` | fixed |
+| `1020:0637` | `gfx_wipeRightToLeft` | `src/gfx/fade.ts:39` `wipeShapes` | fixed |
+| `1020:0688` | `gfx_wipeLeftToRight` | `src/gfx/fade.ts:39` `wipeShapes` | fixed |
+| `1020:06d2` | `gfx_wipeTopToBottom` | `src/gfx/fade.ts:39` `wipeShapes` | fixed |
+| `1020:071c` | `gfx_wipeBottomToTop` | `src/gfx/fade.ts:39` `wipeShapes` | fixed |

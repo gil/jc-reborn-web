@@ -30,11 +30,11 @@ What changes for the viewer: today there are 5 made-up wipes. The original has 6
 
 ## Part A: Emulate the wipes
 
-- [ ] **Action 1: Read the functions**
+- [x] **Action 1: Read the functions**
 
 Read `re/out/functions/` for `1020_0364`, `1020_0512_gfx_wipeEllipseOut`, `1020_05a0_gfx_wipeRectOut`, `1020_0637_gfx_wipeRightToLeft`, `1020_0688_gfx_wipeLeftToRight`, `1020_06d2_gfx_wipeTopToBottom`, `1020_071c_gfx_wipeBottomToTop`. Confirm or correct the overview's "Wipes" reading: the counter `1068:361a` and its order, the stock objects (4 = `BLACK_BRUSH`, 7 = `BLACK_PEN`), the centering in the client rect, the final black `FillRect`, the non-zero argument path, and each wipe's loop. Who calls `1020:0364` and with what (`1018:0673`, chunk 7).
 
-- [ ] **Action 2: Add the wipe driver**
+- [x] **Action 2: Add the wipe driver**
 
 Append to `scripts/re/unicorn/original_graphics.py`:
 
@@ -72,7 +72,7 @@ def wipe_shapes_original(image: NeImage, name: str, x: int, y: int, w: int, h: i
 
 `GDI` 27 is `Rectangle`, 24 is `Ellipse`. If `UnstubbedImport` names another ordinal, use that one.
 
-- [ ] **Action 3: Python test**
+- [x] **Action 3: Python test**
 
 Append to `scripts/re/unicorn/test_original_graphics.py` (add `wipe_shapes_original` to the `original_graphics` import):
 
@@ -98,7 +98,7 @@ class WipeTest(unittest.TestCase):
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_graphics.py' -v`
 Expected: all pass. A mismatch means the first reading was wrong; fix the expectation from what the emulator shows only after reading the assembly to understand why.
 
-- [ ] **Action 4: Dump the wipes**
+- [x] **Action 4: Dump the wipes**
 
 Append to `scripts/re/unicorn/dump_graphics.py` (import `WIPES`, `wipe_shapes_original`; `json` is already imported in step 4):
 
@@ -120,7 +120,7 @@ Register `"wipes": dump_wipes,` in `COMMANDS`.
 Run: `re/.venv/bin/python -I scripts/re/unicorn/dump_graphics.py wipes`
 Expected: exits 0; `re/fixtures/graphics/wipes.tsv` has 12 rows. The second area is a 640 × 480 picture centered in an 800 × 600 client rect; it shows that the rect wipe's step depends on the center, not the size.
 
-- [ ] **Action 5: Commit**
+- [x] **Action 5: Commit**
 
 ```bash
 git add scripts/re/unicorn/original_graphics.py scripts/re/unicorn/test_original_graphics.py scripts/re/unicorn/dump_graphics.py
@@ -129,7 +129,7 @@ git commit -m "test(re): emulate the original wipe transitions"
 
 ## Part B: Rewrite `fade.ts`
 
-- [ ] **Action 6: Write the failing test**
+- [x] **Action 6: Write the failing test**
 
 Create `src/gfx/fade.test.ts`:
 
@@ -216,12 +216,12 @@ describe('applyFade', () => {
 
 Numbers behind the expectations: right to left at half time shows `ceil(107 × 8 / 16) = 54` strips, the last one starting at `634 - 53 × 6 = 316`. The ellipse at tick 1 shows `ceil(25 / 16) = 2` shapes, the larger with radius 4 around `(320, 240)`.
 
-- [ ] **Action 7: Run it to make sure it fails**
+- [x] **Action 7: Run it to make sure it fails**
 
 Run: `pnpm exec vitest run src/gfx/fade.test.ts`
 Expected: FAIL (`wipeShapes` and `WIPE_TICKS` are not exported; the cycle has 5 types).
 
-- [ ] **Action 8: Rewrite `fade.ts`**
+- [x] **Action 8: Rewrite `fade.ts`**
 
 Replace the whole content of `src/gfx/fade.ts` with:
 
@@ -356,12 +356,12 @@ function paintEllipse(px: Uint8ClampedArray, { left, top, right, bottom }: WipeS
 
 Check the right-to-left loop against the original by hand: `strip = 6`, first `left = 634`, `rest` goes 640, 634, ..., 4, so 107 rounds and the last `left` is `634 - 106 × 6 = -2`. The rect wipe at 640 × 480: `stepX = 6`, `stepY = 4`, `halfH` reaches 0 after 60 rounds, the last `ix = 360`, `iy = 240`.
 
-- [ ] **Action 9: Run it to make sure it passes**
+- [x] **Action 9: Run it to make sure it passes**
 
 Run: `pnpm exec vitest run src/gfx/fade.test.ts`
 Expected: PASS, 8 tests.
 
-- [ ] **Action 10: Data test against the original**
+- [x] **Action 10: Data test against the original**
 
 Create `src/gfx/fade.data.test.ts`:
 
@@ -387,7 +387,7 @@ describe.skipIf(!hasFixture('graphics/wipes.tsv'))('wipes match the original SCR
 Run: `pnpm exec vitest run src/gfx/fade.data.test.ts`
 Expected: PASS.
 
-- [ ] **Action 11: Run everything that uses the fade**
+- [x] **Action 11: Run everything that uses the fade**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors (story and compositor use only `FadeState`, `nextFadeState`, `fadeDone`, `applyFade`).
@@ -395,11 +395,11 @@ Expected: no errors (story and compositor use only `FadeState`, `nextFadeState`,
 Run: `pnpm test`
 Expected: all pass.
 
-- [ ] **Action 12: Smoke test**
+- [x] **Action 12: Smoke test**
 
 Run `pnpm dev` in the background, open the printed URL, wait for the splash to end and for at least two scene changes. Expected: the splash ends with an ellipse wipe that grows from the center and leaves the screen black; the next sequence change uses the rect wipe. Stop the server by its PID (or `lsof -ti :5173 -sTCP:LISTEN | xargs kill -9` for the Vite port it printed). If you cannot watch it, say so in the step's commit message instead of claiming it works.
 
-- [ ] **Action 13: Commit**
+- [x] **Action 13: Commit**
 
 ```bash
 git add src/gfx/fade.ts src/gfx/fade.test.ts src/gfx/fade.data.test.ts
@@ -408,13 +408,13 @@ git commit -m "fix(gfx): the six original wipe transitions"
 
 ## Part C: Findings
 
-- [ ] **Action 14: Write the findings**
+- [x] **Action 14: Write the findings**
 
 In `docs/re/graphics.md`, replace `None yet.` under `Wipes` with one bullet per claim, each starting with its address: `1020:0364` (non-zero argument path, the counter and its order, stock black brush and pen, centering, final black fill, caller `1018:0673`), each of the six wipe functions (loop and shape), the step sizes depending on the center for the rect wipe, the message pump instead of a timer, and "Emulated: `re/fixtures/graphics/wipes.tsv`, 6 wipes × 2 areas, equal to `wipeShapes` in `src/gfx/fade.ts`."
 
 Checklist rows (real line numbers): `1020:0364` → `src/gfx/fade.ts` `nextFadeState` / `applyFade`, `fixed`; the six wipes → `wipeShapes`, `fixed`.
 
-- [ ] **Action 15: Log the pacing**
+- [x] **Action 15: Log the pacing**
 
 Add to `docs/re/open-questions.md` under "Workarounds without a known root cause" (next free OQ number):
 
@@ -429,14 +429,14 @@ Add to `docs/re/open-questions.md` under "Workarounds without a known root cause
 - **Status:** open
 ```
 
-- [ ] **Action 16: Names and status**
+- [x] **Action 16: Names and status**
 
 In `scripts/re/names.json`: `1020:0364` `gfx_wipeScreen` (or a name that fits), and set `verified` on `1020:0364`, `1020:0512`, `1020:05a0`, `1020:0637`, `1020:0688`, `1020:06d2`, `1020:071c`.
 
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 17: Check and commit**
+- [x] **Action 17: Check and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -454,7 +454,7 @@ git commit -m "docs(re): chunk 4 wipes verified"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
-- [ ] Only if something could not be finished: record it in
+- [x] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

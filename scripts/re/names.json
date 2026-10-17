@@ -464,10 +464,18 @@
       "signature": null,
       "callingConvention": null
     },
+    "1020:0364": {
+      "name": "gfx_wipeScreen",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "With a DC copies it to A; with 0 runs the next of six black wipes (counter 1068:361a) centered on the window, then fills it black",
+      "signature": null,
+      "callingConvention": null
+    },
     "1020:0512": {
       "name": "gfx_wipeEllipseOut",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Transition: draws growing ellipses from the rect center, pumping input after each step",
       "signature": null,
       "callingConvention": null
@@ -475,7 +483,7 @@
     "1020:05a0": {
       "name": "gfx_wipeRectOut",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Transition: draws growing rectangles from the rect center, pumping input after each step",
       "signature": null,
       "callingConvention": null
@@ -483,7 +491,7 @@
     "1020:0637": {
       "name": "gfx_wipeRightToLeft",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Transition: fills the rect in 1/100-width strips from right to left",
       "signature": null,
       "callingConvention": null
@@ -491,7 +499,7 @@
     "1020:0688": {
       "name": "gfx_wipeLeftToRight",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Transition: fills the rect in 1/100-width strips from left to right",
       "signature": null,
       "callingConvention": null
@@ -499,7 +507,7 @@
     "1020:06d2": {
       "name": "gfx_wipeTopToBottom",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Transition: fills the rect in 1/200-height strips from top to bottom",
       "signature": null,
       "callingConvention": null
@@ -507,7 +515,7 @@
     "1020:071c": {
       "name": "gfx_wipeBottomToTop",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Transition: fills the rect in 1/200-height strips from bottom to top",
       "signature": null,
       "callingConvention": null

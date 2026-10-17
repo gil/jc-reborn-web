@@ -155,6 +155,15 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Resolve in:** chunk 5 (TTM interpreter): find which surface each opcode draws on and when the restore pass runs, switch the interpreter, island, and walk drawing to `src/gfx/gdi/`, then delete the old pipeline and its workarounds (`lingeringLayers`, `clearSavedZones`, the zone layer)
 - **Status:** open (user decision, 2026-10-17: build the model in chunk 4, wire it in chunk 5)
 
+### OQ-21: Wipe speed
+
+- **Where:** `src/gfx/fade.ts` (`WIPE_TICKS`), `src/story/story.ts` (one `step++` per story tick)
+- **What it does:** spreads every wipe over 16 story ticks, showing a proportional share of its shapes each tick.
+- **Original:** `1020:0512`..`1020:071c` draw every shape in one go, pumping window messages between shapes (`1008:13cd`), with no timer: the speed is whatever the machine manages. The story waits for the call to return.
+- **Old guess behind it:** a visible wipe needs a fixed duration in a browser frame loop.
+- **Resolve in:** chunk 7 (story and main loop): decide a duration from the original's timing model, if any, when the story's call to `1020:0364` (`1018:0673`) is read
+- **Status:** open
+
 ## Past fixes to re-check against the original
 
 Each fix below was made without the decompile. Treat it as a guess until a chunk confirms or replaces it. "Out of scope" rows touch docs, build paths, or sound playback, which have no counterpart in the original.
