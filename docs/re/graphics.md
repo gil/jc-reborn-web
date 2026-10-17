@@ -112,7 +112,28 @@ The original draws with Windows GDI. The binary tells which GDI call runs with w
 
 ## Dirty rects
 
-None yet.
+- `1060:0000`: far cdecl `(count)`. Allocates `ceil(count / 5) × 5` zeroed 26-byte nodes in one near block (`1038:06a8`), chains them, marks the first with word `[9]` = 1 (block start), puts them in front of the free list `1068:46ee`, and adds the count to `1068:46ec`. Returns 1, or 0 when the allocation fails. `1060:007e` calls it with 5 when the free list is empty; `1050:016e` calls it at TTM setup.
+- Node words: `[0]` x, `[1]` y, `[2]` w, `[3]` h, `[4]` source DC, `[5]` target DC, `[6]` kind, `[7]` age, `[8]` area, `[9]` block start, `[10]`/`[11]` saved-bits offset/segment, `[12]` next.
+- `1068:46f0`: 20 list heads. A list is keyed by the source, target, and age of its head node.
+- `1060:05a7`: far cdecl `(source, target, age)`. Returns the head slot whose head node matches all three, even when an empty slot comes first; else the first empty slot; else 0 (all 20 slots hold other keys, and the caller does nothing).
+- `1060:007e`: far cdecl `(x, y, w, h, kind, source, target, age, saved offset, saved segment)`. Kind 4 forces the source to `-1` (`1068:287c` holds `0xffff`, the matching table entry). Finds the slot first; with none it returns.
+- `1060:007e`: kind 1 with the clip off (`1068:1ea3` = 0): drops the rect when `x > width - 1`, `x + w < 0`, `y > height - 1`, or `y + h < 0` (screen size `1068:2562`/`2564`); otherwise cuts it to the screen.
+- `1060:007e`: kind 1 with the clip on: drops the rect when `x2 < x`, `x + w < x1`, `y2 < y`, or `y + h < y1` (inclusive clip rect `1068:1ea4`..`1eaa`); otherwise cuts it to the clip rect. It does not also cut to the screen, so a clip rect that starts left of 0 keeps a negative x.
+- `1060:007e`: kind 1 then turns x and w into 8-pixel columns: `w = (w + x % 8 + 7) / 8`, `x = x / 8` (signed division, truncated). Kind 4 keeps pixels. Any other kind is stored as given.
+- `1060:007e`: drops the rect when w or h is 0. Otherwise takes a free node, fills it, and sets its area to `w × h` as a signed 16-bit word.
+- `1060:007e`: kind 1 only: merges with every node of the same list whose bounding box with the new rect has a 16-bit area at most `node area + new area + 20` (all 16-bit signed, so a box of 80 columns × 480 rows, 38,400, reads negative and always merges). A merged node is unlinked and freed, and the new rect grows to the box.
+- `1060:007e`: after a merge the scan goes on from the next node, then restarts from the head and stops when it reaches the node that preceded the last merge (or runs off the end with no merge pending). Then the new node is inserted at the head.
+- `1060:05f9`: far cdecl `(source, target, age)`. Does nothing for a missing or empty list. Sets the copy source `1068:1eb6` and draw target `1068:1eb8` from the head node, then walks head to tail: kind 1 → `1038:06ce(x × 8, y, w × 8, h)`; kind 4 → `1030:0250(saved offset, saved segment, x, y, w, h)`; other kinds nothing. Then frees the whole list. It does not restore `1eb6`/`1eb8`.
+- `1060:03d3`: far cdecl `(which)`. Saves `1eb6`/`1eb8`. With 0, walks the table at `1068:287e` (pairs of near pointers to the source and target DC globals) and replays each pair with age 0 until a pair's target pointer is 0; with anything else, replays only the pair at `1068:2882`. Restores `1eb6`/`1eb8`.
+- `1068:287e`: emulated, the pairs are `(-1, A)`, `(B, A)`, `(-1, B)`, `(C, B)`, `(-1, C)`, `(A, C)`, `(A, B)`, `(B, C)`, `(C, A)` (`re/fixtures/graphics/restore-table.tsv`); `1068:2882` is `(B, A)`.
+- `1060:03d3`: with `which` 0 only, after the replays it subtracts 1 from the age of every node left in every list, so age 1 lists replay on the next pass. Its only caller is `1018:088f` (chunk 7).
+- `1060:04b2`: far cdecl `(x, y, w, h, target, age)`. For every list whose head has that target and age (any source), returns 1 on the first kind-1 node that overlaps the rect, comparing columns (`x / 8`, `(w + x % 8 + 7) / 8`) and rows; else 0. Called from story code in `1010`.
+- `1060:046e`: moves every node of every list to the free list and empties all 20 heads.
+- `1060:0556`: frees the node pool: empties the lists (`1060:046e`), then frees every block of the free list that starts with a block-start node, and clears the free list. It does not reset the pool count `1068:46ec`. Called from `1050:0a79`.
+- `1060:0596`: returns the pool count `1068:46ec`. Nothing references it.
+- `1060:06ac`: far cdecl `(source, target, age)`: frees one list without replaying it. Called from `1050:0b69`.
+- `1060:06f5`: far cdecl `(source, target, age, new source, new target, new age)`: meant to copy one list into another key with `1060:007e`, but its loop only moves to the next node after the loop ends, so it adds the head again forever on a non-empty list. Nothing references it.
+- Emulated: 300 random sequences of 40 operations (`re/fixtures/graphics/dirty.tsv`) end with the same results and lists in `src/gfx/gdi/dirty.ts` (`src/gfx/gdi/dirty.data.test.ts`).
 
 ## Display buffers
 
@@ -165,3 +186,14 @@ None yet.
 | `1040:10ef` | `gfx_freeBmpMatrix` | none (no `BMP:MTX:` in the data) | match |
 | `1040:1113` | `gfx_blitBmpMatrix` | none (no `BMP:MTX:` in the data) | match |
 | `1040:1183` | `gfx_scrollBmpMatrix` | none (no `BMP:MTX:` in the data) | match |
+| `1060:0000` | `gfx_growDirtyPool` | none (no node pool) | match |
+| `1060:007e` | `gfx_addDirtyRect` | `src/gfx/gdi/dirty.ts:47` `DirtyLists.add` | fixed |
+| `1060:03d3` | `gfx_restoreDirtyRects` | `src/gfx/gdi/dirty.ts:101` `DirtyLists.restorePass` | fixed |
+| `1060:046e` | `gfx_clearDirtyLists` | `src/gfx/gdi/dirty.ts:81` `DirtyLists.clear` | fixed |
+| `1060:04b2` | `gfx_dirtyOverlaps` | `src/gfx/gdi/dirty.ts:64` `DirtyLists.overlaps` | fixed |
+| `1060:0556` | `gfx_freeDirtyPool` | none (no node pool) | match |
+| `1060:0596` | `gfx_dirtyPoolSize` | none (no node pool) | match |
+| `1060:05a7` | `gfx_findDirtyList` | `src/gfx/gdi/dirty.ts:122` `find` | fixed |
+| `1060:05f9` | `gfx_replayDirtyList` | `src/gfx/gdi/dirty.ts:85` `DirtyLists.replay` | fixed |
+| `1060:06ac` | `gfx_dropDirtyList` | `src/gfx/gdi/dirty.ts:76` `DirtyLists.drop` | fixed |
+| `1060:06f5` | `gfx_copyDirtyList` | none (dead code, endless loop, no callers) | match |

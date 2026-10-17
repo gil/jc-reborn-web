@@ -31,7 +31,7 @@ Words are 16 bits in the original. The port keeps two 16-bit effects that matter
 
 ## Part A: Read and confirm
 
-- [ ] **Action 1: Read the list code**
+- [x] **Action 1: Read the list code**
 
 Read `re/out/functions/` pseudo-C and assembly for `1060_0000`, `1060_007e`, `1060_03d3`, `1060_046e`, `1060_04b2`, `1060_0556`, `1060_0596`, `1060_05a7`, `1060_05f9`, `1060_06ac`, `1060_06f5`. Confirm or correct the overview's "Dirty rects" first reading, then check these details against the code below before writing it:
 
@@ -47,7 +47,7 @@ If something differs, fix the code below to match the binary before writing it a
 
 ## Part B: Emulate the original lists
 
-- [ ] **Action 2: Add the dirty-list driver to the harness**
+- [x] **Action 2: Add the dirty-list driver to the harness**
 
 Append to `scripts/re/unicorn/original_graphics.py` (add `from original_loaders import read_word` to the imports at the top):
 
@@ -169,7 +169,7 @@ class DirtyEmulator:
 
 Each node in `lists()` is `[x, y, w, h, source, target, kind, age, area, saved]`.
 
-- [ ] **Action 3: Write the Python tests**
+- [x] **Action 3: Write the Python tests**
 
 Append to `scripts/re/unicorn/test_original_graphics.py` (add `DC_A, DC_B, DirtyEmulator` to the `original_graphics` import):
 
@@ -203,7 +203,7 @@ class DirtyListTest(unittest.TestCase):
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_graphics.py' -v`
 Expected: all pass. If the first fails on the argument layout (a `RuntimeError` or nonsense values), check the `stack_words` order against Action 1 item 1.
 
-- [ ] **Action 4: Dump random sequences**
+- [x] **Action 4: Dump random sequences**
 
 Append to `scripts/re/unicorn/dump_graphics.py` (add `import json`, `import random`, and `DC_A, DC_B, DC_C, DirtyEmulator` from `original_graphics`):
 
@@ -264,7 +264,7 @@ Expected: exits 0 in a few minutes at most; `re/fixtures/graphics/dirty.tsv` has
 
 If an operation hangs (`EmulationLimit`), the original looped forever on that input: catch it in `dump_dirty`, record `"hang"` as the result, keep going, and write a finding about the input that caused it.
 
-- [ ] **Action 5: Commit**
+- [x] **Action 5: Commit**
 
 ```bash
 git add scripts/re/unicorn/original_graphics.py scripts/re/unicorn/test_original_graphics.py scripts/re/unicorn/dump_graphics.py
@@ -273,7 +273,7 @@ git commit -m "test(re): emulate the original dirty-rect lists on random sequenc
 
 ## Part C: TypeScript port
 
-- [ ] **Action 6: Write the failing unit test**
+- [x] **Action 6: Write the failing unit test**
 
 Create `src/gfx/gdi/dirty.test.ts`:
 
@@ -392,12 +392,12 @@ describe('DirtyLists.overlaps', () => {
 });
 ```
 
-- [ ] **Action 7: Run it to make sure it fails**
+- [x] **Action 7: Run it to make sure it fails**
 
 Run: `pnpm exec vitest run src/gfx/gdi/dirty.test.ts`
 Expected: FAIL, cannot resolve `./dirty.js`.
 
-- [ ] **Action 8: Implement `dirty.ts`**
+- [x] **Action 8: Implement `dirty.ts`**
 
 Create `src/gfx/gdi/dirty.ts`:
 
@@ -605,12 +605,12 @@ Notes for the executor:
 - `mergeInto` treats `null` the way the original treats pointer 0: the first check `current === stopAt` is true right away for an empty list (`null === null`) and whenever the scan runs off the end while `stopAt` is still `null`. It returns instead of inserting; `add` inserts at the head afterwards, as the original's shared exit does.
 - The `current!` and `next!` assertions are safe only because of that first check; do not restructure the loop.
 
-- [ ] **Action 9: Run the unit test**
+- [x] **Action 9: Run the unit test**
 
 Run: `pnpm exec vitest run src/gfx/gdi/dirty.test.ts`
 Expected: PASS, 11 tests. Where one fails, check the expectation against the Python run of the same input before changing the port (add the case to `DirtyListTest` if needed); the original decides.
 
-- [ ] **Action 10: Write the data test**
+- [x] **Action 10: Write the data test**
 
 Create `src/gfx/gdi/dirty.data.test.ts`:
 
@@ -667,12 +667,12 @@ describe.skipIf(!hasFixture('graphics/dirty.tsv'))('dirty-rect lists match the o
 });
 ```
 
-- [ ] **Action 11: Run the data test**
+- [x] **Action 11: Run the data test**
 
 Run: `pnpm exec vitest run src/gfx/gdi/dirty.data.test.ts`
 Expected: PASS. A failure lists up to 10 operations as `sequence/step op`. Take the first one, replay its sequence up to that step in Python (`DirtyEmulator`) and in a scratch Vitest test, compare `lists()` with `snapshot()` step by step, and fix the port where it strays from the original. Do not change the fixture.
 
-- [ ] **Action 12: Commit**
+- [x] **Action 12: Commit**
 
 ```bash
 git add src/gfx/gdi/dirty.ts src/gfx/gdi/dirty.test.ts src/gfx/gdi/dirty.data.test.ts
@@ -681,20 +681,20 @@ git commit -m "feat(gfx): dirty-rect lists ported from the original and checked 
 
 ## Part D: Findings
 
-- [ ] **Action 13: Write the findings**
+- [x] **Action 13: Write the findings**
 
 In `docs/re/graphics.md`, replace `None yet.` under `Dirty rects` with one bullet per claim, each starting with its address: the node layout and pool (`1060:0000`, 26-byte nodes, 5 at a time, `1068:46ec` count), the 20 heads at `1068:46f0`, the list key (source, target, age of the head node), every rule of `1060:007e` (kind 4 source, screen and clip cuts, column conversion, zero check, 16-bit area, merge rule and its stop rule, head insertion), `1060:05f9`, `1060:03d3` (the table at `1068:287e` from `restore-table.tsv`, the single pair at `1068:2882`, aging), `1060:04b2`, `1060:046e`, `1060:0556`, `1060:0596`, `1060:06ac`, and `1060:06f5` (never advances; no callers). Add: "Emulated: 300 random sequences of 40 operations (`re/fixtures/graphics/dirty.tsv`) end with the same results and lists in `src/gfx/gdi/dirty.ts`."
 
 Checklist rows (real line numbers): `1060:007e` → `DirtyLists.add`, `1060:05a7` → `find`, `1060:05f9` → `replay`, `1060:03d3` → `restorePass` (the table lives in step 5's `display.ts`; write `src/gfx/gdi/dirty.ts` here), `1060:04b2` → `overlaps`, `1060:06ac` → `drop`, `1060:046e` → `clear`, all `fixed`; `1060:0000`, `1060:0556`, `1060:0596` → `none (no node pool)`, `match`; `1060:06f5` → `none (dead code, endless loop, no callers)`, `match`.
 
-- [ ] **Action 14: Names and status**
+- [x] **Action 14: Names and status**
 
 In `scripts/re/names.json`: `1060:0000` `gfx_growDirtyPool`, `1060:007e` `gfx_addDirtyRect`, `1060:03d3` `gfx_restoreDirtyRects`, `1060:046e` `gfx_clearDirtyLists`, `1060:04b2` `gfx_dirtyOverlaps`, `1060:0556` `gfx_freeDirtyPool`, `1060:0596` `gfx_dirtyPoolSize`, `1060:05a7` `gfx_findDirtyList`, `1060:05f9` `gfx_replayDirtyList`, `1060:06ac` `gfx_dropDirtyList`, `1060:06f5` `gfx_copyDirtyList`; all `verified`; notes in our words.
 
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 15: Check and commit**
+- [x] **Action 15: Check and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -712,7 +712,7 @@ git commit -m "docs(re): chunk 4 dirty-rect lists verified"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
-- [ ] Only if something could not be finished: record it in
+- [x] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

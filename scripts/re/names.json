@@ -1456,6 +1456,94 @@
       "signature": null,
       "callingConvention": null
     },
+    "1060:0000": {
+      "name": "gfx_growDirtyPool",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Allocates ceil(n / 5) * 5 zeroed 26-byte dirty-rect nodes and puts them on the free list 1068:46ee; adds them to the count 1068:46ec",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:007e": {
+      "name": "gfx_addDirtyRect",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Adds a dirty rect to the list keyed (source, target, age): kind 1 is cut to the clip or screen, turned into 8-pixel columns, and merged when the union wastes at most 20 cells (16-bit); kind 4 has source -1",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:03d3": {
+      "name": "gfx_restoreDirtyRects",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Replays the source/target pairs of the table at 1068:287e with age 0 (or only 1068:2882), then with 0 ages every remaining node by -1",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:046e": {
+      "name": "gfx_clearDirtyLists",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Moves every node of the 20 dirty lists to the free list",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:04b2": {
+      "name": "gfx_dirtyOverlaps",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Returns 1 when a kind-1 node of any list with that target and age overlaps the rect in columns and rows, else 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:0556": {
+      "name": "gfx_freeDirtyPool",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Empties the lists and frees the node pool blocks; does not reset the pool count",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:0596": {
+      "name": "gfx_dirtyPoolSize",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Returns the dirty node pool count 1068:46ec; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:05a7": {
+      "name": "gfx_findDirtyList",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Returns the head slot whose first node has the given source, target, and age, else the first empty slot, else 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:05f9": {
+      "name": "gfx_replayDirtyList",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Sets source/target DCs from the head, replays the list head to tail (kind 1: copy 8-pixel columns, kind 4: restore saved bits), then frees it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:06ac": {
+      "name": "gfx_dropDirtyList",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Frees one dirty list without replaying it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:06f5": {
+      "name": "gfx_copyDirtyList",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Meant to copy one list into another key; never advances past the head, so it loops forever on a non-empty list; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
     "1060:0a23": {
       "name": "platform_globalAllocLock",
       "subsystem": "platform",
