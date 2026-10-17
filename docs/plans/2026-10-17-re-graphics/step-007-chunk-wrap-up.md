@@ -33,7 +33,7 @@ The spec's done rule for a chunk:
 
 ## Part A: Status
 
-- [ ] **Action 1: List what is still not verified**
+- [x] **Action 1: List what is still not verified**
 
 Run:
 
@@ -48,11 +48,11 @@ for (const a of scope) if (names[a]?.status !== 'verified') console.log(a, names
 
 Expected: only addresses that appear in `docs/re/open-questions.md`. Check each with `rg -n "<address>" docs/re/open-questions.md`. For any that is missing from both, read it, write its finding and checklist row, and mark it `verified`; or add an open-questions entry saying exactly what is unknown.
 
-- [ ] **Action 2: Check the checklist**
+- [x] **Action 2: Check the checklist**
 
 Every address in the scope list above has exactly one row in the `Side-by-side checklist` of `docs/re/graphics.md`, and every `open` row has an entry in `docs/re/open-questions.md` that names that address. Fix whatever is missing.
 
-- [ ] **Action 3: Check the carry-over notes**
+- [x] **Action 3: Check the carry-over notes**
 
 Run: `rg -n "Resolve in:\*\* chunk 5" docs/re/open-questions.md`
 Expected, at least: the model is not wired in; OQ-9 (screen index 0); text drawing; stretched sprites; dirty-rect presenting; OQ-14 (the return-0 stub group); plus the older chunk 5 entries (OQ-8, OQ-10).
@@ -64,7 +64,7 @@ If one is missing, add it from the step that should have written it.
 
 ## Part B: Past fixes
 
-- [ ] **Action 4: Review the chunk 4 rows of "Past fixes to re-check"**
+- [x] **Action 4: Review the chunk 4 rows of "Past fixes to re-check"**
 
 The table in `docs/re/open-questions.md` lists three commits for chunk 4: `85c05ad` (copyZoneToBg skips transparent pixels), `b631319` (animation sprites sometimes get cut), `43ef25b` (better color and transparency handling, chunks 3 and 4). For each:
 
@@ -82,7 +82,7 @@ Then, in the table, change the Chunk cell of each reviewed row from `4` (or `3, 
 
 ## Part C: Comments
 
-- [ ] **Action 5: Audit the comments in `src/gfx/`**
+- [x] **Action 5: Audit the comments in `src/gfx/`**
 
 Run: `rg -n "//|/\*" src/gfx`
 
@@ -98,11 +98,11 @@ For each comment, apply the overview's rule: keep it only if a competent enginee
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 6: Update the segment overview**
+- [x] **Action 6: Update the segment overview**
 
 In `docs/re/segments.md`, update the rows for Code5 (`1020`: the wipe dispatcher and six wipes), Code7 (`1030`: line, text, stretched sprite, saved rects, bitmap free), Code8 (`1038`: copy and present rects, sprite blit, clip region, display setup, rect, brushes, scaling dead code), Code9 (`1040`: bitmap builders, mask, row flip and mirror, palette color, circle, pixel, palette select, matrix), and Code13 (`1060`: dirty-rect lists and restore pass). Add under "Tables found", one line each: `1068:46f0` (20 dirty-list heads), `1068:46ee` / `1068:46ec` (free nodes, pool count), `1068:287e` / `1068:2882` (restore table), `1068:287c` (`0xffff`, the saved-bits source), `1068:1ea3`..`1068:1eae` (clip and drawing state), `1068:1eb0`..`1068:1eb8` (DCs and source/target), `1068:45a0`..`1068:45a4` (the three bitmaps), `1068:361a` (wipe counter), `1068:2e74`..`1068:2e77` (scale modes, all 3).
 
-- [ ] **Action 7: Commit**
+- [x] **Action 7: Commit**
 
 ```bash
 git add scripts/re/names.json docs/re/function-map.md docs/re/graphics.md docs/re/open-questions.md docs/re/segments.md src/gfx
@@ -111,7 +111,7 @@ git commit -m "docs(re): chunk 4 functions verified, past fixes reviewed, commen
 
 ## Part D: Full verification
 
-- [ ] **Action 8: Rebuild everything from scratch and run every test**
+- [x] **Action 8: Rebuild everything from scratch and run every test**
 
 Run: `scripts/re/ghidra-import.sh`
 Expected: ends with `export written to .../re/out`.
@@ -128,7 +128,7 @@ Expected: no errors.
 Run: `pnpm test`
 Expected: all pass, and none of these is reported as skipped: `src/gfx/gdi/color.data.test.ts`, `src/gfx/gdi/masks.data.test.ts`, `src/gfx/gdi/sprite.data.test.ts`, `src/gfx/gdi/dirty.data.test.ts`, `src/gfx/gdi/display.data.test.ts`, `src/gfx/fade.data.test.ts`. If one is skipped, its input is missing; fix that before going on.
 
-- [ ] **Action 9: Smoke test in the browser**
+- [x] **Action 9: Smoke test in the browser**
 
 Run in the background: `pnpm dev`
 Expected: Vite prints a local URL, usually `http://localhost:5173/`.
@@ -145,11 +145,11 @@ You cannot see the canvas yourself; do not mark this action done without their a
 
 Stop the dev server by the job id or PID you started it with. Never kill by name.
 
-- [ ] **Action 10: Tick the spec**
+- [x] **Action 10: Tick the spec**
 
 In `docs/specs/2026-10-17-reverse-engineering-validation-design.md`, tick `- [ ] **4. Graphics.**` to `- [x]`. Change nothing else in that file.
 
-- [ ] **Action 11: Commit**
+- [x] **Action 11: Commit**
 
 ```bash
 git add docs/specs/2026-10-17-reverse-engineering-validation-design.md
@@ -158,7 +158,7 @@ git commit -m "docs: chunk 4 (graphics) done"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
-- [ ] Only if something could not be finished: record it in
+- [x] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

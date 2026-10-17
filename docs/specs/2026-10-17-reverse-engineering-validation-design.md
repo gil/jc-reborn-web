@@ -87,7 +87,7 @@ Each chunk gets its own implementation plan before work starts.
 - [x] **1. Toolchain.** Install Unicorn. Import script, export script, `names.json`, `re/` gitignore entry, Unicorn harness skeleton, initial function map from strings and imports. Blocks everything.
 - [x] **2. Resources.** `RESOURCE.MAP` / `RESOURCE.001` parsing, RLE and LZW decompression (`src/io/`, `src/resource/`). Validated with Unicorn and corpus tests.
 - [x] **3. Decoders.** PAL, SCR, BMP, TTM loader, ADS loader, sub-chunk tags such as `BMP:INF:`, `SCR:DIM:`, `ADS:RES:` (`src/decode/`). Validated with Unicorn and corpus tests.
-- [ ] **4. Graphics.** Primitives, sprites, flipped sprites, zones, clipping, palette, fade, compositing (`src/gfx/`).
+- [x] **4. Graphics.** Primitives, sprites, flipped sprites, zones, clipping, palette, fade, compositing (`src/gfx/`).
 - [ ] **5. TTM interpreter.** Every opcode, timers, slots, tags (`src/ttm/`). Needs 3 and 4.
 - [ ] **6. ADS scheduler.** Threads, timers, conditions, random choices, END handling (`src/ads/`). Needs 5.
 - [ ] **7. Story and main loop.** Scene choice, day/night, holidays, INI-driven behavior, tick timing, island layout (`src/story/`, `src/engine/`, `src/island/`). Watchdog and leak-sweep workarounds are judged here. Needs 6.

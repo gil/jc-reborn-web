@@ -168,7 +168,7 @@ Read but not in scope (leave as they are): timer callbacks `1040:076a 079e 07e6 
 - [x] `step-004-dirty-rect-lists.md`: `src/gfx/gdi/dirty.ts`, a literal port of the `1060` list code (add, merge, replay, restore pass), compared with the original in Unicorn on random sequences.
 - [x] `step-005-display-buffers.md`: `src/gfx/gdi/display.ts` (three surfaces, 8-pixel copy, save/restore bits, screen blit, restore pass, presented surface); OQ-9 settled for the model.
 - [x] `step-006-wipes.md`: wipe geometry checked in Unicorn; `src/gfx/fade.ts` draws the original six wipes.
-- [ ] `step-007-chunk-wrap-up.md`: every in-scope function `verified` or logged, comment audit of `src/gfx/`, past-fix review, full test run, smoke test, spec checkbox ticked.
+- [x] `step-007-chunk-wrap-up.md`: every in-scope function `verified` or logged, comment audit of `src/gfx/`, past-fix review, full test run, smoke test, spec checkbox ticked.
 
 Order: step 1 first (harness, findings file, `color.ts`). Step 2 needs step 1 (`color.ts`). Step 3 needs step 2 (`surface.ts`). Step 4 needs step 1 (harness) and the `ClipRect` type from step 2. Step 5 needs steps 2, 3, and 4. Step 6 needs step 1 (harness) and step 4 (`signed` in the harness, `json` in `dump_graphics.py`); its TypeScript change does not depend on the model. Steps extend the same findings file, `names.json`, `original_graphics.py`, and `dump_graphics.py`, so run them one at a time, in number order. Step 7 needs all of them.
 
