@@ -35,7 +35,7 @@
     - `readTotalFunctions(indexPath: string): number | null`
     - `NAMES_PATH`, `MAP_PATH`, `INDEX_PATH`: absolute paths
 
-- [ ] **Action 1: Write the failing tests**
+- [x] **Action 1: Write the failing tests**
 
 Create `scripts/re/function-map.test.ts`:
 
@@ -125,12 +125,12 @@ describe('renderFunctionMap', () => {
 });
 ```
 
-- [ ] **Action 2: Run the tests, confirm they fail**
+- [x] **Action 2: Run the tests, confirm they fail**
 
 Run: `pnpm exec vitest run scripts/re/function-map.test.ts`
 Expected: FAIL, cannot resolve `./function-map.mjs`.
 
-- [ ] **Action 3: Write `scripts/re/function-map.mjs`**
+- [x] **Action 3: Write `scripts/re/function-map.mjs`**
 
 ```js
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -223,25 +223,25 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 }
 ```
 
-- [ ] **Action 4: Generate the map**
+- [x] **Action 4: Generate the map**
 
 Run: `mkdir -p docs/re`
 Run: `node scripts/re/function-map.mjs`
 Expected: `wrote .../docs/re/function-map.md`. The file has one `## rtl` section with the five runtime library entries. If `re/out/index.tsv` exists, the header line shows the unknown count.
 
-- [ ] **Action 5: Run the tests, confirm they pass**
+- [x] **Action 5: Run the tests, confirm they pass**
 
 Run: `pnpm exec vitest run scripts/re/function-map.test.ts`
 Expected: all tests pass.
 
-- [ ] **Action 6: Commit**
+- [x] **Action 6: Commit**
 
 ```bash
 git add scripts/re/function-map.mjs scripts/re/function-map.test.ts docs/re/function-map.md
 git commit -m "feat(re): names.json validator and function map renderer"
 ```
 
-- [ ] **Action 7: Write `docs/re/README.md`**
+- [x] **Action 7: Write `docs/re/README.md`**
 
 ```markdown
 # Reverse Engineering SCRANTIC.SCR
@@ -304,7 +304,7 @@ Tests that pin original behavior cite the address: `// SCRANTIC 1008:04a2`.
 
 The last section points at a file step 3 creates. That's expected if step 3 hasn't run yet.
 
-- [ ] **Action 8: Find all workaround sites**
+- [x] **Action 8: Find all workaround sites**
 
 Run: `rg -n -i "sweep|leak|orphan|watchdog|grace|workaround|hack|force" src --glob '!*.test.ts'`
 Run: `git log --oneline --grep '^fix'`
@@ -316,7 +316,7 @@ Known sites as of 2026-10-17:
 
 Add any extra site the search finds.
 
-- [ ] **Action 9: Write `docs/re/open-questions.md`**
+- [x] **Action 9: Write `docs/re/open-questions.md`**
 
 Use the template below. Fill in one `OQ-n` per workaround site from action 8. For the "Past fixes" table, put every line from `git log --oneline --grep '^fix'` in it, and assign each one the chunk that will re-check it. Chunks: 2 resources, 3 decoders, 4 graphics, 5 TTM, 6 ADS, 7 story and main loop, 8 walk.
 
@@ -366,7 +366,7 @@ None yet.
 
 The `85c05ad` row is an example. Replace the table body with the full `git log` list.
 
-- [ ] **Action 10: Run the full suite and type check**
+- [x] **Action 10: Run the full suite and type check**
 
 Run: `pnpm test`
 Expected: all tests pass.
@@ -374,7 +374,7 @@ Expected: all tests pass.
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 11: Commit**
+- [x] **Action 11: Commit**
 
 ```bash
 git add docs/re/README.md docs/re/open-questions.md
@@ -383,7 +383,7 @@ git commit -m "docs(re): trust order, toolchain usage, and open questions"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
