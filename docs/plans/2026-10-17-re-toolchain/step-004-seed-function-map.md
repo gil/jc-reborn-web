@@ -38,12 +38,12 @@ This step is reverse engineering work, not coding. The goal is a starting map: f
 - Use the subsystem list from the overview. Windows glue (window, message loop, INI, memory) goes under `platform`.
 - Keep `names.json` sorted by address. The validator rejects unsorted files.
 
-- [ ] **Action 1: Fresh export**
+- [x] **Action 1: Fresh export**
 
 Run: `scripts/re/ghidra-import.sh`
 Expected: `export written to .../re/out`.
 
-- [ ] **Action 2: Name the three known string users**
+- [x] **Action 2: Name the three known string users**
 
 Already confirmed by probing (instruction → function):
 
@@ -68,7 +68,7 @@ For each function, read `re/out/functions/<ssss>_<oooo>_FUN_<ssss>_<oooo>.c`, de
 
 The example name and note are placeholders for what you actually read. Replace them with what the pseudo-C shows.
 
-- [ ] **Action 3: Name the functions behind the other anchor strings**
+- [x] **Action 3: Name the functions behind the other anchor strings**
 
 For each string below, find its row in `re/out/strings.tsv` (use `rg -n -F '<text>' re/out/strings.tsv`). Take the function after `@` in each scalar hit, read its `.c` file, and name it per the rules. One function often covers several strings. Name it once.
 
@@ -90,7 +90,7 @@ The subsystem column is a guess. Use what the code shows.
 
 Strings with no scalar hit may be reached through a table. If a hit lands on a table address, note the table in `docs/re/segments.md` (action 6) and move on.
 
-- [ ] **Action 4: Name the main users of key imports**
+- [x] **Action 4: Name the main users of key imports**
 
 Open `re/out/imports.tsv`. For each import below, look at its callers. Name a caller when its role is clear from the pseudo-C (for example, the one function that reads all INI keys, or the one that wraps `BITBLT` for sprite blits). Skip callers that are generic wrappers you can't place yet.
 
@@ -104,7 +104,7 @@ Open `re/out/imports.tsv`. For each import below, look at its callers. Name a ca
 
 Also name the `SCREENSAVERPROC` export (window procedure) under `platform`. Find its address with `rg -n -i screensaverproc re/out/index.tsv`. If it isn't in the index by name, look it up in `re/ghidra-import.log` or skip it.
 
-- [ ] **Action 5: Validate, apply, and regenerate**
+- [x] **Action 5: Validate, apply, and regenerate**
 
 Run: `node scripts/re/function-map.mjs`
 Expected: `wrote .../docs/re/function-map.md`. On errors, fix `names.json` and re-run.
@@ -115,7 +115,7 @@ Expected: `export written to .../re/out`. This applies the new names in Ghidra. 
 Run: `node scripts/re/function-map.mjs`
 Expected: the unknown count in `docs/re/function-map.md` matches the fresh export.
 
-- [ ] **Action 6: Write `docs/re/segments.md`**
+- [x] **Action 6: Write `docs/re/segments.md`**
 
 Use what the named functions show. One row per segment. Write "unclear" when you don't know. Never guess past the evidence.
 
@@ -148,7 +148,7 @@ Which NE segment holds which subsystem, based on the functions named so far. Upd
 
 Replace every `...` with what you found or with "unclear". Under "Tables found", list each table you hit in action 3, or write "None yet."
 
-- [ ] **Action 7: Run tests**
+- [x] **Action 7: Run tests**
 
 Run: `pnpm test`
 Expected: all pass. That includes `function-map.test.ts`'s check that the committed map matches `names.json`, and `export.data.test.ts`'s check that every name was applied.
@@ -156,7 +156,7 @@ Expected: all pass. That includes `function-map.test.ts`'s check that the commit
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_*.py'`
 Expected: OK. Skip this if step 3 hasn't run yet (`re/.venv` missing).
 
-- [ ] **Action 8: Commit**
+- [x] **Action 8: Commit**
 
 Run: `git status --short`
 Expected: only `scripts/re/names.json`, `docs/re/function-map.md`, `docs/re/segments.md`. Nothing under `re/`.
@@ -168,7 +168,7 @@ git commit -m "docs(re): seed function map from string and import anchors"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
