@@ -49,7 +49,7 @@ The game opens a resource, seeks to a compressed chunk body, then calls `1028:06
 
 `replace_function` patches the function's first 5 bytes with `JMP FAR` to a fresh slot in the stub segment. The slot holds `RETF`, and the existing stub hook runs the handler there. Because we jump instead of call, the stack still holds the original caller's far return address, so `emu.arg(0)` is the word at `SS:SP+4`.
 
-- [ ] **Action 1: Write failing emulator tests**
+- [x] **Action 1: Write failing emulator tests**
 
 Append to the `EmulatorTest` class in `scripts/re/unicorn/test_emulator.py`:
 
@@ -79,12 +79,12 @@ Append to the `EmulatorTest` class in `scripts/re/unicorn/test_emulator.py`:
         self.assertEqual(self.emu.data_segment, self.emu.paragraphs[self.image.auto_data_segment])
 ```
 
-- [ ] **Action 2: Run them to see them fail**
+- [x] **Action 2: Run them to see them fail**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_emulator.py' -v`
 Expected: the three new tests fail with `AttributeError: 'Emulator' object has no attribute ...`. The old tests pass.
 
-- [ ] **Action 3: Implement `replace_function`, `arg`, `near_alloc`, `data_segment`**
+- [x] **Action 3: Implement `replace_function`, `arg`, `near_alloc`, `data_segment`**
 
 In `scripts/re/unicorn/emulator.py`:
 
@@ -184,19 +184,19 @@ with
 
 In `_resolve`, change `return self.stub_paragraph, self._import_offset(target)` to `return self.stub_paragraph, self._stub_offset(target)`. In `call_far`, change `data_segment = self.paragraphs[self.image.auto_data_segment]` to `data_segment = self.data_segment`.
 
-- [ ] **Action 4: Run the emulator tests**
+- [x] **Action 4: Run the emulator tests**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_emulator.py' -v`
 Expected: all pass. If `test_near_alloc_hands_out_disjoint_words_after_the_data` fails on the first value, print `len(auto_data.data)` and `auto_data.min_alloc`; the expected `0x47C0` comes from both being `0x47c0`. Fix the code, not the expectation, unless the image says otherwise.
 
-- [ ] **Action 5: Commit**
+- [x] **Action 5: Commit**
 
 ```bash
 git add scripts/re/unicorn/emulator.py scripts/re/unicorn/test_emulator.py
 git commit -m "feat(re): replace internal SCRANTIC functions with Python handlers in Unicorn"
 ```
 
-- [ ] **Action 6: Write the corpus tests**
+- [x] **Action 6: Write the corpus tests**
 
 Create `scripts/re/unicorn/test_corpus.py`:
 
@@ -247,7 +247,7 @@ if __name__ == "__main__":
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_corpus.py' -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'corpus'`.
 
-- [ ] **Action 7: Implement `corpus.py`**
+- [x] **Action 7: Implement `corpus.py`**
 
 Create `scripts/re/unicorn/corpus.py`:
 
@@ -326,14 +326,14 @@ def compressed_chunks(resources: list[Resource]) -> list[tuple[Resource, Chunk]]
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_corpus.py' -v`
 Expected: 4 tests pass.
 
-- [ ] **Action 8: Commit**
+- [x] **Action 8: Commit**
 
 ```bash
 git add scripts/re/unicorn/corpus.py scripts/re/unicorn/test_corpus.py
 git commit -m "feat(re): Python walker for RESOURCE.001 resources and chunk trees"
 ```
 
-- [ ] **Action 9: Write the failing original-decompressor tests**
+- [x] **Action 9: Write the failing original-decompressor tests**
 
 The expected outputs below are predictions from a first reading. **The original is ground truth.** If a case fails, first rule out a harness bug (wrong argument order, a missing replacement, a handler returning the wrong register). If the harness is right, change the expected value to what the original produced and keep going. Action 13 records the final values for step 2.
 
@@ -413,7 +413,7 @@ if __name__ == "__main__":
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_decompress.py' -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'original_decompress'`.
 
-- [ ] **Action 10: Implement `original_decompress.py`**
+- [x] **Action 10: Implement `original_decompress.py`**
 
 Create `scripts/re/unicorn/original_decompress.py`:
 
@@ -541,7 +541,7 @@ def _install_file(emu: Emulator, file: VirtualFile):
         emu.replace_function(address, handler)
 ```
 
-- [ ] **Action 11: Run and debug until the harness is right**
+- [x] **Action 11: Run and debug until the harness is right**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_decompress.py' -v`
 
@@ -554,7 +554,7 @@ Work through failures in this order:
 
 Expected at the end: all three tests pass.
 
-- [ ] **Action 12: Write the fixture dumper**
+- [x] **Action 12: Write the fixture dumper**
 
 Create `scripts/re/unicorn/dump_decompressed.py`:
 
@@ -634,7 +634,7 @@ Expected: last line `180 chunks, 0 short`, exit code 0. It may take a few minute
 Run: `ls re/fixtures/decompressed`
 Expected: `index.tsv` plus 180 `.bin` files.
 
-- [ ] **Action 13: Write `docs/re/resources.md`**
+- [x] **Action 13: Write `docs/re/resources.md`**
 
 Run: `re/.venv/bin/python -I scripts/re/unicorn/dump_decompressed.py --edge-cases`
 Expected: a markdown table, one row per edge case.
@@ -677,7 +677,7 @@ Outputs of the original decompressor run in Unicorn by `scripts/re/unicorn/dump_
 
 Leave the empty sections for steps 2 and 3.
 
-- [ ] **Action 14: Name the functions this step relies on**
+- [x] **Action 14: Name the functions this step relies on**
 
 Add these entries to `scripts/re/names.json` (status `named`, `signature` and `callingConvention` `null`), keeping the file sorted by address. Rewrite the notes if what you saw differs:
 
@@ -703,7 +703,7 @@ Expected: ends with `export written to .../re/out`. The new names now appear in 
 
 Note: after the re-import, `re/out/functions/` file names change for renamed functions (e.g. `1028_0615_resources_openStream.c`). The harness uses addresses only, so nothing breaks.
 
-- [ ] **Action 15: Update the Unicorn README**
+- [x] **Action 15: Update the Unicorn README**
 
 Append to `scripts/re/unicorn/README.md`:
 
@@ -722,7 +722,7 @@ Patches the function entry with a far jump to a stub slot, so the handler runs i
 The first runs `1028:0615` / `1028:0a0d` / `1028:0875` on every compressed chunk in `RESOURCE.001` and writes the output to `re/fixtures/decompressed/` (gitignored), with `index.tsv` listing resource, chunk path, body offset, method, header size, bytes produced, and file. The second prints the edge-case table kept in `docs/re/resources.md`. The file layer (`1018:1287`, `1018:14e9`, `1018:1398`, `1018:1475`) and allocators (`1038:06a8`, `1030:199a`, `1030:1b63`) are replaced by Python handlers in `original_decompress.py`.
 ```
 
-- [ ] **Action 16: Run every check**
+- [x] **Action 16: Run every check**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_*.py' -v`
 Expected: all pass.
@@ -730,7 +730,7 @@ Expected: all pass.
 Run: `fnm use`, then `pnpm test`
 Expected: all pass (the export test confirms every `names.json` entry was applied).
 
-- [ ] **Action 17: Commit**
+- [x] **Action 17: Commit**
 
 ```bash
 git add scripts/re/unicorn/original_decompress.py scripts/re/unicorn/test_original_decompress.py scripts/re/unicorn/dump_decompressed.py scripts/re/unicorn/README.md scripts/re/names.json docs/re/function-map.md docs/re/resources.md
@@ -741,7 +741,7 @@ Check `git status` first: nothing under `re/` may be staged.
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
-- [ ] Only if something could not be finished: record it in
+- [x] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

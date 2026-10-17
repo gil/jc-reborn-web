@@ -144,6 +144,38 @@
       "signature": null,
       "callingConvention": null
     },
+    "1018:1287": {
+      "name": "resources_readFile",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "fread-like read from an open resource file: buffer, item size, count, handle; returns items read",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1398": {
+      "name": "resources_seekFile",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "fseek-like seek on an open resource file: handle, 32-bit offset, whence",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1475": {
+      "name": "resources_tellFile",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "ftell-like position of an open resource file, returned in DX:AX",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:14e9": {
+      "name": "resources_getFileByte",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "getc-like read of one byte from an open resource file, 0xFFFF at end",
+      "signature": null,
+      "callingConvention": null
+    },
     "1018:1771": {
       "name": "resources_readResourceMap",
       "subsystem": "resources",
@@ -248,6 +280,38 @@
       "signature": null,
       "callingConvention": null
     },
+    "1028:0615": {
+      "name": "resources_openStream",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Opens a decompression stream on a file at a chunk body; read mode takes the method byte and u32 size from the file; returns stream id 0..99 or 0xFFFF",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:076c": {
+      "name": "resources_openMemoryStream",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Same as resources_openStream over a far memory buffer; never called",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0875": {
+      "name": "resources_closeStream",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Closes a decompression stream and frees its buffers; write mode first flushes and patches the size",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0a0d": {
+      "name": "resources_readStream",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Reads up to count decompressed bytes into a far buffer; returns the count produced",
+      "signature": null,
+      "callingConvention": null
+    },
     "1030:01c4": {
       "name": "gfx_saveRectBits",
       "subsystem": "gfx",
@@ -317,6 +381,38 @@
       "subsystem": "decoders",
       "status": "named",
       "note": "Loads a SCR resource: size from SCR:DIM: (default 320x200), SCR:BIN: decoded in strips, optional SCR:VGA: or SCR:AMG: layer",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:199a": {
+      "name": "platform_farAlloc",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Allocates a far block of a 32-bit size with flags; returns DX:AX",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:1b63": {
+      "name": "platform_farFree",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Frees a far block",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:063b": {
+      "name": "platform_nearFree",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Frees a near block through LocalFree",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:06a8": {
+      "name": "platform_nearCalloc",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Zeroed near allocation of count times size bytes",
       "signature": null,
       "callingConvention": null
     },
