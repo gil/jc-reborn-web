@@ -21,7 +21,9 @@ export function copyZoneToBg(srcLayer: Layer, x: number, y: number, w: number, h
     for (let xx = 0; xx < W; xx++) {
       const X = x + xx, Y = y + yy;
       if (X < 0 || X >= SCREEN_W || Y < 0 || Y >= SCREEN_H) continue;
-      buf[Y * SCREEN_W + X] = srcLayer.indexed[Y * SCREEN_W + X]!;
+      const v = srcLayer.indexed[Y * SCREEN_W + X]!;
+      if (v === TRANSPARENT) continue; // C SDL blit colorkey skips transparent source
+      buf[Y * SCREEN_W + X] = v;
     }
   }
 }
