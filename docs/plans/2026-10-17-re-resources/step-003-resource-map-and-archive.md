@@ -360,7 +360,7 @@ git commit -m "test(resources): RESOURCE.MAP and RESOURCE.001 corpus checks"
 
 ## Part D: Side-by-side checklist
 
-- [ ] **Action 11: Fill the checklist rows**
+- [x] **Action 11: Fill the checklist rows**
 
 In `docs/re/resources.md` under `Side-by-side checklist`, add one row per in-scope `1018` function. Expected mapping, adjust to your findings:
 
@@ -378,7 +378,7 @@ Use real line numbers (`file:line`). Status `fixed` for `1018:1771` (the hash fi
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 12: Run every check**
+- [x] **Action 12: Run every check**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -386,7 +386,7 @@ Expected: no errors.
 Run: `pnpm test`
 Expected: all pass.
 
-- [ ] **Action 13: Commit**
+- [x] **Action 13: Commit**
 
 ```bash
 git add docs/re/resources.md docs/re/function-map.md scripts/re/names.json
@@ -395,7 +395,7 @@ git commit -m "docs(re): side-by-side checklist for the resource map and file la
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

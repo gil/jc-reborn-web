@@ -119,7 +119,7 @@ Status is `match`, `fixed`, or `open` (every `open` row has an entry in `docs/re
 
 - [x] `step-001-unicorn-original-decompressor.md`: emulator can replace internal functions; the original decompressor runs on handmade edge cases and on all 180 corpus chunks; fixtures in `re/fixtures/decompressed/`.
 - [x] `step-002-decompression-findings-and-fix.md`: RLE, LZW, and stream findings written and pinned by tests; `src/resource/uncompress.ts` matches the original on every corpus chunk; decoders share one chunk unpacker.
-- [ ] `step-003-resource-map-and-archive.md`: map, name hash, archive, and file layer findings written and pinned; `src/resource/` map types and parser fixed; corpus tests for map and archive.
+- [x] `step-003-resource-map-and-archive.md`: map, name hash, archive, and file layer findings written and pinned; `src/resource/` map types and parser fixed; corpus tests for map and archive.
 - [ ] `step-004-chunk-wrap-up.md`: every in-scope function `verified` or logged, comment audit of `src/io/` and `src/resource/`, full test run, smoke test, spec checkbox ticked.
 
 Order: strictly 1, 2, 3, 4. Step 2 needs step 1's fixtures and edge-case table. Step 3 uses the corpus test helper made in step 2. Step 4 needs all of them.

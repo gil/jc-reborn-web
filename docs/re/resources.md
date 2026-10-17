@@ -211,3 +211,23 @@ All 180 compressed chunks in `RESOURCE.001` decompress to exactly their header s
 | `1028:157c` | `resources_lzwCheckRatio` | none (write side, OQ-7) | open |
 | `1028:1654` | `resources_lzwClearHash` | none (write side, OQ-7) | open |
 | `1028:1698` | `resources_rleWrite` | none (write side, OQ-7) | open |
+| `1018:1008` | `resources_diskRetryHook` | none (does nothing) | match |
+| `1018:1019` | `resources_openFile` | `src/resource/resource-archive.ts:5` (`indexArchive`), `src/io/fetch-resources.ts:1` (`fetchData`); loose-file override: none (the web build has no loose files next to the archive); case-insensitive name match: OQ-8 | open |
+| `1018:1204` | `resources_closeFile` | none (no file slots: we fetch both files whole) | match |
+| `1018:1287` | `resources_readFile` | none (we fetch both files whole and slice payloads in memory) | match |
+| `1018:1398` | `resources_seekFile` | none (we fetch both files whole and slice payloads in memory) | match |
+| `1018:1475` | `resources_tellFile` | none (we fetch both files whole and slice payloads in memory) | match |
+| `1018:14cc` | `resources_rewindFile` | none (we fetch both files whole and slice payloads in memory) | match |
+| `1018:14e9` | `resources_getFileByte` | none (we fetch both files whole and slice payloads in memory) | match |
+| `1018:15d2` | `resources_eofFile` | none (no callers) | match |
+| `1018:1637` | `resources_writeFile` | none (write side; archived resources never write) | match |
+| `1018:16b7` | `resources_putFileByte` | none (write side; archived resources never write) | match |
+| `1018:1720` | `resources_setFileBuffer` | none (no callers) | match |
+| `1018:1771` | `resources_readResourceMap` | `src/resource/resource-map.ts:13` (`parseMap`; the first entry field is the name hash) | fixed |
+| `1018:18d2` | `resources_freeResourceMap` | none (no callers) | match |
+| `1018:1947` | `resources_forceArchiveReopen` | none (no callers) | match |
+| `1018:195a` | `resources_hashName` | `src/resource/resource-map.ts:25` (`resourceNameHash`) | match |
+| `1018:1a42` | `resources_findMapEntry` | `src/resource/resource-archive.ts:17` (`byName`; keyed by stored name, which finds the same entry because every hash matches its stored name) | match |
+| `1018:1bc3` | `resources_selectArchive` | none (one archive, held in memory) | match |
+| `1018:1caf` | `resources_seekArchive` | none (one archive, held in memory) | match |
+| `1018:1cfc` | `resources_fileSlotFor` | none (no file slots: we fetch both files whole) | match |
