@@ -1184,6 +1184,30 @@
       "signature": null,
       "callingConvention": null
     },
+    "1048:0303": {
+      "name": "ads_nextInstruction",
+      "subsystem": "ads",
+      "status": "named",
+      "note": "Returns the far pointer past one ADS instruction, sized by the 35-entry code-segment table at 1048:0383 (0 to 4 args, 0 for any other word); null past the bytecode end",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:040f": {
+      "name": "ads_sectionSceneIds",
+      "subsystem": "ads",
+      "status": "named",
+      "note": "Walks one ADS section to its 0xFFFF and returns a zero-terminated near list of the distinct tag nodes (1048:0bf4) named by its 0x2000/0x2005 instructions, or 0 when there are none",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:04fc": {
+      "name": "ads_indexSections",
+      "subsystem": "ads",
+      "status": "named",
+      "note": "With slot n: selects it and, on first use, indexes its sections (starts after each tag word, count = number of 0xFFFF) and per-section scene lists; with 0: restores the TTM list head of the current slot",
+      "signature": null,
+      "callingConvention": null
+    },
     "1050:013e": {
       "name": "ttm_readWord",
       "subsystem": "ttm",

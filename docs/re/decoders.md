@@ -180,6 +180,32 @@ Checking what each opcode means against the original is chunk 5's job; this tabl
 
 ## ADS loader
 
+- `1048:0079`: far cdecl `(name or handle)`. Takes the first free of 10 slots at `1068:460c` (far pointers); with none free it returns 0. It allocates a zeroed `0x472`-byte far record into the slot.
+- `1048:0079`: finds `ADS:RES:` with occurrence 0. Layout: u16 count, then per entry a u16 id (read into `1068:4608`) and a NUL-terminated name.
+- `1048:0079`: reads each name one byte at a time into a 20-byte stack buffer until the NUL, with no length check.
+- `1048:0079`: clears the TTM list head (`1068:2634`) and the tag list head (`1068:263c`) before the first entry, then loads each entry's TTM at once with `1048:0044(name, id)`. One failure stops the list and fails the whole ADS.
+- `1048:0079`: after the list, saves the TTM list head in record words `[6..7]` and the tag list head in word `[8]`.
+- `1048:0079`: finds `ADS:SCR:` with occurrence 0 and opens a decompression stream with the low 16 bits of its size. It reads the whole stream into one far buffer; the read count must equal the stream size.
+- `1048:0079`: record words `[2..3]` get the far bytecode pointer, `[4..5]` a pointer to its last byte (`start + size - 1`), and word `[0]` (the "sections indexed" flag) is set to 0.
+- `1048:0079`: at the end it closes the stream and the file, then calls `1048:04fc(0)`, which restores the TTM list head of the slot that was current before. Sections are not indexed at load time.
+- `1048:0079`: on any failure it calls `1048:001b`, which unloads all 10 ADS slots (`1048:067f`) and every TTM (`1050:07c6`), and returns 0. On success it returns slot + 1.
+- No `VER:`, `TAG:`, or `ADS:TAG:` string exists in the binary, so the original never reads the version or the `ADS:TAG:` names. Our debug page shows the `ADS:TAG:` names; nothing else uses them.
+- `1048:0303`: far cdecl `(far pointer)`. Returns null when the pointer is null or its offset is past the current slot's last byte (`1068:2608` selects the slot, record word `[4]`). Only offsets are compared.
+- `1048:0303`: looks the word up in a 35-entry table in the code segment at `1048:0383`; the handler offsets follow at `1048:0383 + 0x46`.
+- `1048:0303`: the five handlers add 10, 8, 6, 4, or 2 bytes to the pointer (4, 3, 2, 1, or 0 args). A word not in the table also moves 2 bytes (0 args).
+- `1048:0383`: the table, as `opcode: args`: `f000`: 0, `f010`: 1, `f200`: 1, `f210`: 1, `1010`..`1070`: 2, `1080`: 1, `1310`..`1370`: 2, `1380` `1390` `13a0` `13a1` `13b0` `13b1` `13c0` `13c1`: 1, `2000`: 4, `2005`: 4, `2010` `2015` `2020`: 3, `3020`: 1, `4000` `4010`: 3.
+- `1048:04fc`: far cdecl `(slot + 1, or 0)`. With 0, it restores the TTM list head (`1068:2634`) from the current slot's record words `[6..7]` and returns the current slot + 1. The tag list head is not restored.
+- `1048:04fc`: with `n` from 1 to 11 (the bound check allows 11 though there are 10 slots) and a loaded slot, it makes slot `n - 1` current (`1068:2608`) and restores its TTM list head. It returns `n` at once when record word `[0]` says the sections are already indexed.
+- `1048:04fc`: section 0 starts after the first word (its tag). Section pointers go to record words `[0xa9 + 2 × i]`.
+- `1048:04fc`: it walks with `1048:0303`. Every `0xFFFF` adds 1 to the count and moves 4 bytes, past the `0xFFFF` and the next section's tag word, so every section starts after its tag word. The tag word is never read as an instruction.
+- `1048:04fc`: the walk ends when the position reaches the last byte (`offset >= length - 1`). That test runs after each `0xFFFF` too, so a `0xFFFF` at the very end starts no section.
+- `1048:04fc`: the count in record word `[1]` is the number of `0xFFFF` seen. Pointer slots from the count to 79 are zeroed, so a last section with no closing `0xFFFF` is dropped.
+- `1048:04fc`: there is no bounds check on the section count while it walks; more than 80 sections would write past the pointer slots.
+- `1048:04fc`: each section's scene list from `1048:040f` goes to record word `[0x1e9 + i]`. Then it sets words `[9..0x58]` to 8, calls `1048:0bc5` (walks the tag list, chunk 6), sets word `[0]` to 1, and returns `n`.
+- `1048:040f`: walks one section with `1048:0303` until a `0xFFFF` opcode. For every instruction whose opcode is in the 2-entry table at `1068:260a` (`0x2000`, `0x2005`), it passes the first two args (TTM id, tag) to `1048:0bf4` and adds the result to a 100-entry stack list if it is not there yet (no bounds check).
+- `1048:040f`: returns a near zeroed copy of the list with a 0 end entry (`platform_nearCalloc`), or 0 when the list is empty.
+- `1048:0bf4`: returns the node of the current slot's tag list (record word `[8]`, next pointer at byte `+0x3b`) whose TTM id and tag equal its two args, or null.
+
 ## ADS opcode coverage
 
 ## Thunks
