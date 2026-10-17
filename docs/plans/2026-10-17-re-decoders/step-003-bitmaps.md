@@ -355,7 +355,7 @@ git commit -m "fix(decode): bitmaps use chunk lookup; checked against the origin
 
 ## Part D: Checklist
 
-- [ ] **Action 13: Fill the checklist rows and open questions**
+- [x] **Action 13: Fill the checklist rows and open questions**
 
 In `docs/re/decoders.md` under `Side-by-side checklist`, add rows (real line numbers):
 
@@ -373,7 +373,7 @@ If Action 2 could not tell who reaches `1040:0db0`, still mark it `match` (the d
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 14: Run every check and commit**
+- [x] **Action 14: Run every check and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -391,7 +391,7 @@ git commit -m "docs(re): side-by-side checklist for the bitmap loaders"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
-- [ ] Only if something could not be finished: record it in
+- [x] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

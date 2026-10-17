@@ -138,3 +138,9 @@ Results of the original chunk lookup (`1038:016b`, then `1038:0215` with occurre
 | `1038:0619` | `platform_nearMalloc` | none (allocation) | match |
 | `1040:09eb` | `decoders_loadPalette` | `src/decode/pal.ts:8` (`decodePal`; 16 colors through the level table) | fixed |
 | `1030:16d8` | `decoders_loadScreen` | `src/decode/scr.ts:10` (`decodeScr`); strips: none (we decode the whole screen at once; the only visible difference, the uncut first strip, needs a screen under 64 rows, and the data has none) | fixed |
+| `1030:1112` | `decoders_readBmpInfo` | `src/decode/bmp.ts:8` (`decodeBmp`: count, widths, then heights from `BMP:INF:`) | fixed |
+| `1030:124a` | `decoders_loadBmp` | `src/decode/bmp.ts:8` (`decodeBmp`: one `BMP:BIN:` buffer cut image by image); `BMP:VGA:`/`BMP:AMG:` branches: none (never run, `1068:1ebf` is 0) | fixed |
+| `1030:000e` | `decoders_bmpPixelBytes` | `src/decode/bmp.ts:21` (`unpackNibbles` length check; odd widths refused at `src/decode/bmp.ts:20`) | match |
+| `1030:15cc` | `decoders_freeBmpInfo` | none (memory is garbage collected) | match |
+| `1030:1624` | `decoders_expandAmgBits` | none (AMG layers are never loaded) | match |
+| `1040:0db0` | `decoders_loadBmpMatrix` | none (no `BMP:MTX:` in the data, and no TTM script uses its opcode `0xF08F`) | match |
