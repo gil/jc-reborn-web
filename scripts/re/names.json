@@ -104,6 +104,22 @@
       "signature": null,
       "callingConvention": null
     },
+    "1000:11d0": {
+      "name": "rtl_memcpy",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Borland RTL near memcpy(dst, src, count): copies words, then the odd byte; returns dst",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:121a": {
+      "name": "rtl_memset",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Borland RTL near memset(dst, byte, count) through 1000:11f2; returns dst",
+      "signature": null,
+      "callingConvention": null
+    },
     "1000:144d": {
       "name": "rtl_fputc",
       "subsystem": "rtl",
@@ -1152,11 +1168,67 @@
       "signature": null,
       "callingConvention": null
     },
+    "1048:0044": {
+      "name": "ttm_loadTtmWithId",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Loads a TTM with 1050:0177, stores the id in record word [0], runs the page index 1050:04d6; returns the id, or 0xFFFF when the load fails",
+      "signature": null,
+      "callingConvention": null
+    },
     "1048:0079": {
       "name": "ads_loadAds",
       "subsystem": "ads",
       "status": "named",
       "note": "Loads an ADS resource into one of 10 slots: ADS:RES: id/name pairs, then the ADS:SCR: script data; returns slot + 1 or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:013e": {
+      "name": "ttm_readWord",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Returns the word at a far pointer",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0177": {
+      "name": "ttm_loadTtm",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Loads a TTM: PAG: page count (330 when missing), TT3: bytecode decompressed whole, appends a 0xd4-byte record with a page table of count + 1 far pointers; returns 1 or 0xFFFF",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:03e2": {
+      "name": "ttm_selectTtm",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Finds the TTM record with the given id in the list at 1068:2634 and makes it current (1068:2638); returns 1, or 0 when none matches",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:042a": {
+      "name": "ttm_addTagRecord",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Appends a zeroed 0x3d-byte near tag node (TTM id, tag id, page) at the tail of the list at 1068:263c",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:04a8": {
+      "name": "ttm_skipStringArg",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Returns the far pointer past a NUL-terminated string field, padded to an even length from the string start",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:04d6": {
+      "name": "ttm_indexPages",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Builds the page table of a TTM: pages end at 0x0FF0, 0x1111 tags are recorded with their page; returns 1 when all pages are found, 0 at the end of the bytecode, 0xFFFF on arg codes 8..14",
       "signature": null,
       "callingConvention": null
     },

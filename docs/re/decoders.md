@@ -112,6 +112,33 @@ Results of the original chunk lookup (`1038:016b`, then `1038:0215` with occurre
 
 ## TTM loader
 
+- `1050:0177`: far cdecl `(name or handle)`. Opens the name with `1038:016b` unless `1038:0584` says it is already a handle, and closes it before returning only when it opened it.
+- `1050:0177`: finds `PAG:` with occurrence 0 and reads its body as a u16 page count (`resources_readFile(buffer, 2, 1, handle)`, count not checked). When `PAG:` is missing the count is 330 (`0x14a`).
+- `1050:0177`: finds `TT3:` with occurrence 0 and opens a decompression stream on it with method `0xFFFF` (ignored in read mode) and the low 16 bits of its size. A missing `TT3:` or a failed stream returns `0xFFFF`.
+- `1050:0177`: takes only the low word of the unpacked size (`resources_streamSize`) and sign-extends it for the far allocation, so a bytecode of 32 KB or more would fail. The largest in the data is 16,660 bytes (`MJFISH.TTM`).
+- `1050:0177`: reads the whole stream into one far buffer in a single read. When the read count differs from the size it frees the buffer and returns `0xFFFF`.
+- `1050:0177`: allocates the record and the page table with `platform_farAlloc` flag 1, which goes through `1000:2245` as a `farcalloc(size, 1)`, so both start zeroed. The bytecode buffer uses flag 0 (`1000:222c`, not zeroed).
+- `1050:0177`: appends a zeroed `0xd4`-byte far record to the list headed at `1068:2634` (next pointer at byte `+0xcc`, words `[0x66..0x67]`) and makes it current at `1068:2638`.
+- `1050:0177`: record fields: word `[0]` TTM id (0 here), `[1]` page count, `[2..3]` far pointer to the bytecode, `[4..5]` far pointer to its last byte (`start + size - 1`, offset only), `[0x68..0x69]` a zeroed far page table of `count + 1` far pointers.
+- `1050:0177`: returns 1, or `0xFFFF` when an allocation fails. A failed record or page table allocation leaves the bytecode buffer allocated.
+- No `VER:`, `TTI:`, or `TAG:` string exists in the binary, so the original never reads the version or the `TTI:TAG:` tag names. As far as this binary is concerned, those names are only for the original's authoring tools.
+- `1048:0044`: far cdecl `(name, id)`. Loads with `1050:0177`, stores the id in the current record's word `[0]`, and runs the page index `1050:04d6` with the id. Returns the id, or `0xFFFF` when the load fails. The page index result is ignored.
+- `1050:03e2`: walks the TTM list from `1068:2634` and makes the record whose word `[0]` equals the id current (`1068:2638`). Returns 1, or 0 when no record matches (the current pointer is then null).
+- `1050:04d6`: far cdecl `(id)`. Selects the record with `1050:03e2` and returns 0 when there is none or its bytecode pointer is null.
+- `1050:04d6`: clears all `count + 1` page table entries, then indexes pages `0` to `count - 1`. Each page's entry is set to the current position before anything is read, so page 0 starts at offset 0.
+- `1050:04d6`: before each instruction it returns 0 when the position is at or past the last byte (`offset >= size - 1`). The page whose entry was just set keeps it, so a missing `PAG:` (330 pages) gives one extra entry at the end of the bytecode.
+- `1050:04d6`: an opcode `0x0FF0` ends the page; the next page starts at the following word. After the last page's `0x0FF0` it returns 1 without checking the end.
+- `1050:04d6`: other opcodes are sized by their low nibble: 0..7 take that many word arguments.
+- `1050:04d6`: arg code `0xF` is a string argument skipped with `1050:04a8`, except for `0xAF1F` and `0xAF2F`, which take a count word and `2 × count` more words.
+- `1050:04d6`: arg codes 8..14 return `0xFFFF` at once.
+- `1050:04d6`: every `0x1111` adds a tag record with `1050:042a(page, id, tag)`, where the tag is its one argument and the page is the page being indexed.
+- `1050:04d6`: returns 1 when all `count` pages are found, 0 when the bytecode ends first.
+- `1050:042a`: allocates a `0x3d`-byte near node (`1038:0619`), zeroes it with `rtl_memset` (`1000:121a`), and appends it at the tail of the list headed at `1068:263c` (next pointer at byte `+0x3b`); `1068:263e` points at the new node. Fields: word `[0]` TTM id, `[1]` tag id, `[2]` and `[4]` page, `[5]` `0xFFFF`. A failed allocation is skipped silently.
+- `1050:04a8`: counts the characters up to the NUL and returns the far pointer past the string field: `length + 1` bytes rounded up to even, from the start of the string. The padding byte is not read.
+- `1050:013e`: returns the word at a far pointer.
+- `1000:121a`: `rtl_memset(destination, byte, count)` on near memory through `1000:11f2`; returns the destination.
+- `1000:11d0`: `rtl_memcpy(destination, source, count)` on near memory: copies words, then the odd byte; returns the destination.
+
 ## TTM opcode coverage
 
 ## ADS loader
