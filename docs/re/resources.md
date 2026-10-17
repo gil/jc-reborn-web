@@ -119,3 +119,40 @@ All 180 compressed chunks in `RESOURCE.001` decompress to exactly their header s
 
 | Original | Name | Ours | Status |
 | --- | --- | --- | --- |
+| `1028:0000` | `resources_storedRead` | `src/resource/uncompress.ts:14` | fixed |
+| `1028:0024` | `resources_rleRead` | `src/resource/uncompress.ts:20` | fixed |
+| `1028:0072` | `resources_storedWrite` | none (write side, OQ-7) | open |
+| `1028:00b8` | `resources_readFileToFar` | `src/resource/uncompress.ts:20` (literal copy; ours stops at the chunk end, see RLE) | fixed |
+| `1028:0125` | `resources_streamGetByte` | `src/resource/uncompress.ts:8` (input is the chunk body after the header) | fixed |
+| `1028:0185` | `resources_streamReadBytes` | `src/resource/uncompress.ts:54` (group read cut to the chunk body) | fixed |
+| `1028:022e` | `resources_rleCopyLiteral` | `src/resource/uncompress.ts:20` | fixed |
+| `1028:02b4` | `resources_rleFillRun` | `src/resource/uncompress.ts:20` | match |
+| `1028:0331` | `resources_streamPutByte` | none (we decode a whole chunk in one call; output stops at the header size) | match |
+| `1028:0384` | `resources_writeCompressedByte` | none (write side, OQ-7) | open |
+| `1028:03d0` | `resources_selectStream` | none (stream slots: we decode a whole chunk in one call) | match |
+| `1028:0458` | `resources_isReadMode` | none (we only read) | match |
+| `1028:0478` | `resources_freeNear` | none (garbage collected) | match |
+| `1028:048e` | `resources_freeStream` | none (garbage collected) | match |
+| `1028:04f8` | `resources_allocStreamSlot` | none (stream slots: we decode a whole chunk in one call) | match |
+| `1028:0547` | `resources_initStreamMethod` | `src/resource/uncompress.ts:13` | match |
+| `1028:0615` | `resources_openStream` | `src/resource/uncompress.ts:8` | match |
+| `1028:076c` | `resources_openMemoryStream` | none (no callers) | match |
+| `1028:0875` | `resources_closeStream` | none (nothing to free) | match |
+| `1028:0951` | `resources_drainBuffered` | none (we decode a whole chunk in one call) | match |
+| `1028:09ca` | `resources_decodeInto` | `src/resource/uncompress.ts:13` (returns only the bytes produced) | fixed |
+| `1028:0a0d` | `resources_readStream` | `src/resource/uncompress.ts:8` | fixed |
+| `1028:0a4b` | `resources_writeStream` | none (write side, OQ-7) | open |
+| `1028:0b0a` | `resources_streamSize` | `src/resource/uncompress.ts:8` (header size read in unpackChunk) | match |
+| `1028:0b36` | `resources_seekStream` | none (no callers) | match |
+| `1028:0c92` | `resources_rewindStream` | none (only called by the seek, which has no callers) | match |
+| `1028:0d44` | `resources_lzwInit` | `src/resource/uncompress.ts:37` | match |
+| `1028:0e04` | `resources_lzwRead` | `src/resource/uncompress.ts:37` | fixed |
+| `1028:0fc1` | `resources_lzwReadCode` | `src/resource/uncompress.ts:54` | fixed |
+| `1028:10cb` | `resources_rleReadMemory` | none (memory streams have no callers) | match |
+| `1028:11be` | `resources_lzwWriteInit` | none (write side, OQ-7) | open |
+| `1028:1233` | `resources_lzwWrite` | none (write side, OQ-7) | open |
+| `1028:13cf` | `resources_lzwWriteCode` | none (write side, OQ-7) | open |
+| `1028:155d` | `resources_lzwRatioDivide` | none (write side, OQ-7) | open |
+| `1028:157c` | `resources_lzwCheckRatio` | none (write side, OQ-7) | open |
+| `1028:1654` | `resources_lzwClearHash` | none (write side, OQ-7) | open |
+| `1028:1698` | `resources_rleWrite` | none (write side, OQ-7) | open |

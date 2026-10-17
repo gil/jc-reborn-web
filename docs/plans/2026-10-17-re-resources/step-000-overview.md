@@ -118,7 +118,7 @@ Status is `match`, `fixed`, or `open` (every `open` row has an entry in `docs/re
 ## Steps
 
 - [x] `step-001-unicorn-original-decompressor.md`: emulator can replace internal functions; the original decompressor runs on handmade edge cases and on all 180 corpus chunks; fixtures in `re/fixtures/decompressed/`.
-- [ ] `step-002-decompression-findings-and-fix.md`: RLE, LZW, and stream findings written and pinned by tests; `src/resource/uncompress.ts` matches the original on every corpus chunk; decoders share one chunk unpacker.
+- [x] `step-002-decompression-findings-and-fix.md`: RLE, LZW, and stream findings written and pinned by tests; `src/resource/uncompress.ts` matches the original on every corpus chunk; decoders share one chunk unpacker.
 - [ ] `step-003-resource-map-and-archive.md`: map, name hash, archive, and file layer findings written and pinned; `src/resource/` map types and parser fixed; corpus tests for map and archive.
 - [ ] `step-004-chunk-wrap-up.md`: every in-scope function `verified` or logged, comment audit of `src/io/` and `src/resource/`, full test run, smoke test, spec checkbox ticked.
 

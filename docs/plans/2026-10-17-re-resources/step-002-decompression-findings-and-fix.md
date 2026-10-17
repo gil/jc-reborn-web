@@ -567,14 +567,14 @@ git commit -m "refactor(decode): read compressed chunks through unpackChunk"
 
 ## Part F: Side-by-side checklist
 
-- [ ] **Action 18: Fill the checklist rows for the stream and codecs**
+- [x] **Action 18: Fill the checklist rows for the stream and codecs**
 
 In `docs/re/resources.md` under `Side-by-side checklist`, add one row per function in `1028:0000`..`1028:1797`. `Ours` is the TS function and line (`src/resource/uncompress.ts:<line>` for `uncompressRle`, `uncompressLzw`, `unpackChunk`, `uncompress`), or `none (reason)`, e.g. `none (stream slots: we decode a whole chunk in one call)`. Status `fixed` where Part D changed behavior, `match` where it already agreed, `open` only with an `open-questions.md` entry (the compress side points at OQ-7).
 
 Run: `node scripts/re/function-map.mjs`
 Expected: no errors.
 
-- [ ] **Action 19: Commit**
+- [x] **Action 19: Commit**
 
 ```bash
 git add docs/re/resources.md docs/re/function-map.md scripts/re/names.json
@@ -583,7 +583,7 @@ git commit -m "docs(re): side-by-side checklist for the decompression stream"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
