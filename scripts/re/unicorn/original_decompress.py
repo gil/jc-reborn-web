@@ -52,7 +52,7 @@ def pack_codes(codes: list[tuple[int, int]]) -> bytes:
 
 def decompress_original(image: NeImage, data: bytes, body_offset: int, body_size: int) -> bytes:
     emu = Emulator(image)
-    _install_heap(emu)
+    install_heap(emu)
     _install_file(emu, VirtualFile(data, body_offset))
     (size,) = struct.unpack_from("<I", data, body_offset + 1)
     stream = emu.call_far(OPEN_STREAM, stack_words=[body_size >> 16, body_size & 0xFFFF, READ_MODE, FILE_HANDLE, 0])["ax"]
@@ -72,7 +72,7 @@ def decompress_original(image: NeImage, data: bytes, body_offset: int, body_size
     return emu.read(out_segment, 0, produced)
 
 
-def _install_heap(emu: Emulator):
+def install_heap(emu: Emulator):
     def near_calloc(emu: Emulator):
         size = emu.arg(0) * emu.arg(1)
         offset = emu.near_alloc(size)

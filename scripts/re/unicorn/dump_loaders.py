@@ -1,0 +1,65 @@
+import argparse
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from corpus import CHUNKED_TYPES, Resource, load_resources, walk_chunks  # noqa: E402
+from ne_image import NeImage  # noqa: E402
+from original_loaders import find_chunks_original  # noqa: E402
+
+REPO = Path(__file__).resolve().parents[3]
+DATA = REPO / "public/data"
+OUT = REPO / "re/fixtures/loaders"
+LOADER_PATHS = {
+    ".BMP": ["BMP:INF:", "BMP:BIN:", "BMP:VGA:", "BMP:AMG:", "BMP:MTX:"],
+    ".SCR": ["SCR:DIM:", "SCR:BIN:", "SCR:VGA:", "SCR:AMG:"],
+    ".PAL": ["PAL:VGA:"],
+    ".TTM": ["PAG:", "TT3:"],
+    ".ADS": ["ADS:RES:", "ADS:SCR:"],
+}
+
+
+def write_tsv(name: str, header: list[str], rows: list[list[object]]):
+    OUT.mkdir(parents=True, exist_ok=True)
+    lines = ["\t".join(header), *("\t".join(str(value) for value in row) for row in rows)]
+    (OUT / name).write_text("\n".join(lines) + "\n")
+    print(f"{name}: {len(rows)} rows", file=sys.stderr)
+
+
+def chunked(resources: list[Resource], kind: str | None = None) -> list[Resource]:
+    return [r for r in resources if r.name[-4:] in CHUNKED_TYPES and (kind is None or r.name[-4:] == kind)]
+
+
+def dump_chunks(image: NeImage, resources: list[Resource]):
+    rows = []
+    for resource in chunked(resources):
+        walked = [chunk.path for chunk in walk_chunks(resource.payload)]
+        for path in dict.fromkeys([*walked, *LOADER_PATHS[resource.name[-4:]]]):
+            [found] = find_chunks_original(image, resource.name, resource.payload, [path])
+            position, size = found or (-1, -1)
+            rows.append([resource.name, path, position, size])
+    write_tsv("chunks.tsv", ["resource", "path", "position", "size"], rows)
+
+
+COMMANDS = {
+    "chunks": dump_chunks,
+}
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Run the original SCRANTIC.SCR loaders on every resource; fixtures go to re/fixtures/loaders/")
+    parser.add_argument("what", nargs="*", help=f"fixtures to write, any of {', '.join(sorted(COMMANDS))} (default: all)")
+    args = parser.parse_args()
+    unknown = sorted(set(args.what) - set(COMMANDS))
+    if unknown:
+        parser.error(f"unknown fixture {', '.join(unknown)}")
+    image = NeImage.load(DATA / "SCRANTIC.SCR")
+    resources = load_resources(DATA)
+    for name in args.what or sorted(COMMANDS):
+        COMMANDS[name](image, resources)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

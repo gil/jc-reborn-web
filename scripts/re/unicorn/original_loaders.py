@@ -1,0 +1,145 @@
+import struct
+from dataclasses import dataclass
+
+from emulator import Emulator
+from ne_image import NeImage
+from original_decompress import install_heap
+
+OPEN_FILE = "1018:1019"
+CLOSE_FILE = "1018:1204"
+FILE_READ = "1018:1287"
+FILE_SEEK = "1018:1398"
+FILE_TELL = "1018:1475"
+FILE_GETC = "1018:14e9"
+NEAR_MALLOC = "1038:0619"
+OPEN_CHUNKED = "1038:016b"
+FIND_CHUNK = "1038:0215"
+CHUNK_SIZE = "1038:0517"
+FIRST_HANDLE = 0x0100
+FAILED = 0xFFFF
+
+
+@dataclass
+class OpenResource:
+    data: bytes
+    pos: int = 0
+
+
+class ResourceFiles:
+    def __init__(self, payloads: dict[str, bytes]):
+        self.payloads = {name.upper(): data for name, data in payloads.items()}
+        self.open: dict[int, OpenResource] = {}
+        self.next_handle = FIRST_HANDLE
+
+    def install(self, emu: Emulator):
+        for address, handler in (
+            (OPEN_FILE, self.open_file),
+            (CLOSE_FILE, self.close_file),
+            (FILE_READ, self.read),
+            (FILE_SEEK, self.seek),
+            (FILE_TELL, self.tell),
+            (FILE_GETC, self.getc),
+        ):
+            emu.replace_function(address, handler)
+
+    def file(self, emu: Emulator, index: int) -> OpenResource:
+        handle = emu.arg(index)
+        if handle not in self.open:
+            raise RuntimeError(f"file call with unknown handle {handle:#x}, argument layout is wrong")
+        return self.open[handle]
+
+    def open_file(self, emu: Emulator):
+        data = self.payloads.get(c_string(emu, emu.arg(0)).upper())
+        if data is None:
+            return {"ax": 0}
+        handle = self.next_handle
+        self.next_handle += 2
+        self.open[handle] = OpenResource(data)
+        return {"ax": handle}
+
+    def close_file(self, emu: Emulator):
+        self.open.pop(emu.arg(0), None)
+        return {"ax": 0}
+
+    def read(self, emu: Emulator):
+        file = self.file(emu, 3)
+        buf, size, count = emu.arg(0), emu.arg(1), emu.arg(2)
+        items = min(count, (len(file.data) - file.pos) // size) if size else 0
+        data = file.data[file.pos:file.pos + items * size]
+        file.pos += len(data)
+        emu.write(emu.data_segment, buf, data)
+        return {"ax": items}
+
+    def seek(self, emu: Emulator):
+        file = self.file(emu, 0)
+        offset = emu.arg(1) | emu.arg(2) << 16
+        size = len(file.data)
+        whence = emu.arg(3)
+        if whence == 0:
+            target = offset
+        elif whence == 1:
+            target = (file.pos + offset) & 0xFFFFFFFF
+        else:
+            target = size - offset if offset < size else 0
+        file.pos = min(target, size)
+        return {"ax": 0, "dx": 0}
+
+    def tell(self, emu: Emulator):
+        pos = self.file(emu, 0).pos
+        return {"ax": pos & 0xFFFF, "dx": pos >> 16}
+
+    def getc(self, emu: Emulator):
+        file = self.file(emu, 0)
+        if file.pos >= len(file.data):
+            return {"ax": FAILED}
+        file.pos += 1
+        return {"ax": file.data[file.pos - 1]}
+
+
+def new_loader_emulator(image: NeImage, payloads: dict[str, bytes]) -> Emulator:
+    emu = Emulator(image)
+    install_heap(emu)
+    emu.replace_function(NEAR_MALLOC, _near_malloc)
+    ResourceFiles(payloads).install(emu)
+    return emu
+
+
+def _near_malloc(emu: Emulator):
+    size = emu.arg(0)
+    offset = emu.near_alloc(size)
+    emu.write(emu.data_segment, offset, bytes(size))
+    return {"ax": offset}
+
+
+def put_string(emu: Emulator, text: str) -> int:
+    data = text.encode("latin1") + b"\0"
+    offset = emu.near_alloc(len(data))
+    emu.write(emu.data_segment, offset, data)
+    return offset
+
+
+def c_string(emu: Emulator, offset: int) -> str:
+    out = bytearray()
+    while (byte := emu.read(emu.data_segment, offset + len(out), 1)[0]) != 0:
+        out.append(byte)
+    return out.decode("latin1")
+
+
+def read_word(emu: Emulator, segment: int, offset: int) -> int:
+    return struct.unpack("<H", emu.read(segment, offset, 2))[0]
+
+
+def find_chunks_original(image: NeImage, name: str, payload: bytes, paths: list[str]) -> list[tuple[int, int] | None]:
+    emu = new_loader_emulator(image, {name: payload})
+    handle = emu.call_far(OPEN_CHUNKED, stack_words=[put_string(emu, name)])["ax"]
+    if handle == 0:
+        raise RuntimeError(f"{name} did not open")
+    results: list[tuple[int, int] | None] = []
+    for path in paths:
+        regs = emu.call_far(FIND_CHUNK, stack_words=[0, put_string(emu, path), handle])
+        if regs["ax"] == FAILED and regs["dx"] == FAILED:
+            results.append(None)
+            continue
+        size = emu.call_far(CHUNK_SIZE, stack_words=[handle])["ax"]
+        results.append((regs["dx"] << 16 | regs["ax"], size))
+    return results

@@ -44,3 +44,10 @@ Patches the function entry with a far jump to a stub slot, so the handler runs i
     re/.venv/bin/python -I scripts/re/unicorn/dump_decompressed.py --edge-cases
 
 The first runs `1028:0615` / `1028:0a0d` / `1028:0875` on every compressed chunk in `RESOURCE.001` and writes the output to `re/fixtures/decompressed/` (gitignored), with `index.tsv` listing resource, chunk path, body offset, method, header size, bytes produced, and file. The second prints the edge-case table kept in `docs/re/resources.md`. The file layer (`1018:1287`, `1018:14e9`, `1018:1398`, `1018:1475`) and allocators (`1038:06a8`, `1038:063b`, `1030:199a`, `1030:1b63`) are replaced by Python handlers in `original_decompress.py`.
+
+## Original loaders
+
+    re/.venv/bin/python -I scripts/re/unicorn/dump_loaders.py
+    re/.venv/bin/python -I scripts/re/unicorn/dump_loaders.py chunks
+
+Runs the original chunk lookup and loaders on every resource and writes fixtures to `re/fixtures/loaders/` (gitignored). `original_loaders.py` replaces the resource file layer (`1018:1019`, `1018:1204`, `1018:1287`, `1018:1398`, `1018:1475`, `1018:14e9`) with handlers that serve resource payloads by name, plus the allocators. Each loader's drawing or bitmap call is replaced by a handler that captures what the loader hands it.

@@ -129,14 +129,14 @@ git commit -m "docs(re): chunk reader findings"
 
 ## Part B: Run the original chunk lookup
 
-- [ ] **Action 5: Make the heap installer public**
+- [x] **Action 5: Make the heap installer public**
 
 In `scripts/re/unicorn/original_decompress.py`, rename `_install_heap` to `install_heap` (the definition and its one call in `decompress_original`). Check nothing else uses the old name:
 
 Run: `rg -n "_install_heap" scripts`
 Expected: no matches.
 
-- [ ] **Action 6: Write the failing Python tests**
+- [x] **Action 6: Write the failing Python tests**
 
 Create `scripts/re/unicorn/test_original_loaders.py`. The expected values come from the overview's first reading of `1038:0215`. Payload layout: `VER:` header at 0, body 8..12; `TTI:` header at 13, body 21..32; `TTI:TAG:` header at 21, body 29..32; `PAG:` header at 33, body 41..42.
 
@@ -210,7 +210,7 @@ if __name__ == "__main__":
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_loaders.py' -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'original_loaders'`.
 
-- [ ] **Action 7: Write the loader harness**
+- [x] **Action 7: Write the loader harness**
 
 Create `scripts/re/unicorn/original_loaders.py`. The file layer follows the chunk 2 findings for `1018:1287` (whole items only, never past the payload), `1018:1398` (positions relative to the payload, clamped to its size; whence 2 counts back from the end), `1018:1475`, and `1018:14e9` (`0xFFFF` at the end). Handles start at `0x0100` so they never equal a name pointer (near heap offsets are above the data segment's static data, around `0x47c0`).
 
@@ -373,7 +373,7 @@ Expected: no output.
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_*.py' -v`
 Expected: all pass (chunk 2's tests still pass after the rename).
 
-- [ ] **Action 8: Dump the original lookup for every resource**
+- [x] **Action 8: Dump the original lookup for every resource**
 
 Create `scripts/re/unicorn/dump_loaders.py`. Each query runs in a fresh emulator, so the forward-only search never hides a chunk.
 
@@ -451,7 +451,7 @@ Expected: no output.
 Run: `re/.venv/bin/python -I scripts/re/unicorn/dump_loaders.py chunks`
 Expected: last line `chunks.tsv: <n> rows` with `n` around 1000 (179 chunked resources, about 5 or 6 paths each). It may take a minute or two. `re/fixtures/loaders/chunks.tsv` exists.
 
-- [ ] **Action 9: Record the edge cases**
+- [x] **Action 9: Record the edge cases**
 
 Under `Emulated edge cases` in `docs/re/decoders.md`, add a table of what the original returned for each case in `test_original_loaders.py` (case, query sequence, result), in the same style as the `Emulated edge cases` table in `docs/re/resources.md`. Under `Chunk reader`, add one bullet per behavior the cases proved, citing `1038:0215` (forward-only search, same path twice, failed search leaves the reader in place, nested tag alone does not match).
 
@@ -466,7 +466,7 @@ Add to `scripts/re/unicorn/README.md`, after the "Original decompressor" section
 Runs the original chunk lookup and loaders on every resource and writes fixtures to `re/fixtures/loaders/` (gitignored). `original_loaders.py` replaces the resource file layer (`1018:1019`, `1018:1204`, `1018:1287`, `1018:1398`, `1018:1475`, `1018:14e9`) with handlers that serve resource payloads by name, plus the allocators. Each loader's drawing or bitmap call is replaced by a handler that captures what the loader hands it.
 ```
 
-- [ ] **Action 10: Commit**
+- [x] **Action 10: Commit**
 
 ```bash
 git add scripts/re/unicorn/original_loaders.py scripts/re/unicorn/dump_loaders.py scripts/re/unicorn/test_original_loaders.py scripts/re/unicorn/original_decompress.py scripts/re/unicorn/README.md docs/re/decoders.md
