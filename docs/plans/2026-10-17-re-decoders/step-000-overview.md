@@ -172,7 +172,7 @@ Python (`scripts/re/unicorn/`):
 - [x] `step-003-bitmaps.md`: bitmap loader checked on every BMP; `decodeBmp` uses path lookup; `BMP:VGA:` and `BMP:MTX:` explained.
 - [x] `step-004-ttm-loader.md`: TTM loader and page index checked on every TTM; `decodeTtm` returns the page count, page offsets, and tags the way the original builds them; shared TTM instruction reader; TTM opcode coverage table.
 - [x] `step-005-ads-loader.md`: ADS loader and opcode size table checked; original size table and section index in `src/decode/ads-bytecode.ts`; `decodeAds` uses path lookup; ADS opcode coverage table; scheduler differences logged for chunk 6.
-- [ ] `step-006-chunk-wrap-up.md`: thunks named, every in-scope function `verified` or logged, comment audit of `src/decode/`, full rebuild and test run, smoke test, spec checkbox ticked.
+- [x] `step-006-chunk-wrap-up.md`: thunks named, every in-scope function `verified` or logged, comment audit of `src/decode/`, full rebuild and test run, smoke test, spec checkbox ticked.
 
 Order: step 1 first (everything uses `findChunk` and the harness). Then 2, 3, 4, 5 in that order: step 3 uses `unpackNibbles` and `packNibbles` from step 2, and all four extend the same findings file, `names.json`, `original_loaders.py`, and `dump_loaders.py`, so run them one at a time. Steps 4 and 5 do not depend on each other's code. Step 6 needs all of them.
 
