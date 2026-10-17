@@ -214,7 +214,7 @@ git commit -m "test: corpus loader and chunk walker for data tests"
 
 ## Part C: Pin the behavior
 
-- [ ] **Action 8: Write the corpus comparison test**
+- [x] **Action 8: Write the corpus comparison test**
 
 Create `src/resource/uncompress.data.test.ts`:
 
@@ -299,14 +299,14 @@ export function unpackChunk(body: Uint8Array): Uint8Array {
 }
 ```
 
-- [ ] **Action 9: Run the original comparison only (no snapshot yet)**
+- [x] **Action 9: Run the original comparison only (no snapshot yet)**
 
 Run: `pnpm exec vitest run src/resource/uncompress.data.test.ts -t "matches the original"`
 Expected: either PASS, or FAIL listing mismatching chunks with the first differing byte. Write down the result. Do not run the snapshot test yet; a snapshot written now would freeze wrong output.
 
 If the test is skipped, `re/fixtures/decompressed/index.tsv` is missing: run `re/.venv/bin/python -I scripts/re/unicorn/dump_decompressed.py` first.
 
-- [ ] **Action 10: Rewrite the unit tests from the findings**
+- [x] **Action 10: Rewrite the unit tests from the findings**
 
 Replace `src/resource/uncompress.test.ts`. Before running, compare every expected value with the `Emulated edge cases` table in `docs/re/resources.md`. **Where they differ, the table wins: change the test.** Then add one test per extra rule you wrote under `RLE` and `LZW` in Action 1 that these cases do not cover, each citing its address.
 
@@ -418,13 +418,13 @@ If your Action 1 reading says method 0 also cannot be read, add a matching `unco
 Run: `pnpm exec vitest run src/resource/uncompress.test.ts`
 Expected: some tests fail. The early-end cases fail at least, because today `uncompress` always returns `outSize` bytes.
 
-- [ ] **Action 11: Record the failures, do not commit yet**
+- [x] **Action 11: Record the failures, do not commit yet**
 
 Write down which unit tests fail and which corpus chunks mismatch (Action 9). Each failure should map to a claim in your `RLE` or `LZW` findings. A failure with no matching finding means a finding is missing: go back to the code and add it. Do not commit: work is committed green, and Part D makes it green.
 
 ## Part D: Fix the code
 
-- [ ] **Action 12: Fix RLE**
+- [x] **Action 12: Fix RLE**
 
 Replace `uncompressRle` in `src/resource/uncompress.ts` with this version. Adjust it only where your `RLE` findings say otherwise.
 
@@ -451,7 +451,7 @@ function uncompressRle(input: Uint8Array, outSize: number): Uint8Array {
 Run: `pnpm exec vitest run src/resource/uncompress.test.ts -t RLE`
 Expected: all RLE tests pass.
 
-- [ ] **Action 13: Fix LZW**
+- [x] **Action 13: Fix LZW**
 
 Make three changes to `uncompressLzw`, then let the tests drive the rest.
 
@@ -487,14 +487,14 @@ Expected: everything passes. If an LZW case fails, compare what the test expects
 Run: `pnpm exec vitest run src/resource/uncompress.data.test.ts -t "matches the original"`
 Expected: PASS. If some chunks still differ, take the first one, decode it with a temporary `console.log` around the first differing byte, and find which rule from your findings the code breaks. Real data hits paths the edge cases do not (table full at 4096, many clears, long strings). Add a unit test for each rule you fix this way, citing its address. Remove the temporary logging.
 
-- [ ] **Action 14: Throw with the method in the message**
+- [x] **Action 14: Throw with the method in the message**
 
 Make sure the dispatch error message contains `method <n>` (the existing `unknown compression method ${method}` does). If your findings say method 0 is readable, implement it; otherwise make it throw the same way.
 
 Run: `pnpm exec vitest run src/resource/`
 Expected: all pass. The snapshot test writes `src/resource/__snapshots__/uncompress.data.test.ts.snap` (180 hashes) on this first run. That is safe now because the bytes match the original.
 
-- [ ] **Action 15: Commit the fix**
+- [x] **Action 15: Commit the fix**
 
 ```bash
 git add src/resource/uncompress.ts src/resource/uncompress.test.ts src/resource/uncompress.data.test.ts src/resource/__snapshots__/uncompress.data.test.ts.snap

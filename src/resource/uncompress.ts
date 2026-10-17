@@ -1,4 +1,17 @@
+const END_OF_INPUT = -1;
+const CLEAR_CODE = 256;
+const FIRST_FREE_CODE = 257;
+const TABLE_SIZE = 4096;
+const MIN_WIDTH = 9;
+const MAX_WIDTH = 12;
+
+export function unpackChunk(body: Uint8Array): Uint8Array {
+  const size = new DataView(body.buffer, body.byteOffset, body.byteLength).getUint32(1, true);
+  return uncompress(body[0]!, body.subarray(5), size);
+}
+
 export function uncompress(method: number, input: Uint8Array, outSize: number): Uint8Array {
+  if (method === 0) return input.slice(0, outSize);
   if (method === 1) return uncompressRle(input, outSize);
   if (method === 2) return uncompressLzw(input, outSize);
   throw new Error(`unknown compression method ${method}`);
@@ -6,97 +19,105 @@ export function uncompress(method: number, input: Uint8Array, outSize: number): 
 
 function uncompressRle(input: Uint8Array, outSize: number): Uint8Array {
   const out = new Uint8Array(outSize);
-  let inOff = 0, outOff = 0;
-  while (outOff < outSize) {
-    const ctrl = input[inOff++]!;
-    if ((ctrl & 0x80) === 0x80) {
-      const len = ctrl & 0x7f;
-      const b = input[inOff++]!;
-      for (let i = 0; i < len; i++) out[outOff++] = b;
+  let inOff = 0;
+  let outOff = 0;
+  while (outOff < outSize && inOff < input.length) {
+    const control = input[inOff++]!;
+    const count = control & 0x7f;
+    if (control & 0x80) {
+      const value = inOff < input.length ? input[inOff++]! : 0xff;
+      for (let i = 0; i < count && outOff < outSize; i++) out[outOff++] = value;
     } else {
-      for (let i = 0; i < ctrl; i++) out[outOff++] = input[inOff++]!;
+      for (let i = 0; i < count && outOff < outSize && inOff < input.length; i++) out[outOff++] = input[inOff++]!;
     }
   }
-  return out;
+  return out.subarray(0, outOff);
 }
 
-// LSB-first bit reader matching uncompress.c:54-74
 function uncompressLzw(input: Uint8Array, outSize: number): Uint8Array {
   const out = new Uint8Array(outSize);
-  const prefix = new Uint16Array(4096);
-  const append = new Uint8Array(4096);
-  const stack = new Uint8Array(4096);
+  const prefix = new Uint16Array(TABLE_SIZE);
+  const suffix = new Uint8Array(TABLE_SIZE);
+  for (let i = 0; i < 256; i++) suffix[i] = i;
+  const stack = new Uint8Array(TABLE_SIZE);
 
   let inOff = 0;
-  let curByte = inOff < input.length ? input[inOff++]! : 0;
-  let nextBit = 0;
-  let nBits = 9;
-  let bitpos = 0;
-  let freeEntry = 257;
-  let outOff = 0;
+  let width = MIN_WIDTH;
+  let maxCode = (1 << width) - 1;
+  let freeCode = FIRST_FREE_CODE;
+  let clearPending = false;
+  // The original keeps one group buffer for all reads, so a 1-byte last group reuses the previous group's bytes.
+  const group = new Uint8Array(MAX_WIDTH + 1);
+  let groupBits = 0;
+  let bitOff = 0;
 
-  const getBits = (n: number): number => {
-    let x = 0;
-    for (let i = 0; i < n; i++) {
-      if (curByte & (1 << nextBit)) x |= 1 << i;
-      nextBit++;
-      if (nextBit > 7) {
-        curByte = inOff < input.length ? input[inOff++]! : 0;
-        nextBit = 0;
+  const readCode = (): number => {
+    if (clearPending || bitOff >= groupBits || freeCode > maxCode) {
+      if (freeCode > maxCode) {
+        width++;
+        maxCode = width === MAX_WIDTH ? TABLE_SIZE : (1 << width) - 1;
       }
+      if (clearPending) {
+        width = MIN_WIDTH;
+        maxCode = (1 << width) - 1;
+        clearPending = false;
+      }
+      const bytes = input.subarray(inOff, inOff + width);
+      if (bytes.length === 0) return END_OF_INPUT;
+      group.set(bytes);
+      inOff += bytes.length;
+      bitOff = 0;
+      groupBits = bytes.length * 8 - (width - 1);
     }
-    return x;
+    let code = 0;
+    for (let i = 0; i < width; i++) {
+      const bit = bitOff + i;
+      if (group[bit >> 3]! & (1 << (bit & 7))) code |= 1 << i;
+    }
+    bitOff += width;
+    return code;
   };
 
-  let oldcode = getBits(nBits);
-  let lastbyte = oldcode;
-  out[outOff++] = oldcode & 0xff;
+  let outOff = 0;
+  let oldCode = readCode();
+  let firstByte = oldCode & 0xff;
+  if (outOff < outSize) out[outOff++] = firstByte;
 
-  while (inOff <= input.length) {
-    const newcode = getBits(nBits);
-    bitpos += nBits;
-
-    if (newcode === 256) {
-      const nbits3 = nBits << 3;
-      const nskip = (nbits3 - ((bitpos - 1) % nbits3)) - 1;
-      getBits(nskip);
-      nBits = 9;
-      freeEntry = 256;
-      bitpos = 0;
-      continue;
+  for (;;) {
+    let code = readCode();
+    if (code === END_OF_INPUT) break;
+    if (code === CLEAR_CODE) {
+      clearPending = true;
+      freeCode = CLEAR_CODE;
+      code = readCode();
+      if (code === END_OF_INPUT) break;
     }
 
-    let code = newcode;
-    let stackPtr = 0;
-
-    if (code >= freeEntry) {
-      stack[stackPtr++] = lastbyte & 0xff;
-      code = oldcode;
+    const inCode = code;
+    let sp = 0;
+    if (code >= freeCode) {
+      stack[sp++] = firstByte;
+      code = oldCode;
     }
-    while (code > 255) {
-      if (code > 4095) break;
-      stack[stackPtr++] = append[code]!;
+    while (code >= 256) {
+      if (sp === stack.length) throw new Error('LZW prefix chain loops');
+      stack[sp++] = suffix[code]!;
       code = prefix[code]!;
     }
-    stack[stackPtr++] = code & 0xff;
-    lastbyte = code;
+    firstByte = suffix[code]!;
+    stack[sp++] = firstByte;
 
-    while (stackPtr > 0) {
-      stackPtr--;
+    while (sp > 0) {
       if (outOff >= outSize) return out;
-      out[outOff++] = stack[stackPtr]!;
+      out[outOff++] = stack[--sp]!;
     }
 
-    if (freeEntry < 4096) {
-      prefix[freeEntry] = oldcode;
-      append[freeEntry] = lastbyte & 0xff;
-      freeEntry++;
-      if (freeEntry >= (1 << nBits) && nBits < 12) {
-        nBits++;
-        bitpos = 0;
-      }
+    if (freeCode < TABLE_SIZE) {
+      prefix[freeCode] = oldCode;
+      suffix[freeCode] = firstByte;
+      freeCode++;
     }
-    oldcode = newcode;
+    oldCode = inCode;
   }
-  return out;
+  return out.subarray(0, outOff);
 }

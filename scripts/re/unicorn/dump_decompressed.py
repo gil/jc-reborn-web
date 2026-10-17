@@ -18,6 +18,8 @@ HEADER = ["resource", "chunk", "bodyOffset", "method", "size", "produced", "file
 def describe(data: bytes) -> str:
     if len(data) > 8 and len(set(data)) == 1:
         return f"`{data[0]:02x}` × {len(data)}"
+    if len(data) > 40:
+        return f"{len(data)} bytes ending `{data[-8:].hex(' ')}`"
     return f"`{data.hex(' ')}`"
 
 

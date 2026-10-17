@@ -47,21 +47,26 @@ Outputs of the original decompressor run in Unicorn by `scripts/re/unicorn/dump_
 | --- | --- | --- |
 | stored | `00 03 00 00 00 01 02 03` | `01 02 03` |
 | stored truncated | `00 05 00 00 00 01 02` | `01 02` |
+| stored past size | `00 02 00 00 00 01 02 03` | `01 02` |
 | rle literal | `01 03 00 00 00 03 01 02 03` | `01 02 03` |
 | rle run | `01 03 00 00 00 83 aa` | `aa aa aa` |
 | rle zero run | `01 02 00 00 00 80 ff 02 de ad` | `de ad` |
 | rle zero literal | `01 02 00 00 00 00 02 de ad` | `de ad` |
 | rle truncated | `01 05 00 00 00 02 de ad` | `de ad` |
 | rle run past size | `01 02 00 00 00 85 aa` | `aa aa` |
+| rle literal past size | `01 02 00 00 00 04 01 02 03 04` | `01 02` |
 | rle run without value | `01 03 00 00 00 83` | `ff ff ff` |
 | lzw new entry | `02 04 00 00 00 41 84 04 04` | `41 42 41 42` |
 | lzw kwkwk | `02 03 00 00 00 41 02 02` | `41 41 41` |
 | lzw truncated | `02 0a 00 00 00 41 84 00` | `41 42` |
+| lzw partial last code | `02 05 00 00 00 41 84 fc` | `41 42` |
 | lzw clear | `02 02 00 00 00 41 00 02 00 00 00 00 00 00 42 00` | `41 42` |
+| lzw clear drops group | `02 03 00 00 00 41 00 0a 01 00 00 00 00 00 43 00` | `41 43` |
 | lzw code 256 after clear | `02 05 00 00 00 41 00 02 00 00 00 00 00 00 00 01` | `41 41 41` |
 | lzw empty | `02 05 00 00 00` | `ff` |
 | lzw first code above 255 | `02 05 00 00 00 2c 83 00` | `2c 41` |
 | lzw width growth | 295 bytes, see `scripts/re/unicorn/test_original_decompress.py` | `41` × 33153 |
+| lzw table full | 5418 bytes, see `scripts/re/unicorn/test_original_decompress.py` | 3845 bytes ending `42 41 42 41 42 42 41 41` |
 
 All 180 compressed chunks in `RESOURCE.001` decompress to exactly their header size in the original.
 
@@ -91,7 +96,7 @@ All 180 compressed chunks in `RESOURCE.001` decompress to exactly their header s
 - `1028:0d44`: state layout: prefix codes (u16) at `+0`, suffix bytes at `+0x2720`, decode stack at `+0x3720` growing upward. The decoder's scalar state (width, free code, previous code, first byte, bit position, input group) is in data segment globals at `1068:4044`..`1068:406a`, not per stream.
 - `1028:0fc1`: input is read in groups of `width` bytes (8 codes per group). Codes are taken LSB first: bit 0 of a code is the lowest unread bit of the group. The mask table is at `1068:1dec`.
 - `1028:0fc1`: a new group is read when the current one is used up, after a clear, or when the width grows. Reading a new group throws away whatever is left of the current one.
-- `1028:0fc1`: a group of `k` bytes yields codes while the bit offset is below `8k - (width - 1)`, so only codes that fit entirely in the group are read. Exception: with `k = 1` (fewer bits than one code) one code is still taken, its high bits coming from the previous group's leftover bytes in `1068:4046`.
+- `1028:0fc1`: a group of `k` bytes yields codes while the bit offset is below `8k - (width - 1)`, so only codes that fit entirely in the group are read. Exception: with `k = 1` (fewer bits than one code) one code is still taken, its high bits coming from the previous group's leftover bytes in `1068:4046`. That buffer is global, so for a chunk whose only group is 1 byte the leftovers come from an earlier stream; ours starts each chunk with a zeroed buffer.
 - `1028:0fc1`: returns -1 when a new group reads 0 bytes, i.e. at the end of the chunk.
 - `1028:0fc1`: the width grows by one when the free code is above the max code: after entry 511 is added (free code 512) it goes to 10 bits, then 11 at 1024, 12 at 2048. At width 12 the max code is set to `0x1000`, so it never grows past 12. One entry is added per code, groups hold 8 codes, and a clear starts a new group, so growth always falls on a group boundary and skips nothing.
 - `1028:0e04`: the first code is output as a byte without an end-of-input check. An empty LZW body outputs one `0xFF` (low byte of -1) and stops.
