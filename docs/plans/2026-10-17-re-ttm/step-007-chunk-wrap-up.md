@@ -127,7 +127,7 @@ git commit -m "docs(re): chunk 5 functions verified, past fixes reviewed, commen
 
 ## Part D: Full verification
 
-- [ ] **Action 9: Rebuild everything from scratch and run every test**
+- [x] **Action 9: Rebuild everything from scratch and run every test**
 
 Run: `scripts/re/ghidra-import.sh`
 Expected: ends with `export written to .../re/out`, and `re/out/jump-tables.tsv` has 240 rows plus its header.
@@ -144,7 +144,7 @@ Expected: no errors.
 Run: `pnpm test`
 Expected: all pass, and none of these is reported as skipped: `src/ttm/page-runner.data.test.ts`, `src/ttm/gdi-device.data.test.ts`, `src/ads/scheduler.data.test.ts`, `src/island/island.data.test.ts`, `src/decode/ttm-loader.data.test.ts`, `src/gfx/gdi/display.data.test.ts`. If one is skipped, its input is missing; fix that before going on.
 
-- [ ] **Action 10: Smoke test in the browser**
+- [x] **Action 10: Smoke test in the browser**
 
 Run in the background: `pnpm dev --port 5173 --strictPort`
 
@@ -160,11 +160,11 @@ You cannot see the canvas yourself; do not mark this action done without their a
 
 Stop the dev server: `lsof -ti :5173 -sTCP:LISTEN | xargs kill -9`
 
-- [ ] **Action 11: Tick the spec**
+- [x] **Action 11: Tick the spec**
 
 In `docs/specs/2026-10-17-reverse-engineering-validation-design.md`, tick `- [ ] **5. TTM interpreter.**` to `- [x]`. Change nothing else in that file.
 
-- [ ] **Action 12: Commit**
+- [x] **Action 12: Commit**
 
 ```bash
 git add docs/specs/2026-10-17-reverse-engineering-validation-design.md
@@ -173,7 +173,7 @@ git commit -m "docs: chunk 5 (TTM interpreter) done"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
