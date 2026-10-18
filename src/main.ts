@@ -4,14 +4,18 @@ import { indexArchive } from './resource/resource-archive.js';
 import { decodePal } from './decode/pal.js';
 import { decodeAds } from './decode/ads-loader.js';
 import { makePalette, setPaletteColors } from './gfx/palette.js';
-import { makeAdsState, adsTick, adsThreadLayers, adsActiveThreadCount } from './ads/scheduler.js';
-import { composite } from './gfx/compositor.js';
+import { Display } from './gfx/gdi/display.js';
+import { makeDrawState } from './gfx/gdi/surface.js';
+import { applyFade } from './gfx/fade.js';
+import { presentSurface } from './gfx/present.js';
+import { makeAdsState, adsTick, adsActiveThreadCount } from './ads/scheduler.js';
 import { startLoop } from './engine/loop.js';
 import { pumpMs, hasEnoughMs, consumeMs, msPerTick, resetClock } from './engine/clock.js';
-import { islandInit, islandInitHoliday, randomIslandState } from './island/island.js';
+import { randomIslandState } from './island/island.js';
 import { SCREEN_W, SCREEN_H } from './types.js';
-import type { TtmContext } from './ttm/interpreter.js';
-import { storyInit, storyTick, storyAnimateBg, type GameState } from './story/story.js';
+import { GdiDevice } from './ttm/gdi-device.js';
+import { makeTtmEnv } from './ttm/page-runner.js';
+import { storyInit, storyTick, storyAnimateBg, storyRedrawHoliday, type GameState } from './story/story.js';
 import { initSound, playSample } from './audio/sound.js';
 import { initSoundIcon } from './ui/sound-icon.js';
 import { initFullscreen } from './ui/fullscreen.js';
@@ -35,31 +39,24 @@ const palResRaw = archive.list.find(r => r.type === '.PAL')!;
 const pal = makePalette();
 setPaletteColors(pal, decodePal(palResRaw.payload).colors);
 
-const islandState = randomIslandState();
-const islandRt = islandInit(archive, islandState);
-const holidayLayer = islandInitHoliday(archive, islandState);
+const display = new Display();
+display.screenIsB = true;
+const draw = makeDrawState();
+const device = new GdiDevice(display, draw, archive, {
+  playSound: playSample,
+  random: () => Math.floor(Math.random() * 0x10000),
+});
 
 const adsRaw = archive.list.find(r => r.type === '.ADS')!;
-const adsInitial = decodeAds(adsRaw.payload);
-const adsState = makeAdsState(adsInitial, archive, 1);
-
-const ttmCtx: TtmContext = {
-  archive,
-  palette: pal,
-  setBackground: (indexed) => { game.background = indexed; },
-  playSample,
-  dx: 0,
-  dy: 0,
-};
 
 const game: GameState = {
-  adsState,
-  islandRt,
-  islandState,
-  holidayLayer,
+  adsState: makeAdsState(decodeAds(adsRaw.payload), archive, 1),
+  islandRt: null,
+  islandState: randomIslandState(),
   bgAnimTimer: 8,
-  background: islandRt.bgLayer.indexed,
-  ttmCtx,
+  ttm: makeTtmEnv(device, draw),
+  display,
+  palette: pal,
   archive,
   fadeState: null,
 };
@@ -88,22 +85,16 @@ startLoop(
     // the actual tick rate so animations don't run too fast.
     while (hasEnoughMs(pacedMini * msPerTick())) {
       consumeMs(pacedMini * msPerTick());
-      // storyTick first: phase transitions (e.g. scene end → walk, walk done → new scene)
-      // create new walkCtx / adsState. adsTick then advances them in the SAME iteration
-      // so their layers are populated before the render callback runs.
       storyTick(storyState, game);
-      pacedMini = adsTick(game.adsState, game.ttmCtx);
       storyAnimateBg(storyState, game, pacedMini);
+      pacedMini = adsTick(game.adsState, game.ttm, pal, display);
+      storyRedrawHoliday(game);
+      display.restorePass(0);
     }
   },
   () => {
-    composite(img, {
-      background: game.background,
-      ttmThreads: adsThreadLayers(game.adsState),
-      holiday: game.holidayLayer,
-      palette: pal,
-      fade: game.fadeState,
-    });
+    presentSurface(img.data, display.window, pal);
+    if (game.fadeState) applyFade(img.data, game.fadeState);
     ctx.putImageData(img, 0, 0);
     hudUpdate(adsActiveThreadCount(game.adsState), storyState.currentScene?.adsName ?? '-');
   },

@@ -41,7 +41,7 @@ This step switches drawing only. Thread lifecycle (chunk 6), story and island lo
 
 ## Part A: Presenting to the canvas
 
-- [ ] **Action 1: Write the failing test**
+- [x] **Action 1: Write the failing test**
 
 Create `src/gfx/present.test.ts`:
 
@@ -62,12 +62,12 @@ describe('presentSurface', () => {
 });
 ```
 
-- [ ] **Action 2: Run it to make sure it fails**
+- [x] **Action 2: Run it to make sure it fails**
 
 Run: `pnpm exec vitest run src/gfx/present.test.ts`
 Expected: FAIL, `Cannot find module './present.js'`.
 
-- [ ] **Action 3: Write it**
+- [x] **Action 3: Write it**
 
 Create `src/gfx/present.ts`:
 
@@ -87,7 +87,7 @@ export function presentSurface(out: Uint8ClampedArray, surface: Surface, palette
 }
 ```
 
-- [ ] **Action 4: Run it and commit**
+- [x] **Action 4: Run it and commit**
 
 Run: `pnpm exec vitest run src/gfx/present.test.ts`
 Expected: PASS.
@@ -99,7 +99,7 @@ git commit -m "feat(gfx): present a surface to RGBA"
 
 ## Part B: Island on the display
 
-- [ ] **Action 5: Write the failing data test**
+- [x] **Action 5: Write the failing data test**
 
 Create `src/island/island.data.test.ts`:
 
@@ -159,7 +159,7 @@ describe.skipIf(!hasCorpus)('island on the display', () => {
 });
 ```
 
-- [ ] **Action 6: Rewrite the island drawing**
+- [x] **Action 6: Rewrite the island drawing**
 
 Replace `src/island/island.ts` with the code below. The island logic (positions, sprite numbers, random choices, counters) is unchanged; only where it draws changes.
 
@@ -342,14 +342,14 @@ export function showScreen(display: Display, archive: ParsedArchive, name: strin
 
 The old `drawSpriteFlip` mirrored left to right, which is `MIRROR` in the model.
 
-- [ ] **Action 7: Run the island test**
+- [x] **Action 7: Run the island test**
 
 Run: `pnpm exec vitest run src/island`
 Expected: all pass.
 
 ## Part C: Walk on the display
 
-- [ ] **Action 8: Write the failing test**
+- [x] **Action 8: Write the failing test**
 
 Create `src/walk/walk.test.ts`:
 
@@ -387,7 +387,7 @@ describe('walk on the display', () => {
 
 `walkInit(0, 0, 0, 0)` starts and ends at spot A facing south: the first `walkAnimate` arrives at once (80) and the next one reports done (0).
 
-- [ ] **Action 9: Split moving from drawing**
+- [x] **Action 9: Split moving from drawing**
 
 In `src/walk/walk.ts`:
 
@@ -439,7 +439,7 @@ function drawMarked(display: Display, image: Surface | undefined, x: number, y: 
 }
 ```
 
-- [ ] **Action 10: Run the walk tests**
+- [x] **Action 10: Run the walk tests**
 
 Run: `pnpm exec vitest run src/walk`
 Expected: all pass. If the drawn frame of spot A lands off screen (no pixel 5 on B), pass `dx`/`dy` that bring it on screen in the test, not a change to `walkDraw`.
@@ -448,7 +448,7 @@ Expected: all pass. If the drawn frame of spot A lands off screen (no pixel 5 on
 
 The scheduler keeps its ADS logic (chunk 6). Only thread state, ticking, and drawing change.
 
-- [ ] **Action 11: Write the failing data test**
+- [x] **Action 11: Write the failing data test**
 
 Create `src/ads/scheduler.data.test.ts`:
 
@@ -486,7 +486,7 @@ describe.skipIf(!hasCorpus)('ADS scheduler adapter on the real data', () => {
 });
 ```
 
-- [ ] **Action 12: Switch the scheduler**
+- [x] **Action 12: Switch the scheduler**
 
 In `src/ads/scheduler.ts`:
 
@@ -703,14 +703,14 @@ export function adsPlayWalk(
 
 Delete the comments that only described the deleted code: the `// Lingering layers shown...` and `// (a) Advance threads...` blocks went with the old `adsTick`; check `rg -n "lingering|layer" src/ads/scheduler.ts` prints nothing.
 
-- [ ] **Action 13: Run the scheduler tests**
+- [x] **Action 13: Run the scheduler tests**
 
 Run: `pnpm exec vitest run src/ads`
 Expected: all pass (the data test may take up to a minute). A failure names the scene and tick; fix the adapter, not the test.
 
 ## Part E: Story, main, and debug page
 
-- [ ] **Action 14: Story**
+- [x] **Action 14: Story**
 
 In `src/story/story.ts`:
 
@@ -808,7 +808,7 @@ export function storyRedrawHoliday(game: GameState): void {
 }
 ```
 
-- [ ] **Action 15: Main loop**
+- [x] **Action 15: Main loop**
 
 Replace `src/main.ts` with:
 
@@ -916,7 +916,7 @@ startLoop(
 );
 ```
 
-- [ ] **Action 16: Debug page**
+- [x] **Action 16: Debug page**
 
 In `src/debug-main.ts`, replace the four imports of `makeLayer`, the old `primitives`, the old `sprite`, and `composite` with:
 
@@ -950,7 +950,7 @@ demoBtn.addEventListener('click', () => {
 });
 ```
 
-- [ ] **Action 17: Delete the old pipeline**
+- [x] **Action 17: Delete the old pipeline**
 
 ```bash
 git rm src/gfx/layer.ts src/gfx/primitives.ts src/gfx/primitives.test.ts src/gfx/sprite.ts src/gfx/sprite.test.ts src/gfx/clip.ts src/gfx/zone.ts src/gfx/compositor.ts src/ttm/interpreter.ts src/ttm/interpreter.test.ts src/ttm/thread.ts src/ttm/bmp-slots.ts
@@ -961,7 +961,7 @@ In `src/types.ts`, delete the `Rect` and `Layer` interfaces (keep `Palette`, `Sp
 Run: `rg -n "gfx/(layer|primitives|sprite|clip|zone|compositor)\.js|ttm/(interpreter|thread|bmp-slots)\.js|\bLayer\b|\bRect\b|ttmCtx|holidayLayer|lingering" src`
 Expected: no output.
 
-- [ ] **Action 18: Type check, test, commit**
+- [x] **Action 18: Type check, test, commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.

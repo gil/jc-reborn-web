@@ -1,15 +1,15 @@
 import { ADS, ADS_ARG_COUNTS } from './opcodes.js';
-import { makeThread, type TtmThread, type TtmSlot } from '../ttm/thread.js';
-import { ttmPlay, type TtmContext } from '../ttm/interpreter.js';
-import { OP } from '../ttm/opcodes.js';
 import type { AdsResource } from '../decode/ads-loader.js';
 import type { ParsedArchive } from '../resource/types.js';
 import { decodeTtm } from '../decode/ttm-loader.js';
-import { makeLayer } from '../gfx/layer.js';
 import { decodeBmp } from '../decode/bmp.js';
-import type { Sprite } from '../types.js';
-import { walkInit, walkAnimate, type WalkState } from '../walk/walk.js';
-import type { Layer } from '../types.js';
+import type { Display } from '../gfx/gdi/display.js';
+import { spriteSurface } from '../gfx/gdi/sprite.js';
+import type { Surface } from '../gfx/gdi/surface.js';
+import { activatePendingPalette, runTtmPage, type TtmEnv } from '../ttm/page-runner.js';
+import { loadThreadDrawState, makeThread, makeTtmSlot, resetDrawClip, type TtmSlot, type TtmThread } from '../ttm/state.js';
+import type { Palette } from '../types.js';
+import { walkInit, walkAnimate, walkDraw, type WalkState } from '../walk/walk.js';
 
 const MAX_THREADS = 10;
 const OP_ADD_SCENE = 0, OP_STOP_SCENE = 1, OP_NOP = 2;
@@ -19,13 +19,12 @@ interface RandOp { type: number; slot: number; tag: number; numPlays: number; we
 
 export interface WalkContext {
   ws: WalkState;
-  layer: Layer;
-  sprites: Sprite[];    // JOHNWALK.BMP sprites
-  bgSprites: Sprite[];  // BACKGRND.BMP sprites (for palm tree occlusion)
+  sprites: Surface[];    // JOHNWALK.BMP images
+  bgSprites: Surface[];  // BACKGRND.BMP images (for palm tree occlusion)
   dx: number;
   dy: number;
   timer: number;
-  done: boolean;        // walk finished; keep layer visible one more frame
+  done: boolean;
 }
 
 export interface AdsState {
@@ -39,7 +38,6 @@ export interface AdsState {
   stopRequested: boolean;
   ticksSinceStopRequest: number;   // grace period for orphan GOTO-loop threads after END
   walkCtx: WalkContext | null;
-  lingeringLayers: Layer[];        // last frame of stopped threads; shown for one tick
 }
 
 // Ticks of grace allowed for natural PURGE completion after END before force-stopping
@@ -116,13 +114,11 @@ function scanBytecode(bc: Uint8Array, startTag: number): {
 export function makeAdsState(ads: AdsResource, archive: ParsedArchive, startTag: number): AdsState {
   // Build TTM slot array (index = slot id from sub-resource list)
   const maxSlot = Math.max(0, ...ads.subResources.map(s => s.slot));
-  const ttmSlots: TtmSlot[] = Array.from({ length: maxSlot + 1 }, () =>
-    ({ ttm: null, sprites: Array.from({ length: 6 }, () => []) }),
-  );
+  const ttmSlots: TtmSlot[] = Array.from({ length: maxSlot + 1 }, (_, id) => makeTtmSlot(id, null));
   for (const sub of ads.subResources) {
     const raw = archive.byName.get(sub.name);
     if (!raw) { console.warn(`ADS sub-resource not found: ${sub.name}`); continue; }
-    ttmSlots[sub.slot] = { ttm: decodeTtm(raw.payload), sprites: Array.from({ length: 6 }, () => []) };
+    ttmSlots[sub.slot] = makeTtmSlot(sub.slot, decodeTtm(raw.payload));
   }
 
   const bc = ads.bytecode;
@@ -131,7 +127,7 @@ export function makeAdsState(ads: AdsResource, archive: ParsedArchive, startTag:
   const state: AdsState = {
     bc,
     ttmSlots,
-    threads: Array.from({ length: MAX_THREADS }, makeThread),
+    threads: Array.from({ length: MAX_THREADS }, () => makeThread()),
     chunks,
     chunksLocal: [],
     randOps: [],
@@ -139,7 +135,6 @@ export function makeAdsState(ads: AdsResource, archive: ParsedArchive, startTag:
     stopRequested: false,
     ticksSinceStopRequest: 0,
     walkCtx: null,
-    lingeringLayers: [],
   };
 
   adsPlayChunk(state, tagOffset);
@@ -158,7 +153,6 @@ function isSceneRunning(state: AdsState, slot: number, tag: number): boolean {
 }
 
 function adsAddScene(state: AdsState, slotNo: number, tag: number, arg3: number): void {
-  // Don't add a duplicate running scene
   if (isSceneRunning(state, slotNo, tag)) return;
 
   const thread = state.threads.find(t => !t.isRunning);
@@ -167,62 +161,27 @@ function adsAddScene(state: AdsState, slotNo: number, tag: number, arg3: number)
   const slot = state.ttmSlots[slotNo];
   if (!slot) { console.warn(`no TTM slot ${slotNo}`); return; }
 
-  thread.slot = slot;
-  thread.isRunning = 1;
-  thread.sceneSlot = slotNo;
-  thread.sceneTag = tag;
-  thread.sceneTimer = 0;
-  thread.sceneIterations = 0;
-  thread.delay = 4;
-  thread.timer = 0;
-  thread.nextGotoOffset = 0;
-  thread.selectedBmpSlot = 0;
-  thread.fgColor = 0x0f;
-  thread.bgColor = 0x0f;
-  thread.layer = makeLayer();
+  const tagPage = slotNo === 0 ? 0 : tagPageOf(slot, tag);
+  Object.assign(thread, makeThread(slot), { isRunning: 1, sceneSlot: slotNo, sceneTag: tag, tagPage, page: tagPage });
 
-  // Slot 0: start from beginning; otherwise find tag in TTM bytecode
-  if (slotNo === 0) {
-    thread.ip = 0;
-  } else {
-    thread.ip = findTtmTag(slot, tag);
-  }
-
-  const arg3s = arg3 as number;
-  if ((arg3s << 16 >> 16) < 0) {        // signed negative → time limit
-    thread.sceneTimer = -(arg3s << 16 >> 16);
-  } else if (arg3s > 0) {               // positive → repeat count
-    thread.sceneIterations = arg3s - 1;
-  }
+  const signed = (arg3 << 16) >> 16;
+  if (signed < 0) thread.sceneTimer = -signed;
+  else if (arg3 > 0) thread.sceneIterations = arg3 - 1;
 
   console.log(`[ADS] start slot=${slotNo} tag=${tag} iters=${thread.sceneIterations}`);
 }
 
-function findTtmTag(slot: TtmSlot, tag: number): number {
-  if (!slot.ttm) return 0;
-  const bc = slot.ttm.bytecode;
-  const dv = new DataView(bc.buffer, bc.byteOffset);
-  let p = 0;
-  while (p < bc.length) {
-    const op = dv.getUint16(p, true); p += 2;
-    const argCount = op & 0x000f;
-    if (argCount === 0x0f) {
-      while (p < bc.length && dv.getUint8(p++) !== 0) {}
-      if (p & 1) p++;
-    } else {
-      if (op === OP.TAG && p < bc.length) {
-        const id = dv.getUint16(p, true);
-        if (id === tag) return p + 2; // offset after the TAG + arg
-      }
-      p += argCount * 2;
-    }
-  }
-  return 0;
+function tagPageOf(slot: TtmSlot, tag: number): number {
+  return slot.ttm?.tags.find(t => t.id === tag)?.page ?? 0;
+}
+
+function restartThread(t: TtmThread): void {
+  const { slot, sceneSlot, sceneTag, sceneIterations, tagPage } = t;
+  Object.assign(t, makeThread(slot), { isRunning: 1, sceneSlot, sceneTag, sceneIterations, tagPage, page: tagPage });
 }
 
 function adsStopScene(state: AdsState, idx: number): void {
   const t = state.threads[idx]!;
-  state.lingeringLayers.push(t.layer); // keep last frame visible until new scene draws
   console.log(`[ADS] stop  slot=${t.sceneSlot} tag=${t.sceneTag}`);
   t.isRunning = 0;
 }
@@ -393,14 +352,7 @@ function adsPlayTriggeredChunks(state: AdsState, slotNo: number, tag: number): v
 
 // ------- per-frame tick (browser rAF adaptation of adsPlay loop) -------
 
-export function adsTick(state: AdsState, ttmCtx: TtmContext): number {
-  // Lingering layers shown for exactly one tick after a thread stops so there's
-  // always content while the replacement scene primes its first frame.
-  state.lingeringLayers = [];
-
-  // Pre-tick sweep: free leaked threads with nil/unloaded TTM slot (e.g. walk
-  // threads that survived into the playing phase). These would wedge the engine
-  // because play() skips them but their timer stays frozen.
+export function adsTick(state: AdsState, env: TtmEnv, palette: Palette, display: Display): number {
   for (const t of state.threads) {
     if (t.isRunning === 1 && !t.slot.ttm) {
       console.warn(`[ADS] pre-tick sweep: freeing leaked nil-slot thread slot=${t.sceneSlot} tag=${t.sceneTag} timer=${t.timer}`);
@@ -408,69 +360,51 @@ export function adsTick(state: AdsState, ttmCtx: TtmContext): number {
     }
   }
 
-  // (a) Advance threads whose timer reached 0 in the previous frame
   for (const t of state.threads) {
-    if (t.isRunning !== 1 || t.timer !== 0) continue;
-    t.timer = t.delay;
-    ttmPlay(t, ttmCtx);
+    if (t.isRunning === 1) runThread(env, t);
+  }
+  activatePendingPalette(env, palette);
+  resetDrawClip(env.draw);
+
+  let mini = 300;
+  if (state.walkCtx && !state.walkCtx.done) mini = Math.min(mini, state.walkCtx.timer);
+  for (const t of state.threads) {
+    if (t.isRunning) mini = Math.min(mini, t.timer);
+  }
+  mini = mini === 300 ? 1 : Math.max(1, mini);
+
+  const wc = state.walkCtx;
+  if (wc && !wc.done) {
+    wc.timer -= mini;
+    if (wc.timer <= 0) {
+      wc.timer = walkAnimate(wc.ws);
+      wc.done = wc.timer === 0;
+    }
+    if (!wc.done) walkDraw(wc.ws, display, wc.sprites, wc.bgSprites, wc.dx, wc.dy);
   }
 
-  // (b) Compute mini: minimum of walk timer + all non-zero thread timers and
-  // delays. Includes isRunning=2 threads so their cleanup timer isn't frozen.
-  let mini = 300;
-  if (state.walkCtx && !state.walkCtx.done) {
-    mini = Math.min(mini, state.walkCtx.timer);
-  }
   for (const t of state.threads) {
     if (!t.isRunning) continue;
-    if (t.delay < mini) mini = t.delay;
-    if (t.timer < mini) mini = t.timer;
-  }
-  if (mini === 300) mini = 1;
-
-  // (c) Decrement all timers by mini — walk context and all threads
-  if (state.walkCtx) {
-    const wc = state.walkCtx;
-    if (!wc.done) {
-      wc.timer -= mini;
-      if (wc.timer <= 0) {
-        const delay = walkAnimate(wc.ws, wc.layer, wc.sprites, wc.bgSprites, wc.dx, wc.dy);
-        wc.timer = delay;
-        if (delay === 0) wc.done = true;
-      }
+    t.timer -= mini;
+    if (t.sceneTimer > 0) {
+      t.sceneTimer -= mini;
+      if (t.sceneTimer <= 0) t.isRunning = 2;
     }
   }
-  for (const t of state.threads) {
-    if (t.isRunning) t.timer -= mini;
-  }
 
-  // (d) Post-process: handle expired, restarted threads and scene triggers.
-  // Single pass — with mini-based lockstep all threads reach timer==0 together.
   for (let i = 0; i < state.threads.length; i++) {
     const t = state.threads[i]!;
     if (!t.isRunning || t.timer > 0) continue;
-
-    if (t.nextGotoOffset) {
-      t.ip = t.nextGotoOffset;
-      t.nextGotoOffset = 0;
-    }
-
-    if (t.sceneTimer > 0) {
-      t.sceneTimer -= t.delay;
-      if (t.sceneTimer <= 0) t.isRunning = 2;
-    }
-
-    if (t.isRunning === 2) {
-      if (t.sceneIterations > 0) {
-        t.sceneIterations--;
-        console.log(`[ADS] restart slot=${t.sceneSlot} tag=${t.sceneTag} iters_left=${t.sceneIterations}`);
-        t.isRunning = 1;
-        t.ip = findTtmTag(t.slot, t.sceneTag);
-      } else {
-        const slot = t.sceneSlot, tag = t.sceneTag;
-        adsStopScene(state, i);
-        if (!state.stopRequested) adsPlayTriggeredChunks(state, slot, tag);
-      }
+    if (t.isRunning === 1) {
+      advancePage(t);
+    } else if (t.sceneIterations > 0) {
+      t.sceneIterations--;
+      console.log(`[ADS] restart slot=${t.sceneSlot} tag=${t.sceneTag} iters_left=${t.sceneIterations}`);
+      restartThread(t);
+    } else {
+      const slot = t.sceneSlot, tag = t.sceneTag;
+      adsStopScene(state, i);
+      if (!state.stopRequested) adsPlayTriggeredChunks(state, slot, tag);
     }
   }
 
@@ -491,32 +425,50 @@ export function adsTick(state: AdsState, ttmCtx: TtmContext): number {
   return mini;
 }
 
-export function adsActiveThreadCount(state: AdsState): number {
-  return state.threads.filter(t => t.isRunning).length;
+function runThread(env: TtmEnv, t: TtmThread): void {
+  loadThreadDrawState(t, env.draw);
+  const result = runTtmPage(env, t, t.page);
+  if (!result.ran) {
+    t.isRunning = 2;
+    return;
+  }
+  t.replay = true;
+  if (result.delay !== null && result.delay !== t.delay) {
+    t.delay = result.delay;
+    t.timer = result.delay;
+  }
+  if (result.purge) {
+    t.nextPage = t.tagPage;
+    if (t.sceneTimer <= 0) t.isRunning = 2;
+  } else if (result.gotoPage !== null) {
+    t.nextPage = result.gotoPage;
+  }
 }
 
-export function adsThreadLayers(state: AdsState): (Layer | null)[] {
-  const layers: (Layer | null)[] = [...state.lingeringLayers]; // lingering under active; active wins
-  for (const t of state.threads) layers.push(t.isRunning ? t.layer : null);
-  if (state.walkCtx) layers.push(state.walkCtx.layer);
-  return layers;
+function advancePage(t: TtmThread): void {
+  t.timer = t.delay;
+  t.replay = false;
+  t.page = t.nextPage >= 0 ? t.nextPage : t.page + 1;
+  t.nextPage = -1;
+}
+
+export function adsActiveThreadCount(state: AdsState): number {
+  return state.threads.filter(t => t.isRunning).length;
 }
 
 export function adsPlayWalk(
   state: AdsState,
   archive: ParsedArchive,
-  bgSprites: Sprite[],
+  bgSprites: Surface[],
   fromSpot: number, fromHdg: number,
   toSpot: number, toHdg: number,
   dx: number, dy: number,
 ): void {
   const raw = archive.byName.get('JOHNWALK.BMP');
   if (!raw) { console.warn('JOHNWALK.BMP not found'); return; }
-  const sprites = decodeBmp(raw.payload).sprites;
   state.walkCtx = {
     ws: walkInit(fromSpot, fromHdg, toSpot, toHdg),
-    layer: makeLayer(),
-    sprites,
+    sprites: decodeBmp(raw.payload).sprites.map(spriteSurface),
     bgSprites,
     dx, dy,
     timer: 0,

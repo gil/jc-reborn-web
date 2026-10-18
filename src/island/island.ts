@@ -1,9 +1,11 @@
-import { drawSprite, drawSpriteFlip } from '../gfx/sprite.js';
-import { decodeScr } from '../decode/scr.js';
 import { decodeBmp } from '../decode/bmp.js';
+import { decodeScr } from '../decode/scr.js';
+import { COPY_RECT } from '../gfx/gdi/dirty.js';
+import { SURFACE_A, SURFACE_B, SURFACE_C, type Display } from '../gfx/gdi/display.js';
+import { drawSprite, MIRROR, spriteSurface } from '../gfx/gdi/sprite.js';
+import { makeDrawState, rawIndices, type Surface } from '../gfx/gdi/surface.js';
 import type { ParsedArchive } from '../resource/types.js';
-import type { Layer, Sprite } from '../types.js';
-import { SCREEN_W, SCREEN_H, TRANSPARENT } from '../types.js';
+import { SCREEN_H, SCREEN_W } from '../types.js';
 
 export interface IslandState {
   lowTide: boolean;
@@ -23,69 +25,62 @@ export function randomIslandState(): IslandState {
   return { lowTide, night: false, raft: 0, holiday: 0, xPos, yPos };
 }
 
+export interface IslandSprite {
+  image: Surface;
+  x: number;
+  y: number;
+}
+
 export interface IslandRuntime {
-  bgLayer: Layer;
-  sprites: Sprite[];   // all sprites from BACKGRND.BMP
+  sprites: Surface[];   // all sprites from BACKGRND.BMP
+  holiday: IslandSprite | null;
   state: IslandState;
   counter1: number;
   counter2: number;
 }
 
-// Draw helper: applies xPos/yPos island offset
-function blit(rt: IslandRuntime, x: number, y: number, sprNo: number, flip = false): void {
-  const sp = rt.sprites[sprNo];
-  if (!sp) return;
-  const dx = x + rt.state.xPos, dy = y + rt.state.yPos;
-  if (flip) drawSpriteFlip(rt.bgLayer, sp, dx, dy);
-  else drawSprite(rt.bgLayer, sp, dx, dy);
+const HIGH_TIDE_WAVES = [[270, 306, 3], [364, 319, 6], [518, 303, 9]] as const;
+const LOW_TIDE_WAVES = [[129, 340, 39], [233, 323, 30], [367, 356, 33], [558, 323, 36]] as const;
+const HOLIDAYS = [[410, 298, 0], [333, 286, 1], [404, 267, 2], [361, 155, 3]] as const;
+const unclipped = makeDrawState();
+
+function drawOn(surface: Surface, image: Surface | undefined, x: number, y: number, flags = 0): void {
+  if (image) drawSprite(surface, unclipped, image, x, y, flags);
 }
 
-// Draw helper with no offset (clouds use grDx=grDy=0)
-function blitNoOffset(rt: IslandRuntime, x: number, y: number, sprNo: number, flip = false): void {
-  const sp = rt.sprites[sprNo];
-  if (!sp) return;
-  if (flip) drawSpriteFlip(rt.bgLayer, sp, x, y);
-  else drawSprite(rt.bgLayer, sp, x, y);
+function loadSprites(archive: ParsedArchive, name: string): Surface[] {
+  const resource = archive.byName.get(name);
+  return resource ? decodeBmp(resource.payload).sprites.map(spriteSurface) : [];
 }
 
-export function islandInit(archive: ParsedArchive, state: IslandState): IslandRuntime {
-  // Allocate background layer
-  const indexed = new Uint8Array(SCREEN_W * SCREEN_H);
-  indexed.fill(TRANSPARENT);
-  const bgLayer: Layer = { indexed, clip: { x: 0, y: 0, w: SCREEN_W, h: SCREEN_H } };
+function drawScreenIntoBackground(display: Display, payload: Uint8Array): void {
+  const screen = decodeScr(payload);
+  const { target } = display;
+  display.target = SURFACE_C;
+  display.blitScreen({ width: screen.width, height: screen.height, pixels: rawIndices(screen.indexed) }, 0, 0);
+  display.target = target;
+}
 
-  // Load and blit background screen (ocean or night)
-  const scrName = state.night
-    ? 'NIGHT.SCR'
-    : `OCEAN0${Math.floor(Math.random() * 3)}.SCR`;
-  const scrRaw = archive.byName.get(scrName);
-  if (scrRaw) {
-    const scr = decodeScr(scrRaw.payload);
-    indexed.set(scr.indexed);
-  }
+export function islandInit(display: Display, archive: ParsedArchive, state: IslandState): IslandRuntime {
+  const background = display.surfaces[SURFACE_C]!;
+  background.pixels.fill(0);
+  const screen = archive.byName.get(state.night ? 'NIGHT.SCR' : `OCEAN0${Math.floor(Math.random() * 3)}.SCR`);
+  if (screen) drawScreenIntoBackground(display, screen.payload);
 
-  // Load MRAFT.BMP for raft sprite
   if (state.raft > 0) {
-    const raftRaw = archive.byName.get('MRAFT.BMP');
-    if (raftRaw) {
-      const raftBmp = decodeBmp(raftRaw.payload);
-      const xRaft = state.lowTide ? 529 : 512;
-      const yRaft = state.lowTide ? 281 : 266;
-      const sp = raftBmp.sprites[state.raft - 1];
-      if (sp) drawSprite(bgLayer, sp, xRaft + state.xPos, yRaft + state.yPos);
-    }
+    const raft = loadSprites(archive, 'MRAFT.BMP')[state.raft - 1];
+    const x = (state.lowTide ? 529 : 512) + state.xPos;
+    const y = (state.lowTide ? 281 : 266) + state.yPos;
+    drawOn(background, raft, x, y);
   }
 
-  // Load BACKGRND.BMP — all other sprites come from here
-  const bmpRaw = archive.byName.get('BACKGRND.BMP');
-  const sprites: Sprite[] = bmpRaw ? decodeBmp(bmpRaw.payload).sprites : [];
-  const rt: IslandRuntime = { bgLayer, sprites, state, counter1: 0, counter2: 0 };
+  const sprites = loadSprites(archive, 'BACKGRND.BMP');
+  const rt: IslandRuntime = { sprites, holiday: null, state, counter1: 0, counter2: 0 };
 
   // Clouds (grDx=grDy=0 in C — no island offset)
   const windDir = Math.random() < 0.5;
   const r = Math.random;
   const numClouds = Math.floor(r() * 6);
-
   for (let i = 0; i < numClouds; i++) {
     const cloudNo = Math.floor(r() * 3);
     const [maxW, maxH] = cloudNo === 0 ? [640 - 129, 100 - 36]
@@ -93,66 +88,87 @@ export function islandInit(archive: ParsedArchive, state: IslandState): IslandRu
       : [640 - 264, 100 - 76];
     const cx = Math.floor(r() * maxW);
     const cy = Math.floor(r() * maxH) + 25;
-    blitNoOffset(rt, cx, cy, 15 + cloudNo, windDir);
+    drawOn(background, sprites[15 + cloudNo], cx, cy, windDir ? MIRROR : 0);
   }
 
-  // Island static elements (with xPos/yPos offset)
-  blit(rt, 288, 279,  0);   // island body
-  blit(rt, 442, 148, 13);   // trunk
-  blit(rt, 365, 122, 12);   // leafs
-  blit(rt, 396, 279, 14);   // palm shadow
-
+  const onIsland = (x: number, y: number, sprNo: number) => drawOn(background, sprites[sprNo], x + state.xPos, y + state.yPos);
+  onIsland(288, 279, 0);   // island body
+  onIsland(442, 148, 13);  // trunk
+  onIsland(365, 122, 12);  // leafs
+  onIsland(396, 279, 14);  // palm shadow
   if (state.lowTide) {
-    blit(rt, 249, 303, 1);  // low tide shore
-    blit(rt, 150, 328, 2);  // rock
+    onIsland(249, 303, 1); // low tide shore
+    onIsland(150, 328, 2); // rock
   }
 
-  // Prime wave animation (4 initial cycles)
-  for (let i = 0; i < 4; i++) islandAnimate(rt);
+  for (let i = 0; i < 4; i++) {
+    const [x, y, sprNo] = nextWave(rt);
+    drawOn(background, sprites[sprNo], x, y);
+  }
 
+  rt.holiday = placeHoliday(archive, state);
+  if (rt.holiday) drawOn(background, rt.holiday.image, rt.holiday.x, rt.holiday.y);
   return rt;
 }
 
-// Called every 8 ticks (delay set in adsInitIsland).
-// Cycles wave sprites using two rolling counters (port of island.c:islandAnimate).
-export function islandAnimate(rt: IslandRuntime): void {
+function nextWave(rt: IslandRuntime): [number, number, number] {
+  let wave: readonly [number, number, number];
   if (rt.state.lowTide) {
     rt.counter2 = (rt.counter2 + 1) % 4;
-    switch (rt.counter2) {
-      case 0: blit(rt, 129, 340, 39 + rt.counter1); break; // rock waves
-      case 1: blit(rt, 233, 323, 30 + rt.counter1); break; // low tide left
-      case 2: blit(rt, 367, 356, 33 + rt.counter1); break; // low tide center
-      case 3: blit(rt, 558, 323, 36 + rt.counter1); break; // low tide right
-    }
+    wave = LOW_TIDE_WAVES[rt.counter2]!;
   } else {
     rt.counter2 = (rt.counter2 + 1) % 3;
-    switch (rt.counter2) {
-      case 0: blit(rt, 270, 306, 3 + rt.counter1); break;  // high tide left
-      case 1: blit(rt, 364, 319, 6 + rt.counter1); break;  // high tide center
-      case 2: blit(rt, 518, 303, 9 + rt.counter1); break;  // high tide right
-    }
+    wave = HIGH_TIDE_WAVES[rt.counter2]!;
   }
+  const placed: [number, number, number] = [wave[0] + rt.state.xPos, wave[1] + rt.state.yPos, wave[2] + rt.counter1];
   if (rt.counter2 === 0) rt.counter1 = (rt.counter1 + 1) % 2;
+  return placed;
 }
 
-// Returns a holiday overlay layer (or null if no holiday).
-export function islandInitHoliday(archive: ParsedArchive, state: IslandState): Layer | null {
+// Called every 8 ticks (delay set in adsInitIsland).
+export function islandAnimate(rt: IslandRuntime, display: Display): void {
+  const [x, y, sprNo] = nextWave(rt);
+  const image = rt.sprites[sprNo];
+  if (!image) return;
+  drawOn(display.surfaces[SURFACE_B]!, image, x, y);
+  display.dirty.add(x, y, image.width, image.height, COPY_RECT, SURFACE_B, SURFACE_A, 0, null);
+  display.dirty.add(x, y, image.width, image.height, COPY_RECT, SURFACE_B, SURFACE_C, 0, null);
+}
+
+function placeHoliday(archive: ParsedArchive, state: IslandState): IslandSprite | null {
   if (!state.holiday) return null;
-  const raw = archive.byName.get('HOLIDAY.BMP');
-  if (!raw) return null;
-  const sprites = decodeBmp(raw.payload).sprites;
-  const indexed = new Uint8Array(SCREEN_W * SCREEN_H);
-  indexed.fill(TRANSPARENT);
-  const layer: Layer = { indexed, clip: { x: 0, y: 0, w: SCREEN_W, h: SCREEN_H } };
-  // holiday sprite indices and positions from island.c
-  const configs: Array<[number, number, number]> = [
-    [410, 298, 0], // Halloween
-    [333, 286, 1], // St Patrick
-    [404, 267, 2], // Christmas
-    [361, 155, 3], // New Year
-  ];
-  const [x, y, sprNo] = configs[state.holiday - 1]!;
-  const sp = sprites[sprNo];
-  if (sp) drawSprite(layer, sp, x + state.xPos, y + state.yPos);
-  return layer;
+  const [x, y, sprNo] = HOLIDAYS[state.holiday - 1]!;
+  const image = loadSprites(archive, 'HOLIDAY.BMP')[sprNo];
+  return image ? { image, x: x + state.xPos, y: y + state.yPos } : null;
+}
+
+export function islandRedrawHoliday(rt: IslandRuntime, display: Display): void {
+  const holiday = rt.holiday;
+  if (!holiday) return;
+  if (!display.dirty.overlaps(holiday.x, holiday.y, holiday.image.width, holiday.image.height, SURFACE_A, 0)) return;
+  drawOn(display.surfaces[SURFACE_B]!, holiday.image, holiday.x, holiday.y);
+}
+
+export function showBackground(display: Display): void {
+  const { source, target } = display;
+  display.source = SURFACE_C;
+  display.target = SURFACE_B;
+  display.copyRect(0, 0, SCREEN_W, SCREEN_H);
+  display.source = source;
+  display.target = target;
+  display.dirty.add(0, 0, SCREEN_W, SCREEN_H, COPY_RECT, SURFACE_B, SURFACE_A, 0, null);
+}
+
+export function clearBackground(display: Display): void {
+  display.surfaces[SURFACE_C]!.pixels.fill(0);
+  showBackground(display);
+}
+
+export function showScreen(display: Display, archive: ParsedArchive, name: string): boolean {
+  const resource = archive.byName.get(name);
+  if (!resource) return false;
+  display.surfaces[SURFACE_C]!.pixels.fill(0);
+  drawScreenIntoBackground(display, resource.payload);
+  showBackground(display);
+  return true;
 }

@@ -1,11 +1,13 @@
 import { decodeAds } from '../decode/ads-loader.js';
-import { decodeScr } from '../decode/scr.js';
 import { makeAdsState, adsPlayWalk, adsActiveThreadCount, type AdsState } from '../ads/scheduler.js';
-import { islandInit, islandInitHoliday, islandAnimate, type IslandRuntime, type IslandState } from '../island/island.js';
-import type { TtmContext } from '../ttm/interpreter.js';
+import {
+  clearBackground, islandAnimate, islandInit, islandRedrawHoliday, showBackground, showScreen,
+  type IslandRuntime, type IslandState,
+} from '../island/island.js';
+import type { Display } from '../gfx/gdi/display.js';
+import type { TtmEnv } from '../ttm/page-runner.js';
 import type { ParsedArchive } from '../resource/types.js';
-import type { Layer } from '../types.js';
-import { clearSavedZones } from '../gfx/zone.js';
+import type { Palette } from '../types.js';
 import {
   storyScenes, type StoryScene,
   FINAL, FIRST, ISLAND, LEFT_ISLAND, VARPOS_OK, LOWTIDE_OK, NORAFT, HOLIDAY_NOK,
@@ -14,12 +16,12 @@ import { type FadeState, nextFadeState, fadeDone } from '../gfx/fade.js';
 
 export interface GameState {
   adsState: AdsState;
-  islandRt: IslandRuntime;
+  islandRt: IslandRuntime | null;
   islandState: IslandState;
-  holidayLayer: Layer | null;
   bgAnimTimer: number;
-  background: Uint8Array | null;
-  ttmCtx: TtmContext;
+  ttm: TtmEnv;
+  display: Display;
+  palette: Palette;
   archive: ParsedArchive;
   fadeState: FadeState | null;
 }
@@ -153,13 +155,12 @@ function buildSequence(state: StoryState, game: GameState): void {
   if (finalSceneForIsland.flags & ISLAND) {
     const newIslandState = calcIslandFromScene(finalSceneForIsland, state.currentDay, baseIsland);
     game.islandState = newIslandState;
-    game.islandRt = islandInit(game.archive, newIslandState);
-    game.holidayLayer = islandInitHoliday(game.archive, newIslandState);
+    game.islandRt = islandInit(game.display, game.archive, newIslandState);
     game.bgAnimTimer = 8;
-    game.background = game.islandRt.bgLayer.indexed;
+    showBackground(game.display);
   } else {
-    game.background = null;
-    game.holidayLayer = null;
+    game.islandRt = null;
+    clearBackground(game.display);
   }
 }
 
@@ -190,15 +191,16 @@ function startScene(scene: StoryScene, game: GameState): void {
   const raw = game.archive.byName.get(scene.adsName);
   if (!raw) { console.warn(`ADS not found: ${scene.adsName}`); return; }
   const ads = decodeAds(raw.payload);
-  clearSavedZones();
   game.adsState = makeAdsState(ads, game.archive, scene.adsTagNo);
 
-  game.ttmCtx.dx = (scene.flags & ISLAND)
+  game.ttm.islandX = (scene.flags & ISLAND)
     ? game.islandState.xPos + (scene.flags & LEFT_ISLAND ? 272 : 0)
     : 0;
-  game.ttmCtx.dy = (scene.flags & ISLAND) ? game.islandState.yPos : 0;
+  game.ttm.islandY = (scene.flags & ISLAND) ? game.islandState.yPos : 0;
+  game.ttm.keepDrawings = false;
+  game.ttm.mirrorNextLoad = false;
 
-  if (scene.dayNo !== 0) game.ttmCtx.playSample(17);
+  if (scene.dayNo !== 0) game.ttm.device.playSound(17);
 }
 
 function sceneIsDone(game: GameState): boolean {
@@ -217,11 +219,8 @@ export function storyInit(_archive: ParsedArchive, game: GameState, debugAds: st
     debugAds,
     playingTicks: 0,
   };
-  const introRaw = skipIntro ? null : game.archive.byName.get('INTRO.SCR');
-  if (introRaw) {
-    const intro = decodeScr(introRaw.payload);
-    game.background = intro.indexed;
-    game.holidayLayer = null;
+  if (!skipIntro && showScreen(game.display, game.archive, 'INTRO.SCR')) {
+    game.islandRt = null;
     for (const t of game.adsState.threads) t.isRunning = 0;
     state.phase = { kind: 'splash', startMs: performance.now(), fading: false };
   } else {
@@ -281,7 +280,7 @@ function storyTickStep(state: StoryState, game: GameState): void {
         adsPlayWalk(
           game.adsState,
           game.archive,
-          game.islandRt.sprites,
+          game.islandRt?.sprites ?? [],
           state.prevSpot, state.prevHdg,
           scene.spotStart, scene.hdgStart,
           game.islandState.xPos, game.islandState.yPos,
@@ -299,8 +298,6 @@ function storyTickStep(state: StoryState, game: GameState): void {
       const wc = game.adsState.walkCtx;
       if (wc === null || wc.done) {
         // Walk done — clear the walk context, then start the queued scene.
-        // adsTick kept the walk layer visible one extra frame (done=true) so
-        // startScene can prime new threads before the layer disappears.
         game.adsState.walkCtx = null;
 
         const residual = game.adsState.threads.filter(t => t.isRunning);
@@ -332,7 +329,7 @@ function storyTickStep(state: StoryState, game: GameState): void {
       } else if (state.playingTicks > 8000) {
         const live = game.adsState.threads
           .filter(t => t.isRunning)
-          .map(t => `slot=${t.sceneSlot} tag=${t.sceneTag} run=${t.isRunning} ip=${t.ip} timer=${t.timer} delay=${t.delay} sceneTimer=${t.sceneTimer} iters=${t.sceneIterations}`)
+          .map(t => `slot=${t.sceneSlot} tag=${t.sceneTag} run=${t.isRunning} page=${t.page} timer=${t.timer} delay=${t.delay} sceneTimer=${t.sceneTimer} iters=${t.sceneIterations}`)
           .join(' | ');
         console.warn(`[STORY] WATCHDOG: force-ending ${state.currentScene?.adsName}[${state.currentScene?.adsTagNo}] after ${state.playingTicks} ticks — live threads: ${live || 'none'}`);
         for (const t of game.adsState.threads) {
@@ -360,11 +357,14 @@ function storyTickStep(state: StoryState, game: GameState): void {
 
 // Island wave animation — call each game tick with elapsed ticks
 export function storyAnimateBg(state: StoryState, game: GameState, elapsed: number): void {
-  if (state.phase.kind === 'splash') return;
-  if (!game.background) return;
+  if (state.phase.kind === 'splash' || !game.islandRt) return;
   game.bgAnimTimer -= elapsed;
   while (game.bgAnimTimer <= 0) {
-    islandAnimate(game.islandRt);
+    islandAnimate(game.islandRt, game.display);
     game.bgAnimTimer += 8;
   }
+}
+
+export function storyRedrawHoliday(game: GameState): void {
+  if (game.islandRt) islandRedrawHoliday(game.islandRt, game.display);
 }

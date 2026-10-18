@@ -1,6 +1,7 @@
-import { drawSprite, drawSpriteFlip } from '../gfx/sprite.js';
-import { clearLayer } from '../gfx/layer.js';
-import type { Layer, Sprite } from '../types.js';
+import { COPY_RECT } from '../gfx/gdi/dirty.js';
+import { SURFACE_A, SURFACE_B, SURFACE_C, type Display } from '../gfx/gdi/display.js';
+import { drawSprite, MIRROR } from '../gfx/gdi/sprite.js';
+import { makeDrawState, type Surface } from '../gfx/gdi/surface.js';
 import { calcPath } from './calcpath.js';
 import { UNDEF_NODE } from './calcpath-data.js';
 import {
@@ -64,17 +65,8 @@ export function walkInit(fromSpot: number, fromHdg: number, toSpot: number, toHd
 }
 
 // Returns delay ticks: 6 while walking/turning, 80 when just arrived, 0 when done.
-// Modifies ws in place. Draws one frame to layer using sprites (JOHNWALK.BMP[0])
-// and bgSprites (BACKGRND.BMP, for palm tree when behind it).
-// dx/dy are the island xPos/yPos offsets applied to all draw coordinates.
-export function walkAnimate(
-  ws: WalkState,
-  layer: Layer,
-  sprites: Sprite[],
-  bgSprites: Sprite[],
-  dx: number,
-  dy: number,
-): number {
+// Modifies ws in place.
+export function walkAnimate(ws: WalkState): number {
   if (ws.hasArrived) return 0;
 
   if (ws.nextHdg !== -1) {
@@ -129,27 +121,32 @@ export function walkAnimate(
     }
   }
 
-  // Draw current frame
-  const row = walkData[ws.dataIdx]!;
-  clearLayer(layer);
+  return ws.hasArrived ? 80 : 6;
+}
 
-  const sp = sprites[row[3]!];
-  if (sp) {
-    const x = row[1]! - 1 + dx;
-    const y = row[2]! + dy;
-    if (row[0]) drawSpriteFlip(layer, sp, x, y);
-    else drawSprite(layer, sp, x, y);
-  }
+const DRAWN_LISTS = [
+  [SURFACE_B, SURFACE_A, 0],
+  [SURFACE_B, SURFACE_A, 1],
+  [SURFACE_C, SURFACE_B, 0],
+] as const;
+const unclipped = makeDrawState();
 
+export function walkDraw(ws: WalkState, display: Display, sprites: Surface[], bgSprites: Surface[], dx: number, dy: number): void {
+  const [mirrored = 0, x = 0, y = 0, sprNo = 0] = walkData[ws.dataIdx]!;
+  drawMarked(display, sprites[sprNo], x - 1 + dx, y + dy, mirrored ? MIRROR : 0);
   // Redraw palm tree on top when Johnny is behind it
   if (ws.isBehindTree) {
-    const trunk = bgSprites[13];
-    const leafs = bgSprites[12];
-    if (trunk) drawSprite(layer, trunk, 442 + dx, 148 + dy);
-    if (leafs) drawSprite(layer, leafs, 365 + dx, 122 + dy);
+    drawMarked(display, bgSprites[13], 442 + dx, 148 + dy, 0);
+    drawMarked(display, bgSprites[12], 365 + dx, 122 + dy, 0);
   }
+}
 
-  return ws.hasArrived ? 80 : 6;
+function drawMarked(display: Display, image: Surface | undefined, x: number, y: number, flags: number): void {
+  if (!image) return;
+  drawSprite(display.surfaces[SURFACE_B]!, unclipped, image, x, y, flags);
+  for (const [source, target, age] of DRAWN_LISTS) {
+    display.dirty.add(x, y, image.width, image.height + 2, COPY_RECT, source, target, age, null);
+  }
 }
 
 // Returns true once the walk has fully completed (hasArrived + delay expired).
