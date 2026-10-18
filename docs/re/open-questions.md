@@ -85,14 +85,6 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Resolve in:** chunk 7 (story and main loop): decide a duration from the original's timing model, if any, when the story's call to `1020:0364` (`1018:0673`) is read
 - **Status:** open
 
-### OQ-24: Island drawing bridge
-
-- **Where:** `src/island/island.ts`, `src/story/story.ts` (`buildSequence` line 120, `storyInit` line 220, `storyRedrawHoliday` line 339)
-- **What it does:** draws the ocean, raft, clouds, island, first waves, and holiday sprite into C when a sequence starts, then copies C to B and marks the whole screen `(B → A, age 0)`. Every 8 ticks a wave is drawn on B with rects `(B → A, 0)` and `(B → C, 0)`. The holiday sprite is redrawn on B when its rect overlaps a `(B → A, age 0)` rect. Scenes off the island start from a C cleared to index 0; `INTRO.SCR` is drawn into C. Seen in a headless run: `startScene` gives a scene without `LEFT_ISLAND` the island offset of a left island (`islandX = -272`), so `ACTIVITY.ADS` tag 4 (`MJDIVE.TTM`) dives off the left edge of the screen; the old pipeline computed the same offset.
-- **Original:** `1010:040e` (waves and island bits), `1010:1e50` (holiday), and the island setup; which surfaces and rects they use is not checked.
-- **Resolve in:** chunk 7 (story and island)
-- **Status:** open
-
 ### OQ-25: Walk drawing bridge
 
 - **Where:** `src/walk/walk.ts` (`startWalk`, `walkTick`, `walkDraw`), ticked once per engine tick by `src/main.ts` while the story walks
@@ -338,3 +330,12 @@ Settled by chunk 5: 1030:03d7 is reached only from 1058:025b for opcodes 0xa506,
 - **Resolve in:** chunk 6 (ADS interpreter)
 - **Resolution:** nodes advance on due times against a clock (`1048:196e`), scenes start through the section scripts, and every section of every ADS matches the original trace (`src/ads/tick.data.test.ts`). The clock itself is OQ-29.
 - **Status:** resolved (chunk 6)
+
+### OQ-24: Island drawing bridge
+
+- **Where:** `src/island/island.ts`, `src/story/story.ts` (`buildSequence` line 120, `storyInit` line 220, `storyRedrawHoliday` line 339)
+- **What it does:** draws the ocean, raft, clouds, island, first waves, and holiday sprite into C when a sequence starts, then copies C to B and marks the whole screen `(B → A, age 0)`. Every 8 ticks a wave is drawn on B with rects `(B → A, 0)` and `(B → C, 0)`. The holiday sprite is redrawn on B when its rect overlaps a `(B → A, age 0)` rect. Scenes off the island start from a C cleared to index 0; `INTRO.SCR` is drawn into C. Seen in a headless run: `startScene` gives a scene without `LEFT_ISLAND` the island offset of a left island (`islandX = -272`), so `ACTIVITY.ADS` tag 4 (`MJDIVE.TTM`) dives off the left edge of the screen; the old pipeline computed the same offset.
+- **Original:** `1010:040e` (waves and island bits), `1010:1e50` (holiday), and the island setup; which surfaces and rects they use is not checked.
+- **Resolve in:** chunk 7 (story and island)
+- **Resolution:** `src/island/island.ts` ports `1010:0136`, `1010:040e`, `1010:1e50` and their helpers through `IslandDevice` (`src/island/island-device.ts`); every case of the island trace matches the original (`src/island/island.data.test.ts`, `docs/re/island.md`, `Emulated`). The left-island offset comes from `1010:1b00` (place bit 1: island at `(0x11, 0x135)`, so offset `(-272, 30)`) and the TTM offset from `1010:00fc` (`+1`, or `+0x111` for scenes with flag `0x400`). Wired into the story in step 7.
+- **Status:** resolved (chunk 7)

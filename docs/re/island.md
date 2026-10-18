@@ -136,20 +136,20 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 | --- | --- | --- | --- |
 | `1010:0059` | `story_presentFromB` | none (unreferenced) | match |
 | `1010:00b2` | `story_presentFromA` | none (unreferenced) | match |
-| `1010:00fc` | `story_setTtmOffset` | `src/island/island.ts` | open |
-| `1010:0136` | `story_drawIsland` | `src/island/island.ts` (`islandInit`) | open |
+| `1010:00fc` | `story_setTtmOffset` | `src/island/island.ts:161` `ttmOffset` | fixed |
+| `1010:0136` | `story_drawIsland` | `src/island/island.ts:104` `drawIsland` | fixed |
 | `1010:03ce` | `story_freeIslandBitmaps` | none (nothing to free in JavaScript) | match |
-| `1010:040e` | `story_animateIsland` | `src/island/island.ts` (`islandAnimate`) | open |
-| `1010:0463` | `story_resetOceanWaves` | none | open |
-| `1010:04a2` | `story_animateOceanWaves` | `src/island/island.ts` (`islandAnimate`) | open |
-| `1010:0a38` | `story_initClouds` | none | open |
-| `1010:0b67` | `story_animateClouds` | none | open |
-| `1010:0e74` | `story_drawSurf` | `src/island/island.ts` (`islandAnimate`) | open |
-| `1010:14bf` | `story_randomPlace` | `src/island/island.ts` (`randomIslandState`) | open |
-| `1010:1551` | `story_redrawIslandOver` | none | open |
-| `1010:1a0d` | `story_markIslandDrawn` | none | open |
-| `1010:1a88` | `story_rectOverlap` | none | open |
-| `1010:1b00` | `story_placeIsland` | `src/island/island.ts` (`randomIslandState`) | open |
+| `1010:040e` | `story_animateIsland` | `src/island/island.ts:149` `animateIsland` | fixed |
+| `1010:0463` | `story_resetOceanWaves` | `src/island/island.ts:370` `resetOceanWaves` | fixed |
+| `1010:04a2` | `story_animateOceanWaves` | `src/island/island.ts:407` `animateOceanWaves`, `src/island/island.ts:378` `spawnWave` | fixed |
+| `1010:0a38` | `story_initClouds` | `src/island/island.ts:308` `initClouds` | fixed |
+| `1010:0b67` | `story_animateClouds` | `src/island/island.ts:330` `animateClouds` | fixed |
+| `1010:0e74` | `story_drawSurf` | `src/island/island.ts:276` `drawSurf`, `src/island/island.ts:272` `drawSurfSpot` | fixed |
+| `1010:14bf` | `story_randomPlace` | `src/island/island.ts:219` `randomPlace` | fixed |
+| `1010:1551` | `story_redrawIslandOver` | `src/island/island.ts:182` `redrawIslandOver` | fixed |
+| `1010:1a0d` | `story_markIslandDrawn` | `src/island/island.ts:450` `markIslandDrawn` | fixed |
+| `1010:1a88` | `story_rectOverlap` | `src/island/island.ts:176` `rectOverlap` | fixed |
+| `1010:1b00` | `story_placeIsland` | `src/island/island.ts:232` `placeIsland` | fixed |
 | `1010:1c41` | `story_setIslandFlags` | `src/story/sequence.ts:76` `resetIslandFlags`, `src/story/sequence.ts:80` `applySceneFlags` | fixed |
-| `1010:1d69` | `story_drawRaft` | `src/island/island.ts` (`islandInit`) | open |
-| `1010:1e50` | `story_drawHoliday` | `src/island/island.ts` (`islandRedrawHoliday`) | open |
+| `1010:1d69` | `story_drawRaft` | `src/island/island.ts:255` `drawRaft` | fixed |
+| `1010:1e50` | `story_drawHoliday` | `src/island/island.ts:166` `drawHoliday` | fixed |

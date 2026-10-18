@@ -166,7 +166,7 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 | `1008:0fcd` | `platform_screenSaverProc` | `src/main.ts`, `src/engine/loop.ts` | open |
 | `1008:12eb` | `platform_setDialogStartTime` | none (out of scope, OQ-35) | match |
 | `1008:13cd` | `platform_pumpInputMessage` | none (out of scope, OQ-35) | match |
-| `1008:143c` | `platform_initSaver` | `src/main.ts`, `src/story/story.ts` (`storyInit`) | open |
+| `1008:143c` | `platform_initSaver` | `src/main.ts`, `src/story/story.ts` (`storyInit`), `src/island/island.ts:96` `drawIntro` | open |
 | `1008:157b` | `platform_shutdownSaver` | none | open |
 | `1008:15c8` | `story_idleTick` | `src/main.ts` | open |
 | `1008:16c2` | `platform_clockTick` | `src/engine/clock.ts` | open |

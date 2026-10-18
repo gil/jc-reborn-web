@@ -34,7 +34,7 @@ The code blocks follow the overview's first reading. Where `docs/re/island.md` s
 
 ## Part A: Clock timers
 
-- [ ] **Action 1: Write the failing test**
+- [x] **Action 1: Write the failing test**
 
 Create `src/engine/timers.test.ts`:
 
@@ -62,7 +62,7 @@ describe('clock callback', () => {
 Run: `pnpm exec vitest run src/engine/timers.test.ts`
 Expected: FAIL, cannot resolve `./timers.js`.
 
-- [ ] **Action 2: Write `src/engine/timers.ts`**
+- [x] **Action 2: Write `src/engine/timers.ts`**
 
 ```ts
 export interface Timers {
@@ -89,7 +89,7 @@ export function clockTick(timers: Timers): void {
 Run: `pnpm exec vitest run src/engine/timers.test.ts`
 Expected: PASS.
 
-- [ ] **Action 3: Commit**
+- [x] **Action 3: Commit**
 
 ```bash
 git add src/engine/timers.ts src/engine/timers.test.ts
@@ -98,7 +98,7 @@ git commit -m "feat(engine): the original clock callback"
 
 ## Part B: Device and recorder
 
-- [ ] **Action 4: Move the legacy island aside**
+- [x] **Action 4: Move the legacy island aside**
 
 Run: `git mv src/island/island.ts src/island/legacy-island.ts`
 Run: `git rm src/island/island.data.test.ts`
@@ -108,7 +108,7 @@ In `src/story/story.ts` and `src/main.ts`, change `'../island/island.js'` / `'./
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 5: Write `src/island/island-device.ts`**
+- [x] **Action 5: Write `src/island/island-device.ts`**
 
 ```ts
 import { decodeBmp } from '../decode/bmp.js';
@@ -212,7 +212,7 @@ export class DisplayIslandDevice implements IslandDevice {
 
 The island keeps its own `DrawState`: the original shares the clip and colors with the TTM runner, but every TTM page loads its node's colors and clip first (`docs/re/ads.md`, `Tick`), and `1010:1551` restores the clip it set.
 
-- [ ] **Action 6: Write `src/testing/island-recorder.ts`**
+- [x] **Action 6: Write `src/testing/island-recorder.ts`**
 
 ```ts
 import { SURFACE_A } from '../gfx/gdi/display.js';
@@ -347,7 +347,7 @@ export function traceIslandCase(archive: ParsedArchive, k: number): string[] {
 
 ## Part C: The island
 
-- [ ] **Action 7: Write the failing tests**
+- [x] **Action 7: Write the failing tests**
 
 Create `src/island/island.test.ts`:
 
@@ -533,7 +533,7 @@ describe.skipIf(!hasCorpus)('island on the display', () => {
 Run: `pnpm exec vitest run src/island`
 Expected: FAIL, cannot resolve `./island.js`.
 
-- [ ] **Action 8: Write `src/island/island.ts`**
+- [x] **Action 8: Write `src/island/island.ts`**
 
 ```ts
 import type { Timers } from '../engine/timers.js';
@@ -1000,12 +1000,12 @@ Things in this block to check against `docs/re/island.md` before trusting it:
 - `animateOceanWaves`: the `percent(35)` draw happens before the speed test, so it uses a random number even when the speed is too low.
 - The surf counter wrap (`>= SURF_FRAMES` is the same as the original's `> 2`).
 
-- [ ] **Action 9: Run the tests**
+- [x] **Action 9: Run the tests**
 
 Run: `pnpm exec vitest run src/island src/engine/timers.test.ts`
 Expected: PASS. When the data test fails, its message names the first differing row of each case. Compare the two rows: an extra or missing `overlaps` row means a short-circuit order differs; a `state` row that differs in `random write index` means a random draw is missing or extra; a `sprite` row with a different index or position points at the table it reads. Fix the port, not the fixture.
 
-- [ ] **Action 10: Type check and commit**
+- [x] **Action 10: Type check and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -1020,7 +1020,7 @@ git commit -m "feat(island): port the original island drawing and animation"
 
 ## Part D: Findings and open questions
 
-- [ ] **Action 11: Update the checklist and OQ-24**
+- [x] **Action 11: Update the checklist and OQ-24**
 
 In `docs/re/island.md`, `Side-by-side checklist`, point every ported row at `src/island/island.ts:<line>` with the function name (lines from `rg -n "^export function|^function" src/island/island.ts`) and status `fixed`: `1010:00fc` `ttmOffset`, `1010:0136` `drawIsland`, `1010:040e` `animateIsland`, `1010:0463` `resetOceanWaves`, `1010:04a2` `animateOceanWaves` and `spawnWave`, `1010:0a38` `initClouds`, `1010:0b67` `animateClouds`, `1010:0e74` `drawSurf` and `drawSurfSpot`, `1010:14bf` `randomPlace`, `1010:1551` `redrawIslandOver`, `1010:1a0d` `markIslandDrawn`, `1010:1a88` `rectOverlap`, `1010:1b00` `placeIsland`, `1010:1d69` `drawRaft`, `1010:1e50` `drawHoliday`. Add the intro drawing of `1008:143c` to `docs/re/story.md`'s checklist row for `1008:143c` as `src/island/island.ts` `drawIntro` (still `open` until step 7 wires the startup).
 
@@ -1031,7 +1031,7 @@ In `docs/re/open-questions.md`, move OQ-24 to `Resolved`:
 - **Status:** resolved (chunk 7)
 ```
 
-- [ ] **Action 12: Commit**
+- [x] **Action 12: Commit**
 
 ```bash
 git add docs/re/island.md docs/re/story.md docs/re/open-questions.md
@@ -1040,7 +1040,7 @@ git commit -m "docs(re): island port checked against the original"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
