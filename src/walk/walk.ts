@@ -176,14 +176,19 @@ export function startWalk(
   };
 }
 
-export function walkTick(walk: WalkContext, display: Display): void {
+export function walkTick(walk: WalkContext, display: Display, elapsed: number): void {
   if (walk.done) return;
-  walk.timer--;
+  walk.timer -= elapsed;
   if (walk.timer <= 0) {
     walk.timer = walkAnimate(walk.ws);
     walk.done = walk.timer === 0;
   }
   // Drawn on the tick the walk ends too: the story waits out the arrival rest with Johnny on screen.
+  walkDraw(walk.ws, display, walk.sprites, walk.bgSprites, walk.dx, walk.dy);
+}
+
+export function walkHold(walk: WalkContext, display: Display): void {
+  if (!walk.ws.hasArrived) walkAnimate(walk.ws);
   walkDraw(walk.ws, display, walk.sprites, walk.bgSprites, walk.dx, walk.dy);
 }
 

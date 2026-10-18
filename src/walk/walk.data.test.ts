@@ -12,7 +12,7 @@ describe.skipIf(!hasCorpus)('walk on the real data', () => {
     const shown = () => display.window.pixels.some((index, p) => index !== display.surfaces[SURFACE_C]!.pixels[p]);
     let ticks = 0;
     while (!walk.done) {
-      walkTick(walk, display);
+      walkTick(walk, display, 1);
       display.restorePass(0);
       expect(shown(), `tick ${ticks}`).toBe(true);
       ticks++;

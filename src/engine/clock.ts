@@ -1,22 +1,29 @@
-const MS_PER_TICK = 20; // 1 tick = 20ms ≈ 50Hz (events.c:108: delay *= 20)
+export const STEP_MS = 50;
+export const CLOCK_MS = 16;
 
-let totalMs = 0;
-let lastMs = performance.now();
+export class EngineClock {
+  private nextTick: number;
+  private nextStep: number;
 
-export function pumpMs(): void {
-  const now = performance.now();
-  totalMs += now - lastMs;
-  lastMs = now;
+  constructor(now: number) {
+    this.nextTick = now + CLOCK_MS;
+    this.nextStep = now + STEP_MS;
+  }
+
+  ticksDue(now: number): number {
+    let ticks = 0;
+    for (; this.nextTick <= now; this.nextTick += CLOCK_MS) ticks++;
+    return ticks;
+  }
+
+  stepDue(now: number): boolean {
+    if (now < this.nextStep) return false;
+    while (this.nextStep <= now) this.nextStep += STEP_MS;
+    return true;
+  }
+
+  resume(now: number): void {
+    this.nextTick = now + CLOCK_MS;
+    this.nextStep = now + STEP_MS;
+  }
 }
-
-export function hasEnoughMs(ms: number): boolean {
-  return totalMs >= ms;
-}
-
-export function consumeMs(ms: number): void {
-  totalMs -= ms;
-}
-
-export function msPerTick(): number { return MS_PER_TICK; }
-
-export function resetClock(): void { lastMs = performance.now(); }

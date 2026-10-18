@@ -1,341 +1,204 @@
 import { decodeAds } from '../decode/ads-loader.js';
 import { makeAdsState, type AdsState } from '../ads/state.js';
 import { adsSectionBusy, adsStartSection, adsTick } from '../ads/tick.js';
-import { startWalk, type WalkContext } from '../walk/walk.js';
-import {
-  clearBackground, islandAnimate, islandInit, islandRedrawHoliday, showBackground, showScreen,
-  type IslandRuntime, type IslandState,
-} from '../island/legacy-island.js';
+import type { Timers } from '../engine/timers.js';
+import { fadeDone, nextFadeState, type FadeState } from '../gfx/fade.js';
 import type { Display } from '../gfx/gdi/display.js';
-import type { TtmEnv } from '../ttm/page-runner.js';
+import { animateIsland, drawHoliday, drawIsland, ttmOffset, type Island } from '../island/island.js';
 import type { ParsedArchive } from '../resource/types.js';
+import type { TtmEnv } from '../ttm/page-runner.js';
 import type { Palette } from '../types.js';
-import {
-  storyScenes, type StoryScene,
-  FINAL, FIRST, ISLAND, LEFT_ISLAND, VARPOS_OK, LOWTIDE_OK, NORAFT, HOLIDAY_NOK,
-} from './story-data.js';
-import { type FadeState, nextFadeState, fadeDone } from '../gfx/fade.js';
+import { startWalk, walkHold, walkTick, type WalkContext } from '../walk/walk.js';
+import { holidayOf, timeSlot, wallClockOf, type WallClock } from './calendar.js';
+import type { StoryRandom } from './random.js';
+import { ADS_FILES, IDLE_ENTRY, SCENE_TTM_LEFT, SCENES, type SceneEntry } from './scene-table.js';
+import { applySceneFlags, newSequence, resetIslandFlags, type StoryWorld } from './sequence.js';
+import { saveSettings, type SettingsStore } from './settings.js';
+
+const ANY_SPOT = 0;
+const ANY_HEADING = -1;
+const SPOTS = 6;
+const HEADINGS = 8;
+const IDLE_WAIT_BASE = 180;
+const IDLE_WAIT_SPREAD = 240;
+const DAY_SCENE_SOUND = 25;
 
 export interface GameState {
-  adsState: AdsState;
-  walk: WalkContext | null;
-  random: () => number;
-  islandRt: IslandRuntime | null;
-  islandState: IslandState;
-  bgAnimTimer: number;
-  ttm: TtmEnv;
-  display: Display;
-  palette: Palette;
   archive: ParsedArchive;
+  display: Display;
+  ttm: TtmEnv;
+  palette: Palette;
+  random: StoryRandom;
+  timers: Timers;
+  world: StoryWorld;
+  island: Island;
+  settings: SettingsStore;
   fadeState: FadeState | null;
+  clock: () => Date;
 }
-
-type StoryPhase =
-  | { kind: 'splash'; startMs: number; fading: boolean }
-  | { kind: 'walking' }
-  | { kind: 'playing' }
-  | { kind: 'fading'; remaining: number }
-  | { kind: 'advance' };
 
 export interface StoryState {
-  phase: StoryPhase;
-  queue: StoryScene[];
-  finalScene: StoryScene | null;
-  prevSpot: number;
-  prevHdg: number;
-  currentScene: StoryScene | null;
-  currentDay: number;
+  started: boolean;
+  target: { spot: number; heading: number };
+  adsId: number;
+  ads: AdsState | null;
+  walk: WalkContext | null;
   debugAds: string | null;
-  playingTicks: number;
+  debugNext: number;
 }
 
-function loadCurrentDay(): number {
-  try {
-    const stored = localStorage.getItem('jc_story_day');
-    const storedDate = localStorage.getItem('jc_story_date');
-    const today = new Date().toDateString();
-    let day = stored ? parseInt(stored, 10) : 1;
-    if (storedDate !== today) {
-      day = (day % 11) + 1;
-      localStorage.setItem('jc_story_day', String(day));
-      localStorage.setItem('jc_story_date', today);
-    }
-    if (day < 1 || day > 11) { day = 1; localStorage.setItem('jc_story_day', '1'); }
-    return day;
-  } catch { return 1; }
+export function makeStoryState(debugAds: string | null = null): StoryState {
+  return { started: false, target: { spot: ANY_SPOT, heading: ANY_HEADING }, adsId: 0, ads: null, walk: null, debugAds, debugNext: 0 };
 }
 
-function calcIslandDateTime(state: IslandState): IslandState {
-  const d = new Date();
-  const hour = d.getHours() % 8;
-  const night = hour === 0 || hour === 7;
-
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const mmdd = mm + dd;
-
-  let holiday = 0;
-  if (mmdd > '1028' && mmdd < '1101') holiday = 1;       // Halloween
-  else if (mmdd > '0314' && mmdd < '0318') holiday = 2;  // St Patrick
-  else if (mmdd > '1222' && mmdd < '1226') holiday = 3;  // Christmas
-  else if (mmdd > '1228' || mmdd < '0102') holiday = 4;  // New Year
-
-  return { ...state, night, holiday };
+export function currentEntry(game: GameState): SceneEntry | null {
+  const { sequence } = game.world;
+  return sequence.queue[sequence.position] ?? null;
 }
 
-function calcIslandFromScene(scene: StoryScene, day: number, base: IslandState): IslandState {
-  const lowTide = !!(scene.flags & LOWTIDE_OK) && Math.random() < 0.5;
-
-  let xPos = 0, yPos = 0;
-  if (scene.flags & VARPOS_OK) {
-    if (Math.random() < 0.5) {
-      xPos = -222 + Math.floor(Math.random() * 109);
-      yPos = -44  + Math.floor(Math.random() * 128);
-    } else if (Math.random() < 0.5) {
-      xPos = -114 + Math.floor(Math.random() * 134);
-      yPos = -14  + Math.floor(Math.random() * 99);
-    } else {
-      xPos = -114 + Math.floor(Math.random() * 119);
-      yPos = -73  + Math.floor(Math.random() * 60);
-    }
-  } else if (scene.flags & LEFT_ISLAND) {
-    xPos = -272; yPos = 0;
+export function storyStep(state: StoryState, game: GameState, elapsed: number): void {
+  let entry = currentEntry(game);
+  if (!entry) {
+    if (!wipeDone(game)) return;
+    startSequence(state, game);
+    entry = currentEntry(game);
+    if (!entry) return;
   }
-
-  let raft = 5;
-  if (scene.flags & NORAFT) {
-    raft = 0;
+  animateIsland(game.island, false);
+  if (state.started || isAtSpot(state, game.world, entry.spotStart, entry.hdgStart)) {
+    if (entry.ads === IDLE_ENTRY) idleStep(state, game, entry);
+    else playStep(state, game, entry);
   } else {
-    if (day <= 2) raft = 1;
-    else if (day <= 5) raft = day - 1;
-    else raft = 5;
+    walkStep(state, game, elapsed);
   }
-
-  let holiday = base.holiday;
-  if (scene.flags & HOLIDAY_NOK) holiday = 0;
-
-  return { ...base, lowTide, xPos, yPos, raft, holiday };
-}
-
-function buildSequence(state: StoryState, game: GameState): void {
-  state.currentDay = loadCurrentDay();
-  const baseIsland = calcIslandDateTime(game.islandState);
-
-  const candidates = state.debugAds
-    ? storyScenes.filter(s => s.adsName === state.debugAds)
-    : storyScenes;
-
-  const finalScene = pickSceneFrom(candidates, FINAL, 0, state.currentDay);
-  state.finalScene = finalScene;
-
-  const queue: StoryScene[] = [];
-
-  if (!(finalScene.flags & FIRST)) {
-    const count = 6 + Math.floor(Math.random() * 14);
-    let wantedFlags = 0;
-    let unwantedFlags = FINAL;
-
-    const newIslandState = (finalScene.flags & ISLAND)
-      ? calcIslandFromScene(finalScene, state.currentDay, baseIsland)
-      : baseIsland;
-
-    if (newIslandState.lowTide) wantedFlags |= LOWTIDE_OK;
-    if (newIslandState.xPos || newIslandState.yPos) wantedFlags |= VARPOS_OK;
-
-    for (let i = 0; i < count; i++) {
-      const scene = pickSceneFrom(candidates, wantedFlags, unwantedFlags, state.currentDay);
-      queue.push(scene);
-      unwantedFlags |= FIRST;
-    }
+  drawHoliday(game.island, false);
+  if (game.world.memory.dayScene === entry) {
+    game.ttm.device.playSound(DAY_SCENE_SOUND);
+    game.world.memory.dayScene = null;
   }
+  game.display.restorePass(0);
+}
 
-  queue.push(finalScene);
-  state.queue = queue;
-  state.prevSpot = -1;
-  state.prevHdg = -1;
-  state.phase = { kind: 'advance' };
+export function isAtSpot(state: StoryState, world: StoryWorld, spot: number, heading: number): boolean {
+  if (spot !== ANY_SPOT) state.target.spot = spot;
+  if (heading !== ANY_HEADING) state.target.heading = heading;
+  const { sequence } = world;
+  return (spot === ANY_SPOT || sequence.spot === spot) && (heading === ANY_HEADING || sequence.heading === heading);
+}
 
-  const finalSceneForIsland = state.finalScene!;
-  if (finalSceneForIsland.flags & ISLAND) {
-    const newIslandState = calcIslandFromScene(finalSceneForIsland, state.currentDay, baseIsland);
-    game.islandState = newIslandState;
-    game.islandRt = islandInit(game.display, game.archive, newIslandState);
-    game.bgAnimTimer = 8;
-    showBackground(game.display);
-  } else {
-    game.islandRt = null;
-    clearBackground(game.display);
+export function finishEntry(state: StoryState, world: StoryWorld, entry: SceneEntry, scene: boolean): void {
+  const { sequence } = world;
+  sequence.spot = entry.spotEnd;
+  sequence.heading = entry.hdgEnd;
+  state.started = false;
+  sequence.position++;
+  if (!scene) return;
+  if (sequence.spot === ANY_SPOT) sequence.spot = (world.random.next() % SPOTS) + 1;
+  if (sequence.heading === 0) sequence.heading = world.random.next() & (HEADINGS - 1);
+}
+
+function wipeDone(game: GameState): boolean {
+  if (!game.fadeState) {
+    game.fadeState = nextFadeState();
+    return false;
   }
+  game.fadeState.step++;
+  if (!fadeDone(game.fadeState)) return false;
+  game.fadeState = null;
+  return true;
 }
 
-function pickSceneFrom(list: StoryScene[], wantedFlags: number, unwantedFlags: number, currentDay: number): StoryScene {
-  const candidates = list.filter(s =>
-    (s.flags & wantedFlags) === wantedFlags &&
-    !(s.flags & unwantedFlags) &&
-    (s.dayNo === 0 || s.dayNo === currentDay),
-  );
-  if (!candidates.length) {
-    const fallback = list.filter(s =>
-      !(s.flags & unwantedFlags) && (s.dayNo === 0 || s.dayNo === currentDay),
-    );
-    return fallback[Math.floor(Math.random() * fallback.length)]!;
+function startSequence(state: StoryState, game: GameState): void {
+  const { world } = game;
+  state.ads = null;
+  state.walk = null;
+  state.started = false;
+  const clock = wallClockOf(game.clock());
+  world.memory.newSequence = true;
+  if (state.debugAds) debugSequence(state, world, clock);
+  else newSequence(world, clock);
+  saveSettings(game.settings, world, game.island.settings);
+  drawIsland(game.island);
+  setTtmOffset(game, false);
+}
+
+function debugSequence(state: StoryState, world: StoryWorld, clock: WallClock): void {
+  const { sequence } = world;
+  const entries = SCENES.filter((entry) => ADS_FILES.get(entry.ads) === state.debugAds);
+  const entry = entries[state.debugNext++ % Math.max(entries.length, 1)];
+  sequence.slot = timeSlot(clock, world.startTime);
+  sequence.holiday = holidayOf(clock);
+  sequence.position = 0;
+  sequence.queue = entry ? [entry] : [];
+  resetIslandFlags(world.island);
+  if (!entry) return;
+  applySceneFlags(world.island, entry);
+  sequence.spot = entry.spotStart;
+  sequence.heading = entry.hdgStart;
+}
+
+function setTtmOffset(game: GameState, left: boolean): void {
+  const offset = ttmOffset(game.island, left);
+  game.ttm.islandX = offset.x;
+  game.ttm.islandY = offset.y;
+}
+
+function loadAdsById(state: StoryState, game: GameState, id: number): AdsState | null {
+  if (id !== state.adsId) {
+    state.ads = null;
+    state.adsId = id;
   }
-  return candidates[Math.floor(Math.random() * candidates.length)]!;
+  if (state.ads) return state.ads;
+  const name = ADS_FILES.get(id);
+  const resource = name ? game.archive.byName.get(name) : undefined;
+  if (!resource) return null;
+  state.ads = makeAdsState(decodeAds(resource.payload), game.archive, () => game.random.next());
+  return state.ads;
 }
 
-function startScene(scene: StoryScene, game: GameState): void {
-  console.log(`[STORY] scene ${scene.adsName}[${scene.adsTagNo}] spot${scene.spotStart}→${scene.spotEnd}`);
-
-  const raw = game.archive.byName.get(scene.adsName);
-  if (!raw) { console.warn(`ADS not found: ${scene.adsName}`); return; }
-  game.adsState = makeAdsState(decodeAds(raw.payload), game.archive, game.random);
-  adsStartSection(game.adsState, scene.adsTagNo);
-
-  game.ttm.islandX = (scene.flags & ISLAND)
-    ? game.islandState.xPos + (scene.flags & LEFT_ISLAND ? 272 : 0)
-    : 0;
-  game.ttm.islandY = (scene.flags & ISLAND) ? game.islandState.yPos : 0;
-  game.ttm.keepDrawings = false;
-  game.ttm.mirrorNextLoad = false;
-
-  if (scene.dayNo !== 0) game.ttm.device.playSound(17);
-}
-
-function endScene(state: StoryState): void {
-  const scene = state.currentScene!;
-  console.log(`[STORY] → advance (scene done: ${scene.adsName}[${scene.adsTagNo}])`);
-  if (!(scene.flags & FINAL)) {
-    state.prevSpot = scene.spotEnd;
-    state.prevHdg = scene.hdgEnd;
+function playStep(state: StoryState, game: GameState, entry: SceneEntry): void {
+  if (!state.started) {
+    state.started = true;
+    state.walk = null;
+    const ads = loadAdsById(state, game, entry.ads);
+    if (ads) adsStartSection(ads, entry.tag);
+    setTtmOffset(game, (entry.flags & SCENE_TTM_LEFT) !== 0);
   }
-  state.phase = { kind: 'advance' };
+  if (state.ads) adsTick(state.ads, game.ttm, game.palette, game.timers.now);
+  if (!state.ads || !adsSectionBusy(state.ads, entry.tag)) finishEntry(state, game.world, entry, true);
 }
 
-export function storyPlayScene(state: StoryState, game: GameState, now: number): void {
-  if (state.phase.kind !== 'playing' || !state.currentScene) return;
-  adsTick(game.adsState, game.ttm, game.palette, now);
-  if (!adsSectionBusy(game.adsState, state.currentScene.adsTagNo)) endScene(state);
-}
-
-export function storyInit(_archive: ParsedArchive, game: GameState, debugAds: string | null = null, skipIntro: boolean = false): StoryState {
-  const state: StoryState = {
-    phase: { kind: 'advance' },
-    queue: [],
-    finalScene: null,
-    prevSpot: -1,
-    prevHdg: -1,
-    currentScene: null,
-    currentDay: 1,
-    debugAds,
-    playingTicks: 0,
-  };
-  if (!skipIntro && showScreen(game.display, game.archive, 'INTRO.SCR')) {
-    game.islandRt = null;
-    state.phase = { kind: 'splash', startMs: performance.now(), fading: false };
-  } else {
-    buildSequence(state, game);
+function idleStep(state: StoryState, game: GameState, entry: SceneEntry): void {
+  if (!state.started) {
+    state.started = true;
+    game.timers.idleWait = (game.random.next() % IDLE_WAIT_SPREAD) + IDLE_WAIT_BASE;
+    state.walk = null;
   }
-  return state;
+  holdJohnny(state, game);
+  if (game.timers.idleWait === 0) finishEntry(state, game.world, entry, false);
 }
 
-export function storyTick(state: StoryState, game: GameState): void {
-  // Chain instant phase transitions so a scene-end → walk-start (or walk-end →
-  // new-scene-start) completes in one tick, capped in case a wait-state ever loops.
-  for (let i = 0; i < 5; i++) {
-    const prevPhase = state.phase.kind;
-    storyTickStep(state, game);
-    if (state.phase.kind === prevPhase) break;
-  }
+function newWalk(game: GameState, toSpot: number, toHeading: number): WalkContext | null {
+  const { sequence } = game.world;
+  const { island } = game;
+  return startWalk(game.archive, island.background?.images ?? [], sequence.spot - 1, sequence.heading, toSpot - 1, toHeading, island.x + 1, island.y);
 }
 
-function storyTickStep(state: StoryState, game: GameState): void {
-  switch (state.phase.kind) {
-    case 'splash': {
-      if (!state.phase.fading) {
-        if (performance.now() - state.phase.startMs >= 2000) {
-          game.fadeState = nextFadeState();
-          state.phase = { ...state.phase, fading: true };
-        }
-      } else if (game.fadeState && !fadeDone(game.fadeState)) {
-        game.fadeState.step++;
-      } else {
-        game.fadeState = null;
-        buildSequence(state, game);
-      }
-      break;
-    }
-
-    case 'advance': {
-      if (!state.queue.length) {
-        state.phase = { kind: 'fading', remaining: 100 };
-        game.fadeState = nextFadeState();
-        return;
-      }
-      const scene = state.queue.shift()!;
-      state.currentScene = scene;
-
-      if (state.prevSpot !== -1) {
-        console.log(`[STORY] → walking spot${state.prevSpot}→${scene.spotStart}`);
-        game.walk = startWalk(
-          game.archive,
-          game.islandRt?.sprites ?? [],
-          state.prevSpot, state.prevHdg,
-          scene.spotStart, scene.hdgStart,
-          game.islandState.xPos, game.islandState.yPos,
-        );
-        state.phase = { kind: 'walking' };
-      } else {
-        startScene(scene, game);
-        state.playingTicks = 0;
-        state.phase = { kind: 'playing' };
-      }
-      break;
-    }
-
-    case 'walking': {
-      if (game.walk === null || game.walk.done) {
-        game.walk = null;
-        if (state.currentScene) startScene(state.currentScene, game);
-        state.playingTicks = 0;
-        state.phase = { kind: 'playing' };
-      }
-      break;
-    }
-
-    case 'playing': {
-      state.playingTicks++;
-      if (state.playingTicks > 8000) {
-        console.warn(`[STORY] WATCHDOG: force-ending ${state.currentScene?.adsName}[${state.currentScene?.adsTagNo}] after ${state.playingTicks} ticks`);
-        endScene(state);
-      }
-      break;
-    }
-
-    case 'fading': {
-      if (game.fadeState && !fadeDone(game.fadeState)) {
-        game.fadeState.step++;
-      }
-      state.phase.remaining -= 1;
-      if (state.phase.remaining <= 0) {
-        game.fadeState = null;
-        if (state.debugAds) state.prevSpot = -1;
-        buildSequence(state, game);
-      }
-      break;
-    }
-  }
+function walkStep(state: StoryState, game: GameState, elapsed: number): void {
+  const { sequence } = game.world;
+  const toSpot = state.target.spot === ANY_SPOT ? sequence.spot : state.target.spot;
+  const toHeading = state.target.heading === ANY_HEADING ? sequence.heading : state.target.heading;
+  if (sequence.spot !== ANY_SPOT) state.walk ??= newWalk(game, toSpot, toHeading);
+  if (state.walk) walkTick(state.walk, game.display, elapsed);
+  if (state.walk && !state.walk.done) return;
+  sequence.spot = toSpot;
+  sequence.heading = toHeading;
+  state.walk = null;
 }
 
-// Island wave animation — call each game tick with elapsed ticks
-export function storyAnimateBg(state: StoryState, game: GameState, elapsed: number): void {
-  if (state.phase.kind === 'splash' || !game.islandRt) return;
-  game.bgAnimTimer -= elapsed;
-  while (game.bgAnimTimer <= 0) {
-    islandAnimate(game.islandRt, game.display);
-    game.bgAnimTimer += 8;
-  }
-}
-
-export function storyRedrawHoliday(game: GameState): void {
-  if (game.islandRt) islandRedrawHoliday(game.islandRt, game.display);
+function holdJohnny(state: StoryState, game: GameState): void {
+  const { sequence } = game.world;
+  if (sequence.spot === ANY_SPOT) return;
+  state.walk ??= newWalk(game, sequence.spot, sequence.heading);
+  if (state.walk) walkHold(state.walk, game.display);
 }

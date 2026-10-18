@@ -3,7 +3,7 @@ import { decodeAds } from '../decode/ads-loader.js';
 import { Display } from '../gfx/gdi/display.js';
 import { makeDrawState } from '../gfx/gdi/surface.js';
 import { makePalette } from '../gfx/palette.js';
-import { storyScenes } from '../story/story-data.js';
+import { ADS_FILES, SCENES } from '../story/scene-table.js';
 import { traceAdsSection } from '../testing/ads-trace.js';
 import { hasCorpus, hasFixture, loadArchive, readFixtureRows } from '../testing/corpus.js';
 import { GdiDevice } from '../ttm/gdi-device.js';
@@ -38,23 +38,25 @@ describe.skipIf(!hasFixture('ads/traces.tsv'))('ADS tick matches the original SC
 });
 
 describe.skipIf(!hasCorpus)('ADS tick on the display', () => {
-  it('plays some page in the first 100 ticks of every story scene', { timeout: 120_000 }, () => {
+  it('plays some page in the first 100 ticks of every scene table entry', { timeout: 120_000 }, () => {
     // SCRANTIC 1048:0874 1048:1acb 1060:03d3
     const archive = loadArchive();
-    for (const scene of storyScenes) {
+    const scenes = new Set(SCENES.filter((entry) => ADS_FILES.has(entry.ads)).map((entry) => `${ADS_FILES.get(entry.ads)} ${entry.tag}`));
+    for (const key of scenes) {
+      const [adsName, tag] = key.split(' ') as [string, string];
       const display = new Display();
       display.screenIsB = true;
       const draw = makeDrawState();
       const random = () => 0x1234;
       const env = makeTtmEnv(new GdiDevice(display, draw, archive, { playSound: () => {}, random }), draw);
-      const state = makeAdsState(decodeAds(archive.byName.get(scene.adsName)!.payload), archive, random);
-      adsStartSection(state, scene.adsTagNo);
+      const state = makeAdsState(decodeAds(archive.byName.get(adsName)!.payload), archive, random);
+      adsStartSection(state, Number(tag));
       let ran = false;
       for (let now = 1; now <= 100; now++) {
         if (adsTick(state, env, makePalette(), now)) ran = true;
         display.restorePass(0);
       }
-      expect(ran, `${scene.adsName} ${scene.adsTagNo}`).toBe(true);
+      expect(ran, key).toBe(true);
     }
   });
 });
