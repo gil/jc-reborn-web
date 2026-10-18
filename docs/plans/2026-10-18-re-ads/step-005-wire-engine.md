@@ -35,7 +35,7 @@ What changes, and why:
 
 ## Part A: Walk
 
-- [ ] **Action 1: Write the failing walk test**
+- [x] **Action 1: Write the failing walk test**
 
 Create `src/walk/walk.data.test.ts`:
 
@@ -67,7 +67,7 @@ describe.skipIf(!hasCorpus)('walk on the real data', () => {
 Run: `fnm use`, then `pnpm exec vitest run src/walk/walk.data.test.ts`
 Expected: FAIL, `startWalk` is not exported.
 
-- [ ] **Action 2: Move the walk context into the walk module**
+- [x] **Action 2: Move the walk context into the walk module**
 
 In `src/walk/walk.ts`, add these imports next to the existing ones:
 
@@ -126,14 +126,14 @@ export function walkTick(walk: WalkContext, display: Display): void {
 
 This is the code that ran inside the old `adsTick` (`src/ads/scheduler.ts`, `walkCtx`), counting down 1 per tick instead of `mini`.
 
-- [ ] **Action 3: Run the walk tests**
+- [x] **Action 3: Run the walk tests**
 
 Run: `pnpm exec vitest run src/walk`
 Expected: all PASS.
 
 ## Part B: Story and main loop
 
-- [ ] **Action 4: Switch the story to the port**
+- [x] **Action 4: Switch the story to the port**
 
 In `src/story/story.ts`:
 
@@ -233,7 +233,7 @@ The scene's end now comes from `storyPlayScene`, after the ADS tick, as in `1018
 
 7. Remove the now unused name imports, if `tsc` reports any.
 
-- [ ] **Action 5: Switch the main loop**
+- [x] **Action 5: Switch the main loop**
 
 In `src/main.ts`:
 
@@ -298,13 +298,13 @@ startLoop(
 );
 ```
 
-- [ ] **Action 6: Delete the old scheduler**
+- [x] **Action 6: Delete the old scheduler**
 
 Delete `src/ads/scheduler.ts`, `src/ads/opcodes.ts`, `src/ads/scheduler.test.ts`, and `src/ads/scheduler.data.test.ts` (`git rm`).
 
 The deleted data test pinned three things. The walk part now lives in `src/walk/walk.data.test.ts`. The purged-page redraw is pinned by `src/ads/tick.test.ts` (`replays the page until it is due`) and by the corpus trace. The "plays every story scene" part is the next action.
 
-- [ ] **Action 7: Keep a smoke test of every story scene on the display**
+- [x] **Action 7: Keep a smoke test of every story scene on the display**
 
 Add to `src/ads/tick.data.test.ts` (a second `describe`, below the trace comparison):
 
@@ -348,14 +348,14 @@ import { adsStartSection, adsTick } from './tick.js';
 
 (merge `hasCorpus` into the existing `../testing/corpus.js` import).
 
-- [ ] **Action 8: Drop the old scheduler fields from `TtmThread`**
+- [x] **Action 8: Drop the old scheduler fields from `TtmThread`**
 
 In `src/ttm/state.ts`, remove these fields from `TtmThread` and from the object `makeThread` returns: `isRunning`, `sceneSlot`, `sceneTag`, `sceneTimer`, `sceneIterations`, `delay`, `timer`, `tagPage`, `page`, `nextPage`, `purged`. Keep `slot`, `replay`, `paletteSlot`, `bmpSlot`, `zoneSlot`, `foreground`, `background`, `clipOn`, `clip`. `AdsNode` (`src/ads/state.ts`) declares its own `delay`, `tagPage`, `page`, `nextPage`, so nothing else changes.
 
 Run: `rg -n "isRunning|sceneSlot|sceneTag|sceneTimer|sceneIterations|walkCtx|adsPlayWalk|adsActiveThreadCount|ADS_ARG_COUNTS|ads/scheduler|ads/opcodes" src`
 Expected: no output.
 
-- [ ] **Action 9: Type-check and run every test**
+- [x] **Action 9: Type-check and run every test**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -363,7 +363,7 @@ Expected: no errors.
 Run: `pnpm test`
 Expected: all PASS; `src/ads/tick.data.test.ts` and `src/walk/walk.data.test.ts` run (not skipped).
 
-- [ ] **Action 10: Commit**
+- [x] **Action 10: Commit**
 
 ```bash
 git add -A src
@@ -372,7 +372,7 @@ git commit -m "feat(engine): run scenes through the ported ADS tick; delete the 
 
 ## Part C: Browser check
 
-- [ ] **Action 11: Smoke test in the browser**
+- [x] **Action 11: Smoke test in the browser**
 
 Run in the background: `pnpm dev --port 5173 --strictPort`
 
@@ -392,7 +392,7 @@ Stop the dev server: `lsof -ti :5173 -sTCP:LISTEN | xargs kill -9`
 
 ## Part D: Docs
 
-- [ ] **Action 12: Update the open questions**
+- [x] **Action 12: Update the open questions**
 
 In `docs/re/open-questions.md`:
 
@@ -433,11 +433,11 @@ Add these in the `Workarounds without a known root cause` section, after OQ-28:
 - **Status:** open
 ```
 
-- [ ] **Action 13: Update the checklist**
+- [x] **Action 13: Update the checklist**
 
 In `docs/re/ads.md`, `Side-by-side checklist`: any row that still points at `src/ads/scheduler.ts` gets its new place or `none (reason)`. `1048:0000`, `1048:001b`, `1048:067f`: `none (nothing to free; a new AdsState per scene, OQ-30)`, status `open` for `067f` (OQ-30), `match` for the other two. Add to `Story interface` one bullet saying where the engine calls `adsStartSection`, `adsTick`, and `adsSectionBusy` (`src/story/story.ts`, `startScene` and `storyPlayScene`).
 
-- [ ] **Action 14: Commit**
+- [x] **Action 14: Commit**
 
 ```bash
 git add docs/re/open-questions.md docs/re/ads.md
@@ -446,7 +446,7 @@ git commit -m "docs(re): ADS workarounds resolved, engine bridges logged"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

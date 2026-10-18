@@ -157,7 +157,7 @@ Every function below must end `verified` in `docs/re/function-map.md` or be list
 - [x] `step-002-original-ads-trace.md`: Unicorn runs the original ADS loader and tick on every section of every ADS and writes `re/fixtures/ads/traces.tsv`.
 - [x] `step-003-ads-state-and-script.md`: `src/ads/state.ts` and `src/ads/script.ts`, pinned by unit tests.
 - [x] `step-004-ads-tick.md`: `src/ads/tick.ts`, pinned by unit tests and equal to the original trace on the whole corpus.
-- [ ] `step-005-wire-engine.md`: story, walk, and main loop switch to the port; old scheduler and its workarounds deleted; open questions updated; browser check.
+- [x] `step-005-wire-engine.md`: story, walk, and main loop switch to the port; old scheduler and its workarounds deleted; open questions updated; browser check.
 - [ ] `step-006-chunk-wrap-up.md`: every in-scope function `verified` or logged, past fixes reviewed, comment audit, full rebuild and test run, spec checkbox ticked.
 
 Order: run the steps one at a time, in number order. Step 2 needs step 1's export (for `1048:118a`; the harness itself uses addresses only). Step 3 needs step 1's findings. Step 4 needs step 3 and, for its data test, step 2's fixture. Step 5 needs step 4. Step 6 needs all of them. Steps 1 to 6 all extend `docs/re/ads.md` and `docs/re/open-questions.md`.
