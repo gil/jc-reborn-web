@@ -33,7 +33,7 @@ The spec's done rule for a chunk:
 
 ## Part A: Status
 
-- [ ] **Action 1: List what is still not verified**
+- [x] **Action 1: List what is still not verified**
 
 Run:
 
@@ -64,7 +64,7 @@ For each function listed:
 
 Then run `node scripts/re/function-map.mjs`.
 
-- [ ] **Action 2: Check both checklists**
+- [x] **Action 2: Check both checklists**
 
 Every address of the overview's `Function scope` has exactly one row in `docs/re/story.md` (segments `1000`, `1008`, `1018`, `1020`, `1040`) or `docs/re/island.md` (segment `1010`), and every `open` row has an entry in `docs/re/open-questions.md` that names that address. Check that the `file:line` references still match:
 
@@ -72,7 +72,7 @@ Run: `rg -n "^export function|^function|^export class" src/story/*.ts src/island
 
 Fix whatever is missing or stale.
 
-- [ ] **Action 3: Check the carry-over notes**
+- [x] **Action 3: Check the carry-over notes**
 
 Run: `rg -n "Resolve in:\*\* chunk 7" docs/re/open-questions.md`
 Expected: every match belongs to an entry whose status is `resolved (chunk 7)` (OQ-1, OQ-6, OQ-24, OQ-26, OQ-28, OQ-29, OQ-30), `resolved (chunk 7), by choice` (OQ-21), or `open, by choice`. Any other open entry with chunk 7 is either finished now or moved to the chunk that owns it, with a sentence saying why.
@@ -85,7 +85,7 @@ Expected: matches only in resolved entries, past-fix notes, or text that says th
 
 ## Part B: Past fixes
 
-- [ ] **Action 4: Review the chunk 7 rows of "Past fixes to re-check"**
+- [x] **Action 4: Review the chunk 7 rows of "Past fixes to re-check"**
 
 The table in `docs/re/open-questions.md` lists these commits for chunk 7: `8adc66a` (various consistency fixes; its `src/ads` part was reviewed in chunk 6), `1204c0d` (chain instant phase transitions in one tick), `c037b5f` (order storyTick → adsTick → storyAnimateBg), `194d7fb` (thread leak sweeps; its `src/ads` part was reviewed in chunk 6), `613b3c2` (8000-tick watchdog), `d39b9ac` (clear saved zones between scenes). For each:
 
@@ -110,7 +110,7 @@ Then, in the table, change the Chunk cell of each reviewed row: `7` becomes `7 (
 
 ## Part C: Comments and docs
 
-- [ ] **Action 5: Audit the comments**
+- [x] **Action 5: Audit the comments**
 
 Run: `rg -n "//|/\*" src/story src/island src/engine src/testing/island-recorder.ts src/walk/walk.ts src/main.ts`
 
@@ -124,13 +124,13 @@ For each comment, apply the overview's rule: keep it only if a competent enginee
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 6: Update `docs/Plan.md` pointers**
+- [x] **Action 6: Update `docs/Plan.md` pointers**
 
 Run: `rg -n "story_data|story\.c|island\.c|storyScenes|story-data" docs/Plan.md`
 
 `docs/Plan.md` is guidance only. Where it describes the story or island as a port of `~/dev/jc_reborn/story.c` / `island.c`, add one line under that heading: `Replaced in chunk 7 by a port of SCRANTIC.SCR; see docs/re/story.md and docs/re/island.md.` Change nothing else in it.
 
-- [ ] **Action 7: Commit**
+- [x] **Action 7: Commit**
 
 ```bash
 git add scripts/re/names.json docs/re/function-map.md docs/re/story.md docs/re/island.md docs/re/open-questions.md docs/re/segments.md docs/re/ads.md docs/Plan.md src
@@ -139,7 +139,7 @@ git commit -m "docs(re): chunk 7 functions verified, past fixes reviewed, commen
 
 ## Part D: Full verification
 
-- [ ] **Action 8: Rebuild everything from scratch and run every test**
+- [x] **Action 8: Rebuild everything from scratch and run every test**
 
 Run: `scripts/re/ghidra-import.sh`
 Expected: ends with `export written to .../re/out`; `re/out/functions/1018_0540_story_newSequence.c` exists.
@@ -162,7 +162,7 @@ Expected: no errors.
 Run: `pnpm test`
 Expected: all pass, and none of these is reported as skipped: `src/story/scene-table.data.test.ts`, `src/story/random.data.test.ts`, `src/story/sequence.data.test.ts`, `src/story/story.data.test.ts`, `src/island/island.data.test.ts`, `src/ads/tick.data.test.ts`, `src/walk/walk.data.test.ts`, `src/ttm/page-runner.data.test.ts`. If one is skipped, its input is missing; fix that before going on.
 
-- [ ] **Action 9: Smoke test in the browser**
+- [x] **Action 9: Smoke test in the browser**
 
 Run in the background: `pnpm dev --port 5173 --strictPort`
 
@@ -178,11 +178,11 @@ You cannot see the canvas yourself; do not mark this action done without their a
 
 Stop the dev server: `lsof -ti :5173 -sTCP:LISTEN | xargs kill -9`
 
-- [ ] **Action 10: Tick the spec**
+- [x] **Action 10: Tick the spec**
 
 In `docs/specs/2026-10-17-reverse-engineering-validation-design.md`, tick `- [ ] **7. Story and main loop.**` to `- [x]`. Change nothing else in that file.
 
-- [ ] **Action 11: Commit**
+- [x] **Action 11: Commit**
 
 ```bash
 git add docs/specs/2026-10-17-reverse-engineering-validation-design.md
@@ -191,7 +191,7 @@ git commit -m "docs: chunk 7 (story and main loop) done"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
