@@ -316,7 +316,7 @@
       "name": "story_presentFromB",
       "subsystem": "story",
       "status": "named",
-      "note": "Presents the whole screen with B as source and target; check for callers",
+      "note": "Presents the whole screen with B as source, target, and A; unreferenced",
       "signature": null,
       "callingConvention": null
     },
@@ -324,7 +324,7 @@
       "name": "story_presentFromA",
       "subsystem": "story",
       "status": "named",
-      "note": "Presents the whole screen with A as source and target; check for callers",
+      "note": "Presents the whole screen with A as source and target; unreferenced",
       "signature": null,
       "callingConvention": null
     },
@@ -340,7 +340,7 @@
       "name": "story_drawIsland",
       "subsystem": "story",
       "status": "named",
-      "note": "First call loads HOLIDAY.BMP, BACKGRND.BMP, MRAFT.BMP; later calls draw the background (NIGHT.SCR, a random OCEAN0x.SCR from table 1068:0262, or a fill), place the island, and set up clouds and waves",
+      "note": "First call loads BACKGRND.BMP and MRAFT.BMP; later calls draw the background into C (ocean, night, or a color-5 fill), place the island, draw raft, island, surf, palm, copy C to B, and set up waves and clouds",
       "signature": null,
       "callingConvention": null
     },
@@ -372,7 +372,7 @@
       "name": "story_animateOceanWaves",
       "subsystem": "story",
       "status": "named",
-      "note": "Spawns, moves, and draws glints and wave sprites on the ocean",
+      "note": "Spawns, moves, and draws glints and wave sprites on the ocean; spawns only when the speed 1068:30bc is above 100, which it never is",
       "signature": null,
       "callingConvention": null
     },
@@ -388,7 +388,7 @@
       "name": "story_animateClouds",
       "subsystem": "story",
       "status": "named",
-      "note": "Spawns, moves, and draws the clouds",
+      "note": "Spawns, moves, and draws the clouds; runs once per sequence, so clouds never move",
       "signature": null,
       "callingConvention": null
     },

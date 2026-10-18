@@ -30,7 +30,7 @@ This step writes no TypeScript. Where `island.md` and the overview's first readi
 
 Read every `1010` function's `.c` file, and its `.asm` wherever the pseudo-C is unclear. Ghidra writes signed overflow tests as `SCARRY2(a, b) != (a + b < 0)`: that is the signed result of `a + b < 0`; and `iVar != 0 && SCARRY2(a, b) == iVar < 0` is `a + b > 0` (signed). Keep a list of corrections to the overview.
 
-- [ ] **Action 1: Confirm the details most likely to be wrong**
+- [x] **Action 1: Confirm the details most likely to be wrong**
 
 Check each in the assembly and note the answer:
 
@@ -45,19 +45,19 @@ Check each in the assembly and note the answer:
 9. `1010:0059`, `1010:00b2`: any caller or relocation (`rg -n "1010:0059|1010:00b2" re/out/index.tsv re/out/relocations.tsv`). `1010:03ce`: called only from `1008:157b`.
 10. `1010:040e`: confirm the overview's reading (clouds only when the argument is set, so they are drawn once per sequence).
 
-- [ ] **Action 2: Check the island bitmaps**
+- [x] **Action 2: Check the island bitmaps**
 
 Write `re/scratch/island/sheets.py` (gitignored scratch) that loads the archive with `scripts/re/unicorn/corpus.py` (`load_resources(Path("public/data"))`) and prints, for `BACKGRND.BMP`, `MRAFT.BMP`, `HOLIDAY.BMP`, the number of images and each image's width and height (`BMP:INF:` chunk: count word, then the widths, then the heights; `walk_chunks` finds it, as `original_ttm.py` `_bitmap_list` does). Run it with `re/.venv/bin/python -I re/scratch/island/sheets.py`.
 
 Note: the highest BACKGRND index the island code uses (expected 41: the last low-tide surf spot's base 39 plus frame 2; the ocean waves use 18..29, the clouds 15..17); that MRAFT has at least 5 images; that HOLIDAY has 4. Any index past the end is a finding (the original then reads a null record).
 
-- [ ] **Action 3: Read the frame tables**
+- [x] **Action 3: Read the frame tables**
 
 Run: `re/.venv/bin/python -I re/scratch/story/dump.py` (from step 1) or a one-liner over the data segment, and dump `1068:0262..0290`. Expected: `1068:0262` three near pointers (the OCEAN names), `1068:0268` `1a 1b 1c 1d 1c 1b 1a ff`, `1068:0270` `16 17 18 19 18 17 16 ff`, `1068:0278` `12 13 14 15 14 13 12 ff`, `1068:0280` wind `0x0001`, `0282`..`028a` zero.
 
 ## Part B: Write the findings
 
-- [ ] **Action 4: Write `docs/re/island.md`**
+- [x] **Action 4: Write `docs/re/island.md`**
 
 Create the file with this header, then the sections below in this order. One claim per bullet, each starting with its address, in our own words. Follow `docs/re/ads.md` for tone.
 
@@ -87,11 +87,11 @@ Sections:
 
 Leave `Emulated` and `Past fixes reviewed` out; steps 5 and 8 add them.
 
-- [ ] **Action 5: Correct the names**
+- [x] **Action 5: Correct the names**
 
 If Part A changed what a `1010` function does, rewrite its `note` in `scripts/re/names.json` (our words, one line). Run `node scripts/re/function-map.mjs`.
 
-- [ ] **Action 6: Commit**
+- [x] **Action 6: Commit**
 
 ```bash
 git add docs/re/island.md scripts/re/names.json docs/re/function-map.md
@@ -102,7 +102,7 @@ If Part A corrected a fact of the overview, list each correction in the commit b
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

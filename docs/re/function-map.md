@@ -329,16 +329,16 @@ Functions found by Ghidra: 597. Verified: 201. Named: 122. Unknown: 274.
 | Address | Name | Status | Note |
 | --- | --- | --- | --- |
 | `1008:15c8` | `story_idleTick` | named | Idle callback: runs one story step, then a speed figure 1068:30bc from 1068:2e14 (never written, so always 0) and GetCurrentTime |
-| `1010:0059` | `story_presentFromB` | named | Presents the whole screen with B as source and target; check for callers |
-| `1010:00b2` | `story_presentFromA` | named | Presents the whole screen with A as source and target; check for callers |
+| `1010:0059` | `story_presentFromB` | named | Presents the whole screen with B as source, target, and A; unreferenced |
+| `1010:00b2` | `story_presentFromA` | named | Presents the whole screen with A as source and target; unreferenced |
 | `1010:00fc` | `story_setTtmOffset` | named | Sets the TTM island offset 1068:46e4/46e2 from the island position (1068:30c4 + 1, or + 0x111 when the argument is set; 1068:30c2); both 0 when 1068:30b2 is 2 |
-| `1010:0136` | `story_drawIsland` | named | First call loads HOLIDAY.BMP, BACKGRND.BMP, MRAFT.BMP; later calls draw the background (NIGHT.SCR, a random OCEAN0x.SCR from table 1068:0262, or a fill), place the island, and set up clouds and waves |
+| `1010:0136` | `story_drawIsland` | named | First call loads BACKGRND.BMP and MRAFT.BMP; later calls draw the background into C (ocean, night, or a color-5 fill), place the island, draw raft, island, surf, palm, copy C to B, and set up waves and clouds |
 | `1010:03ce` | `story_freeIslandBitmaps` | named | Frees BACKGRND.BMP and MRAFT.BMP |
 | `1010:040e` | `story_animateIsland` | named | Island step: ocean waves, clouds on the first call only, surf and raft unless still |
 | `1010:0463` | `story_resetOceanWaves` | named | Empties the 30 ocean wave records and refills the per-kind counts |
-| `1010:04a2` | `story_animateOceanWaves` | named | Spawns, moves, and draws glints and wave sprites on the ocean |
+| `1010:04a2` | `story_animateOceanWaves` | named | Spawns, moves, and draws glints and wave sprites on the ocean; spawns only when the speed 1068:30bc is above 100, which it never is |
 | `1010:0a38` | `story_initClouds` | named | Picks the wind direction and places up to 15 clouds |
-| `1010:0b67` | `story_animateClouds` | named | Spawns, moves, and draws the clouds |
+| `1010:0b67` | `story_animateClouds` | named | Spawns, moves, and draws the clouds; runs once per sequence, so clouds never move |
 | `1010:0e74` | `story_drawSurf` | named | Advances the surf frames every 4 clock ticks and redraws surf spots; with an argument draws one spot |
 | `1010:14bf` | `story_randomPlace` | named | Random x and y in a range minus a BACKGRND sprite's size, or 0, 0 when it does not fit |
 | `1010:1551` | `story_redrawIslandOver` | named | Redraws the island parts in front of a sprite, clipped to it |
