@@ -64,3 +64,9 @@ Runs original graphics code that needs no drawing (brush and mask builders, row 
     re/.venv/bin/python -I scripts/re/unicorn/dump_ttm.py
 
 Loads each TTM script with the original loader, resets one thread node with `1048:0b3e`, and runs every page twice through `1050:074a` (first run, then replay with the thread's ran flag set). Drawing, copying, dirty-rect, zone, loading, sound, and random calls are replaced by handlers that write one trace row each (`original_ttm.py`); everything else runs as original code. Writes `re/fixtures/ttm/traces.tsv` (gitignored). The row format is documented in `docs/plans/2026-10-17-re-ttm/step-000-overview.md`, `Trace format`, and in `docs/re/ttm.md`, `Emulated`.
+
+## Original ADS tick
+
+    re/.venv/bin/python -I scripts/re/unicorn/dump_ads.py
+
+Loads each ADS script with the original loader (`1048:0079`) and, for every section, starts it with `1048:0874` and runs ticks (`1048:04fc`, `1048:1acb`, `1048:0766`) with the clock set before each, until the section is no longer busy or the tick limit. The page runner is the original one with the TTM recorders of `original_ttm.py` (`AdsTracer` extends `TtmTracer`). Writes `re/fixtures/ads/traces.tsv` (gitignored), which `src/ads/tick.data.test.ts` compares with the TypeScript port. The row format is documented in `docs/plans/2026-10-18-re-ads/step-000-overview.md`, `Trace format`, and in `docs/re/ads.md`, `Emulated`. `test_original_ads.py` pins the harness on a synthetic ADS.

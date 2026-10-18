@@ -325,7 +325,7 @@ git add scripts/re/unicorn/original_ttm.py scripts/re/unicorn/original_ads.py sc
 git commit -m "test(re): run the original ADS loader and tick in Unicorn"
 ```
 
-- [ ] **Action 6: Write the corpus dump**
+- [x] **Action 6: Write the corpus dump**
 
 Create `scripts/re/unicorn/dump_ads.py`:
 
@@ -370,7 +370,7 @@ if __name__ == "__main__":
 Run: `re/.venv/bin/python -I -m py_compile scripts/re/unicorn/dump_ads.py`
 Expected: no output.
 
-- [ ] **Action 7: Time one ADS, then dump everything**
+- [x] **Action 7: Time one ADS, then dump everything**
 
 Before the full run, time the smallest file. Run:
 
@@ -384,7 +384,7 @@ Expected: exits 0, one stderr line per section, and `re/fixtures/ads/traces.tsv`
 Run: `rg -c "" re/fixtures/ads/traces.tsv`
 Expected: a row count; note it.
 
-- [ ] **Action 8: Write what the emulation showed**
+- [x] **Action 8: Write what the emulation showed**
 
 Add a section `Emulated` to `docs/re/ads.md`, after `Unreferenced` and before `Side-by-side checklist`:
 
@@ -396,7 +396,7 @@ Add a section `Emulated` to `docs/re/ads.md`, after `Unreferenced` and before `S
 
 Then one bullet each, with the numbers from Action 7: how many sections in how many files, total rows, how many runs ended because `1048:0766` returned 0 and how many reached the tick limit (name them), the limit used, and how long the dump took. Add any surprise the run showed (a fault, a section that never starts its nodes, a node that loops on itself), each with its address.
 
-- [ ] **Action 9: Document the harness**
+- [x] **Action 9: Document the harness**
 
 In `scripts/re/unicorn/README.md`, after the `## Original TTM page runner` section, add the same kind of section:
 
@@ -408,7 +408,7 @@ In `scripts/re/unicorn/README.md`, after the `## Original TTM page runner` secti
 Loads each ADS script with the original loader (`1048:0079`) and, for every section, starts it with `1048:0874` and runs ticks (`1048:04fc`, `1048:1acb`, `1048:0766`) with the clock set before each, until the section is no longer busy or the tick limit. The page runner is the original one with the TTM recorders of `original_ttm.py` (`AdsTracer` extends `TtmTracer`). Writes `re/fixtures/ads/traces.tsv` (gitignored), which `src/ads/tick.data.test.ts` compares with the TypeScript port. The row format is documented in `docs/plans/2026-10-18-re-ads/step-000-overview.md`, `Trace format`, and in `docs/re/ads.md`, `Emulated`. `test_original_ads.py` pins the harness on a synthetic ADS.
 ```
 
-- [ ] **Action 10: Commit**
+- [x] **Action 10: Commit**
 
 ```bash
 git add scripts/re/unicorn/dump_ads.py scripts/re/unicorn/README.md docs/re/ads.md
@@ -417,7 +417,7 @@ git commit -m "test(re): dump the original ADS trace for every section"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

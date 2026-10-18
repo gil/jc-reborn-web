@@ -179,6 +179,15 @@ No call in `re/out/index.tsv` and no relocation in `re/out/relocations.tsv` reac
 - `1048:1a4b(out)`: when the iterator is below the current slot's section count, stores that section's tag in `out`, moves on, and returns 0; otherwise returns 1.
 - `1048:1e5a`: re-runs page `[5]` of every node with `[5] != 0xFFFF` (those that ran this tick) as a replay, loading the globals as `1048:1acb` does, then resets the clip and clears `1068:263e`.
 
+## Emulated
+
+- `scripts/re/unicorn/original_ads.py` (`AdsTracer`) loads each ADS with `1048:0079` and runs `1048:04fc`, `1048:0874`, then per tick `1048:04fc`, `1048:1acb`, `1048:0766` with the clock `1068:2e70` set before each tick. The page runner `1050:074a` is the original one, with the chunk 5 recorders in place of its drawing, loading, sound, and random callees. Rows: `re/fixtures/ads/traces.tsv` (format in `docs/plans/2026-10-18-re-ads/step-000-overview.md`, `Trace format`).
+- The dump covers 66 sections in 10 files: 85,212 rows (plus the header). The tick limit is 2000. The whole dump took 4 min 50 s; the slowest section (`BUILDING.ADS` tag 7) took 17 s.
+- 65 runs ended because `1048:0766` returned 0. One reached the tick limit: `ACTIVITY.ADS` tag 6.
+- `ACTIVITY.ADS`, tag 6: the last block is a random pick between `0x2005 4 22` (weight 2) and `0x2005 4 21` (weight 1), and only a playing 4:21 reaches the `0xF010 0xFFFF` that stops the section. With the trace's random source (`1048:0cda`) every pick is 4:22, which restarts the cycle, so the section stays in state 1 for all 2000 ticks. Nothing else in the section stops it.
+- `STAND.ADS`, tag 14: ends after one tick. Its pass starts 1:42 and stops the section (state 2) in the same pass; 1:42's tag page ends with a purge and no delay, so `1048:1acb` makes it mode 4 at once and `1048:0766` returns 0 on tick 0.
+- No run faulted or reached an unstubbed import.
+
 ## Side-by-side checklist
 
 | Original | Name | Ours | Status |
