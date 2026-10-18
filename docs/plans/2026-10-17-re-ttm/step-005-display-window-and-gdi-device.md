@@ -44,7 +44,7 @@ At runtime `429e` is 1. So nothing ever reaches A, and the window is a fourth pi
 
 ## Part A: The window
 
-- [ ] **Action 1: Write the failing tests**
+- [x] **Action 1: Write the failing tests**
 
 In `src/gfx/gdi/display.test.ts`, replace the test `skips copies into A while B is the screen` with:
 
@@ -93,12 +93,12 @@ In the first test (`starts as the original display setup leaves it`), add after 
     expect(count(display.window, 0)).toBe(640 * 480);
 ```
 
-- [ ] **Action 2: Run them to make sure they fail**
+- [x] **Action 2: Run them to make sure they fail**
 
 Run: `pnpm exec vitest run src/gfx/gdi/display.test.ts`
 Expected: FAIL, `display.window` is undefined.
 
-- [ ] **Action 3: Add the window**
+- [x] **Action 3: Add the window**
 
 In `src/gfx/gdi/display.ts`, add the field after `surfaces`:
 
@@ -149,12 +149,12 @@ Add this private method after `restorePass`:
   }
 ```
 
-- [ ] **Action 4: Run the graphics tests**
+- [x] **Action 4: Run the graphics tests**
 
 Run: `pnpm exec vitest run src/gfx/gdi`
 Expected: all pass, data tests and snapshots included (presents only add the window; no surface changes).
 
-- [ ] **Action 5: Update the findings and OQ-17**
+- [x] **Action 5: Update the findings and OQ-17**
 
 In `docs/re/graphics.md`, `Display buffers`, replace the last bullet (starting `Ours: src/gfx/gdi/display.ts keeps three surfaces`) with:
 
@@ -168,7 +168,7 @@ In `docs/re/open-questions.md`, OQ-17: set `- **Status:** resolved (chunk 5)` an
 - **Resolution:** `Display.window` is painted only by presents, rect by rect, from the same source the original uses (`src/gfx/gdi/display.ts`, `present`). Drawing the window whole each frame shows the same picture, so nothing visible is left to model. A wrong dirty rect now shows on screen exactly as it would in the original.
 ```
 
-- [ ] **Action 6: Commit**
+- [x] **Action 6: Commit**
 
 ```bash
 git add src/gfx/gdi/display.ts src/gfx/gdi/display.test.ts docs/re/graphics.md docs/re/open-questions.md
@@ -177,7 +177,7 @@ git commit -m "feat(gfx): window surface painted by presents"
 
 ## Part B: The GDI device
 
-- [ ] **Action 7: Write the failing unit tests**
+- [x] **Action 7: Write the failing unit tests**
 
 Create `src/ttm/gdi-device.test.ts`:
 
@@ -267,7 +267,7 @@ describe('GdiDevice', () => {
 
 The sprite test relies on chunk 4's `drawSprite`: flags 3 (flip and mirror) with a pre-mirrored copy draws only the mirror. If chunk 4's `src/gfx/gdi/sprite.test.ts` says otherwise, follow it and fix the expected row.
 
-- [ ] **Action 8: Write the failing data test**
+- [x] **Action 8: Write the failing data test**
 
 Create `src/ttm/gdi-device.data.test.ts`:
 
@@ -337,12 +337,12 @@ describe.skipIf(!hasCorpus)('GdiDevice on the real data', () => {
 });
 ```
 
-- [ ] **Action 9: Run them to make sure they fail**
+- [x] **Action 9: Run them to make sure they fail**
 
 Run: `pnpm exec vitest run src/ttm/gdi-device.test.ts src/ttm/gdi-device.data.test.ts`
 Expected: FAIL, `Cannot find module './gdi-device.js'`.
 
-- [ ] **Action 10: Write the device**
+- [x] **Action 10: Write the device**
 
 Create `src/ttm/gdi-device.ts`:
 
@@ -470,7 +470,7 @@ Check `src/resource/types.ts` exports the resource type under the name `RawResou
 
 Step 2's `docs/re/ttm.md`, `Resources`, says how the shared walk list `1068:30d2` is built (when it is loaded and whether with mirrored copies). If it says the list is built without mirrored copies, pass `false` in `walkBitmaps`.
 
-- [ ] **Action 11: Run the tests**
+- [x] **Action 11: Run the tests**
 
 Run: `pnpm exec vitest run src/ttm`
 Expected: all pass.
@@ -479,7 +479,7 @@ If `finds every resource a TTM script loads` fails, look at the missing names. A
 
 If `runs every page` fails, the message names the script and page. Fix the device or the runner, with a unit test.
 
-- [ ] **Action 12: Run everything and commit**
+- [x] **Action 12: Run everything and commit**
 
 Run: `pnpm exec tsc --noEmit`, then `pnpm test`
 Expected: all pass.
@@ -491,7 +491,7 @@ git commit -m "feat(ttm): run TTM pages on the display model"
 
 ## Part C: Findings
 
-- [ ] **Action 13: OQ-8 and the checklist**
+- [x] **Action 13: OQ-8 and the checklist**
 
 In `docs/re/open-questions.md`, OQ-8: replace the `Where` line's interpreter references with `src/ttm/gdi-device.ts` (`find`), set `- **Status:** resolved (chunk 5)`, and add before it:
 
@@ -508,7 +508,7 @@ In `docs/re/ttm.md`, `Resources`, add one bullet: `- Ours: src/ttm/gdi-device.ts
 - `1040:09eb` → `GdiDevice.loadPalette`.
 - `1038:07e8` → `Display.present` (`src/gfx/gdi/display.ts`).
 
-- [ ] **Action 14: Commit**
+- [x] **Action 14: Commit**
 
 ```bash
 git add docs/re/ttm.md docs/re/open-questions.md
@@ -517,7 +517,7 @@ git commit -m "docs(re): TTM resource lookup and presents"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

@@ -180,6 +180,8 @@ Page calls and the other handlers in detail:
 - `1058:0952` (`0x1061`): sets the thread's palette slot on every run; unless replay, the pending palette becomes the record's palette in that slot (which may be null). Data: always slot 0.
 - `0xf01f`, `0xf02f`, `0xf05f` pass the name exactly as the bytecode spells it. In the data every name is upper case.
 - `1028:1845` frees bitmap lists (`1030:00fe`), `1040:0bc7` frees palette slots, `1030:1b63` (`platform_farFree`) frees zone buffers.
+- Data: `FIRE.TTM` loads `FLAME.BMP` and `FLURRY.BMP`, which are not in the archive. No ADS script loads `FIRE.TTM`. In the original the load returns null and `1058:07c5` logs it; ours returns null too.
+- Ours: `src/ttm/gdi-device.ts` loads screens onto the draw target (`1028:1813`), bitmaps as surface lists (`1028:17fa`), the shared walk list once (`1068:30d2`), and palettes as 48 RGB bytes (`1040:09eb`); names are looked up in upper case.
 
 ## Palettes
 
@@ -309,8 +311,12 @@ Filled in at the end of chunk 5.
 
 | Original | Name | Ours | Status |
 | --- | --- | --- | --- |
+| `1028:17fa` | `decoders_callLoadBmp` | `src/ttm/gdi-device.ts:86` `GdiDevice.loadBitmaps` | fixed |
+| `1028:1813` | `decoders_callLoadScreen` | `src/ttm/gdi-device.ts:79` `GdiDevice.loadScreen` | fixed |
 | `1030:07c3` | `gfx_selectFontStub` | none (empty) | match |
 | `1030:07d4` | `gfx_deleteFontStub` | none (empty) | match |
+| `1038:07e8` | `gfx_presentRect` | `src/gfx/gdi/display.ts:87` `Display.present` (the old pipeline shows a whole buffer) | fixed |
+| `1040:09eb` | `decoders_loadPalette` | `src/ttm/gdi-device.ts:97` `GdiDevice.loadPalette` | fixed |
 | `1040:0c13` | `gfx_paletteLevelStub` | none (empty) | match |
 | `1040:0c21` | `gfx_paletteCycleStub` | none (empty) | match |
 | `1040:0c31` | `gfx_paletteEmptyStub` | none (empty, unreferenced) | match |
