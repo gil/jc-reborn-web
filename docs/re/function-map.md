@@ -234,7 +234,7 @@ Functions found by Ghidra: 596. Verified: 127. Named: 113. Unknown: 356.
 | `1050:0799` | `ttm_activatePendingPalette` | named | Makes the pending palette 1068:4646 active and clears it |
 | `1050:07c6` | `ttm_unloadAll` | named | Unloads every TTM (1050:080c) and frees every thread node |
 | `1050:080c` | `ttm_unload` | named | Frees one TTM record: matrix, fonts, bitmaps (not the shared walk list), palettes, zone buffers, page table, bytecode |
-| `1050:0a6e` | `ttm_shutdown` | named | Frees the dirty-rect pool and unloads every TTM |
+| `1050:0a6e` | `ttm_shutdown` | named | Frees the dirty-rect pool and unloads every TTM; nothing references it |
 | `1050:0a85` | `ttm_markDrawn` | named | Marks a drawn rect dirty: B to A at ages 0 and 1, and C to B at age 0 unless 1068:27c0 is set |
 | `1050:0b31` | `ttm_screenToBackground` | named | Sets 1068:4640, copies all of B into C, drops the C-to-B dirty list |
 | `1050:0b74` | `ttm_copyToBackground` | named | Copies a rect of B into C, keeping the copy source and draw target |
@@ -242,11 +242,11 @@ Functions found by Ghidra: 596. Verified: 127. Named: 113. Unknown: 356.
 | `1058:0144` | `ttm_drawOpcode` | named | Dispatches 0xAxxx opcodes to the primitives, sprites, effects (1058:1510) and text |
 | `1058:040c` | `ttm_runPage` | named | Runs one TTM page until 0x0FF0: frames each instruction, applies offsets, dispatches, marks drawings dirty |
 | `1058:13a9` | `ttm_pageOfTag` | named | Returns the first page whose first instruction is 0x1101 or 0x1111 with the tag, or 0xFFFF; stops at the first unset page table entry |
-| `1058:141f` | `ttm_copyStringArg` | named | Copies a string argument (or n bytes when n is not 0) into 1068:464a, terminates it, and returns it |
+| `1058:141f` | `ttm_copyStringArg` | named | Copies a string argument (or n bytes when n is not 0) into 1068:464a, terminates it, and returns it; copies nothing when n is at least the screen height |
 | `1058:147a` | `ttm_fontSlotPointer` | named | Returns a pointer to the thread's font handle in the TTM record (+0x18) |
 | `1058:14a8` | `ttm_paletteRangeEffect` | named | Calls the empty 1040:0c21 for a color range stored by opcodes 0x2302..0x2322 |
 | `1058:14e0` | `ttm_surfaceByNumber` | named | Maps 0 to A, 1 to B, 2 to C, anything else to B |
-| `1058:1510` | `ttm_effectOpcode` | named | Runs the 0xa014..0xa094 and 0xa0b5 effects with target A: zone 0 save and restore, slides, strips, wipes |
+| `1058:1510` | `ttm_effectOpcode` | named | Runs the 0xa014..0xa094 and 0xa0b5 effects with target A (B for the zone 0 restore): zone 0 save and restore, slides, strips, blinds, copies; puts the target back after |
 | `1058:1920` | `ttm_effectPause` | named | Calls 1058:1949 with an empty rect 100 times (a busy wait) |
 | `1058:1949` | `ttm_effectCopy` | named | gfx_copyRect when width and height are both above 2 |
 | `1058:197c` | `ttm_emptyMirrorHook` | named | Empty function; TTM opcode 0x2012 calls it |
@@ -254,7 +254,7 @@ Functions found by Ghidra: 596. Verified: 127. Named: 113. Unknown: 356.
 | `1058:1ad0` | `ttm_timerExpired` | named | Returns 1 when a timer record (start, duration) has run out, or when 1068:45e2 is 0 |
 | `1058:1b1f` | `ttm_timerLerp` | named | Interpolates between two values by the elapsed share of a timer record |
 | `1058:1be1` | `ttm_startTimer` | named | Fills a timer record with the clock 1068:2e70/2e72 and a duration |
-| `1058:1c06` | `ttm_expireTimer` | named | Fills a timer record that has already run out |
+| `1058:1c06` | `ttm_expireTimer` | named | Fills a timer record that has already run out; nothing references it |
 
 ## ads
 
@@ -268,7 +268,7 @@ Functions found by Ghidra: 596. Verified: 127. Named: 113. Unknown: 356.
 | `1048:0b3e` | `ads_resetThread` | named | Resets a thread node: palette, BMP and zone slots 0, page = tag page, no next page, colors 15, delay 0, clip on over the whole screen |
 | `1048:196e` | `ads_advancePage` | named | When the thread's delay is due (or 0): next due time = now + delay, clears the ran flag, moves to the next page or the goto page; returns 1, else 0 |
 | `1048:1acb` | `ads_tick` | named | One ADS tick: runs every active thread's current page, applies delay, goto and purge, then activates the pending palette and resets the clip |
-| `1048:1e5a` | `ads_redrawThreads` | named | Re-runs the last page run of every thread of the current ADS that has one, as a replay (ran flag forced to 1, restored after), then resets the clip; no direct caller found |
+| `1048:1e5a` | `ads_redrawThreads` | named | Re-runs the last page run of every thread of the current ADS that has one, as a replay (ran flag forced to 1, restored after), then resets the clip; no call or relocation references it |
 
 ## story
 

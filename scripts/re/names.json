@@ -1540,7 +1540,7 @@
       "name": "ads_redrawThreads",
       "subsystem": "ads",
       "status": "named",
-      "note": "Re-runs the last page run of every thread of the current ADS that has one, as a replay (ran flag forced to 1, restored after), then resets the clip; no direct caller found",
+      "note": "Re-runs the last page run of every thread of the current ADS that has one, as a replay (ran flag forced to 1, restored after), then resets the clip; no call or relocation references it",
       "signature": null,
       "callingConvention": null
     },
@@ -1652,7 +1652,7 @@
       "name": "ttm_shutdown",
       "subsystem": "ttm",
       "status": "named",
-      "note": "Frees the dirty-rect pool and unloads every TTM",
+      "note": "Frees the dirty-rect pool and unloads every TTM; nothing references it",
       "signature": null,
       "callingConvention": null
     },
@@ -1716,7 +1716,7 @@
       "name": "ttm_copyStringArg",
       "subsystem": "ttm",
       "status": "named",
-      "note": "Copies a string argument (or n bytes when n is not 0) into 1068:464a, terminates it, and returns it",
+      "note": "Copies a string argument (or n bytes when n is not 0) into 1068:464a, terminates it, and returns it; copies nothing when n is at least the screen height",
       "signature": null,
       "callingConvention": null
     },
@@ -1748,7 +1748,7 @@
       "name": "ttm_effectOpcode",
       "subsystem": "ttm",
       "status": "named",
-      "note": "Runs the 0xa014..0xa094 and 0xa0b5 effects with target A: zone 0 save and restore, slides, strips, wipes",
+      "note": "Runs the 0xa014..0xa094 and 0xa0b5 effects with target A (B for the zone 0 restore): zone 0 save and restore, slides, strips, blinds, copies; puts the target back after",
       "signature": null,
       "callingConvention": null
     },
@@ -1812,7 +1812,7 @@
       "name": "ttm_expireTimer",
       "subsystem": "ttm",
       "status": "named",
-      "note": "Fills a timer record that has already run out",
+      "note": "Fills a timer record that has already run out; nothing references it",
       "signature": null,
       "callingConvention": null
     },

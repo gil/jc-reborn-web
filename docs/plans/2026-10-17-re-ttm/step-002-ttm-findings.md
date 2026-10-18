@@ -27,17 +27,17 @@ This step reads and writes. No code changes. Expect most of the session to go in
 
 ## Part A: Read
 
-- [ ] **Action 1: Confirm the page runner**
+- [x] **Action 1: Confirm the page runner**
 
 Read `re/out/functions/1058_040c_*.asm` from the start to `RETF` and `1050_074a_*.c`. Confirm or correct, item by item, the overview's `Page runner` bullets: the entry checks, the replay flag and goto reset, the opcode remaps, the `0x0FF0` stop, the per-instruction `B`/`B` target and source, the arg locals and the stale-local behavior, the string and word-pair cases (`1058:141f`, `1050:04a8`), both offset passes (cases at `1058:05a1`, `05b9`, `0608`, `0620`), the dispatch order, the `0xf10f..0xf19f` string branch (`1058:1005`), the dirty table and its default (`1058:11f0`), and the end-of-page `4640` block (`1058:1212`).
 
-- [ ] **Action 2: Confirm every opcode**
+- [x] **Action 2: Confirm every opcode**
 
 For every row of `re/out/jump-tables.tsv` whose jump is in `1058`, read the case at `target` in the assembly and confirm the overview's `Opcodes` table. Note any difference. Read also `1058:0000` (sound cases), `1058:0144` (draw cases and the effect and text ranges), `1058:1510` (each effect case: `0xa014` `171a`, `0xa024` `1705`, `0xa034`/`0xa094` `1565`, `0xa044` `185f`, `0xa054` `1747`, `0xa064` `1801`, `0xa0b5` `172f`, and the default loop for `0xa074`/`0xa084`), `1058:13a9`, `1058:14e0`, `1058:147a`, `1058:14a8`, `1058:1920`, `1058:1949`, `1058:197c`, `1058:198a`, `1058:1ad0`, `1058:1b1f`, `1058:1be1`, `1058:1c06`.
 
 For the opcodes the data uses (those with a count above 0 in the overview's table), write down the exact arguments of every call they make; step 4 ports them literally.
 
-- [ ] **Action 3: Confirm the helpers and state**
+- [x] **Action 3: Confirm the helpers and state**
 
 Read `1050:0000`, `1050:0061`, `1050:0152`, `1050:0799`, `1050:07c6`, `1050:080c`, `1050:0a6e`, `1050:0a85`, `1050:0b31`, `1050:0b74`, and the stubs `1030:07c3`, `1030:07d4`, `1040:0c13`, `1040:0c21`, `1040:0c31`. Confirm the TTM record and thread node layouts in the overview (`TTM record and thread node`), using `1048:0b3e`, `1050:0177` (record allocation, size `0xd4`), and `1050:042a` (node allocation, size `0x3d`).
 
@@ -58,13 +58,13 @@ print(data[0x27d2:0x27df])
 
 Expected: `2641` = 4, `287a` = 1, `1ebf` = 0, and `b'JOHNWALK.BMP\x00'`.
 
-- [ ] **Action 4: Read the ADS side for the interface**
+- [x] **Action 4: Read the ADS side for the interface**
 
 Read `1048:1acb`, `1048:196e`, `1048:0b3e`, `1048:1e5a`, and `1018:06bf` (`story_stepScene`). Confirm the overview's `ADS side` bullets. Do not go further into the ADS logic (chunk 6); write only what the TTM side depends on: which globals the ADS loads from the node before a run, which results it reads after (`46e6`, `4644`, `4642`, the return value), when the ran flag `[7]` is set and cleared, and the order of calls in one story step.
 
 ## Part B: Write the findings
 
-- [ ] **Action 5: Write `docs/re/ttm.md`**
+- [x] **Action 5: Write `docs/re/ttm.md`**
 
 Create the file with this header, then one section per heading below, in this order. One claim per bullet, each starting with its address, in our own words, never pasted code. Model: `docs/re/graphics.md`.
 
@@ -98,13 +98,13 @@ Sections and what goes in each:
 | --- | --- | --- | --- |
 ```
 
-- [ ] **Action 6: Correct the names**
+- [x] **Action 6: Correct the names**
 
 Where Part A found that a `names.json` note from step 1 is wrong or vague, fix the note. Run: `node scripts/re/function-map.mjs`. Expected: no errors.
 
 ## Part C: Open questions
 
-- [ ] **Action 7: Settle OQ-14, OQ-16, OQ-19, add OQ-27**
+- [x] **Action 7: Settle OQ-14, OQ-16, OQ-19, add OQ-27**
 
 In `docs/re/open-questions.md`:
 
@@ -125,7 +125,7 @@ In `docs/re/open-questions.md`:
 
 If Part A found that the runner must model one of them (for example because the data does use it after all), take it off this list and tell step 4 in the commit message.
 
-- [ ] **Action 8: Commit**
+- [x] **Action 8: Commit**
 
 ```bash
 git add docs/re/ttm.md docs/re/open-questions.md scripts/re/names.json docs/re/function-map.md
@@ -134,7 +134,7 @@ git commit -m "docs(re): TTM interpreter findings"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

@@ -114,14 +114,6 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Resolve in:** only with a reference capture from Windows 3.1; until then the end points, rect edges, and symmetry are pinned and the inner pixels are not
 - **Status:** open
 
-### OQ-16: Text drawing is not modeled
-
-- **Where:** `1030:04ee`, `1030:04ce`, `1030:0765`
-- **What it does:** `TextOut` with the `WILLY.FON` font, text and back colors from `1068:1ea0`/`1ea1`, back mode from `1068:1ea2`.
-- **Ours:** nothing draws text.
-- **Resolve in:** chunk 5 (TTM interpreter): find whether any TTM opcode reaches these functions and whether the data uses it
-- **Status:** open
-
 ### OQ-17: The original presents only dirty rects, the model presents whole frames
 
 - **Where:** `1038:07e8` and its callers: `1030:02ef` (width `-a - b` when the line goes left or up), `1040:0688` (right and bottom passed as width and height)
@@ -134,17 +126,8 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 - **Where:** `src/gfx/gdi/sprite.ts` (`drawSprite` with flags 1 or 2, `drawSpriteStretched`)
 - **What it does:** draws the mirrored or flipped image into exactly the same rect as the plain one.
-- **Original:** `1038:0ae4` mirrors through a pre-mirrored copy (only `JOHNWALK.BMP`, built by `1040:054e`, which lands exactly in place) or through a negative `StretchBlt` destination extent (`x + w` with width `-w`). Whether Windows 3.1 maps a negative extent to the same pixels or one pixel off is GDI behavior, not in the binary.
+- **Original:** `1038:0ae4` mirrors through a pre-mirrored copy (`JOHNWALK.BMP` and the TTM bitmaps loaded right after opcode `0x2012`, built by `1040:054e`, which lands exactly in place) or through a negative `StretchBlt` destination extent (`x + w` with width `-w`). Whether Windows 3.1 maps a negative extent to the same pixels or one pixel off is GDI behavior, not in the binary.
 - **Resolve in:** only with a reference capture from Windows 3.1
-- **Status:** open
-
-### OQ-19: Stretched sprites: negative source extents and shrink rule
-
-- **Where:** `src/gfx/gdi/sprite.ts` (`drawSpriteStretched`)
-- **What it does:** nearest pixel, mirrored or flipped inside the image.
-- **Original:** `1030:03d7` negates the source width or height with the source origin left at 0, which points outside the bitmap, and shrinking uses the DC's stretch mode (default `BLACKONWHITE`). Both are GDI behavior.
-- **Found in chunk 4:** only the TTM case `1058:025b` reaches `1030:03d7`, for opcodes `0xa506`, `0xa516`, `0xa526`, `0xa536`; the TTM scripts use none of them (`docs/re/decoders.md`, TTM opcode coverage).
-- **Resolve in:** chunk 5: confirm the opcode mapping in the interpreter; if it holds, close this
 - **Status:** open
 
 ### OQ-20: The graphics model is not wired in
@@ -215,15 +198,38 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **Why not reviewed:** the engine only reads `RESOURCE.001`; nothing in the original's runtime writes compressed data that we need to reproduce. All four callers of `1028:0615` pass a mode string `"r"`, and `1028:0a4b` (the only way to feed an encoder) has no callers.
 - **Status:** open, by choice
 
+### OQ-16: Text drawing is not modeled
+
+- **Where:** `1030:04ee`, `1030:04ce`, `1030:0765`
+- **What it does:** `TextOut` with the `WILLY.FON` font, text and back colors from `1068:1ea0`/`1ea1`, back mode from `1068:1ea2`.
+- **Ours:** nothing draws text.
+- **Chunk 5:** only TTM opcodes 0xa204..0xa294 draw text, through 1030:04ce; no TTM script uses them or the font opcodes (docs/re/ttm.md, Text and fonts). The engine does not draw text.
+- **Status:** open, by choice
+
+### OQ-27: TTM opcodes the data never uses
+
+- **Where:** `src/ttm/page-runner.ts` (no case for them)
+- **What it does:** our runner treats these as doing nothing (apart from the default dirty rect for `0xAxxx` opcodes): the effects `0xa014`, `0xa024`, `0xa034`, `0xa044`, `0xa074`, `0xa084`, `0xa094`, `0xa0b5` (`1058:1510`); the palette effects `0x0400`, `0x2302`..`0x2322`, `0x2402`, `0x4136` (they need `1068:1ebf`, never set), and `0x4114`, `0x4124` (copy B to the screen and select the pending palette); text and fonts (OQ-16); the BMP matrix `0x00e0`, `0x2032`, `0xa704`, `0xf08f` (no resource has `BMP:MTX:`); `0xb000`, `0xb013` (`1050:0000`, `1050:0061`); `0x0010`, `0x1011`, `0x1041`, `0x1031`, `0xaf02`, `0xaf1f`, `0xaf2f`, `0xa5a7`, the `0xCxxx` opcodes other than `0xc051`.
+- **Original:** `docs/re/ttm.md`, `Opcodes`, `Zones and effects`, `Palettes`, `Stubs and dead branches`.
+- **Why not reviewed:** no TTM script uses any of them (`docs/re/decoders.md`, TTM opcode coverage), so nothing can check a port against the original's output.
+- **Status:** open, by choice
+
+## Resolved
+
 ### OQ-14: `1028` stub group that does not reach a decoder
 
 - **Where:** the stub group `1028:17c8`, `1028:185e`..`1028:1b0d` (the forwarders `1028:17d8`, `1028:182c`, `1028:1845` were settled in chunk 4)
 - **What it does:** of the stubs, 42 return 0, `1028:196e` returns nothing, and `1028:1afc` and `1028:1b0d` return 1. Only direct `CALLF`s reference them: 20 of the return-0 stubs are called from `1058` code around the TTM interpreter (`1058:0054`..`1058:00e5`, `1058:021d`, `1058:02ec`, `1058:0a93`, `1058:0aa4`, `1058:1725`); the other 25 stubs have no reference. See `Thunks` in `docs/re/decoders.md`.
 - **Why not reviewed:** none of them reaches a decoder; their targets belong to graphics or to the TTM opcode handlers that call the stubs.
 - **Chunk 4:** the three forwarders are settled and verified. `1028:182c` returns the record count of a bitmap list through `1030:15fb`; `1028:1845` frees a loaded bitmap through `1030:00fe` (both in `Bitmap masks and mirrors`, `docs/re/graphics.md`); `1028:17d8` draws a sprite through `1038:0ae4` (`Sprites`). Only the stub group is left.
-- **Resolve in:** chunk 5 (TTM interpreter) for the stub group
-- **Status:** open, by choice
 
-## Resolved
+Settled by chunk 5: every stub that 1058 code reaches returns 0 and is reached only from opcodes no TTM script uses (docs/re/ttm.md, Stubs and dead branches). The 25 stubs without a reference stay unreferenced.
 
-None yet.
+### OQ-19: Stretched sprites: negative source extents and shrink rule
+
+- **Where:** `src/gfx/gdi/sprite.ts` (`drawSpriteStretched`)
+- **What it does:** nearest pixel, mirrored or flipped inside the image.
+- **Original:** `1030:03d7` negates the source width or height with the source origin left at 0, which points outside the bitmap, and shrinking uses the DC's stretch mode (default `BLACKONWHITE`). Both are GDI behavior.
+- **Found in chunk 4:** only the TTM case `1058:025b` reaches `1030:03d7`, for opcodes `0xa506`, `0xa516`, `0xa526`, `0xa536`; the TTM scripts use none of them (`docs/re/decoders.md`, TTM opcode coverage).
+
+Settled by chunk 5: 1030:03d7 is reached only from 1058:025b for opcodes 0xa506, 0xa516, 0xa526, 0xa536, which no TTM script uses (docs/re/ttm.md, Opcodes). The pixel rule stays GDI behavior, irrelevant to the data.
