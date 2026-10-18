@@ -265,6 +265,7 @@ Read for the interface; chunk 6 verifies.
 - `1048:196e`: see Delays. It is the only place that clears `[7]`, so a page is replayed (`[7] = 1`) on every tick until its delay is due.
 - `1048:1e5a`: re-runs `[5]` of every node that ran this tick as a replay (`[7]` forced to 1, then restored), loading the globals as `1048:1acb` does. No call or relocation references it.
 - `1018:06bf` (one story step, chunk 7): `1010:040e(0)` (island scenery), the ADS load and tag start when needed, `1048:1acb`, `1048:0766`, `1010:1e50(0)`, sound 25 when due, then the restore pass `1060:03d3(0)`.
+- Ours: src/ads/scheduler.ts runs pages through runTtmPage with the thread's draw state loaded (loadThreadDrawState) and reset after all threads (resetDrawClip), activates the pending palette after all threads (1050:0799), keeps replaying an ending thread's page until its timer is due, and paces with countdown timers (OQ-22).
 
 ## Emulated
 

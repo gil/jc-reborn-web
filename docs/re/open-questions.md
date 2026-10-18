@@ -6,7 +6,7 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 ### OQ-1: Story watchdog force-ends scenes after 8000 ticks
 
-- **Where:** `src/story/story.ts:332`
+- **Where:** `src/story/story.ts:329`
 - **What it does:** ends the current scene once `playingTicks > 8000`, whatever the threads are doing.
 - **Old guess behind it:** some scenes cycle forever without reaching an end.
 - **Resolve in:** chunk 7 (story and main loop)
@@ -14,7 +14,7 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 ### OQ-2: ADS pre-tick sweep frees threads with a nil TTM slot
 
-- **Where:** `src/ads/scheduler.ts:401`
+- **Where:** `src/ads/scheduler.ts:356-361`
 - **What it does:** before each ADS tick, frees threads whose TTM slot is nil or unloaded.
 - **Old guess behind it:** threads leak after walks and block the scene.
 - **Resolve in:** chunk 6 (ADS scheduler)
@@ -22,7 +22,7 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 ### OQ-3: Orphan threads force-stopped 100 ticks after ADS END
 
-- **Where:** `src/ads/scheduler.ts:45-49`, `src/ads/scheduler.ts:479-483`
+- **Where:** `src/ads/scheduler.ts:43-47`, `src/ads/scheduler.ts:413-425`
 - **What it does:** after END, waits `STOP_REQUEST_GRACE_TICKS = 100` ticks for threads to finish, then force-stops the rest.
 - **Old guess behind it:** GOTO-loop threads never see the stop request and wedge the scene.
 - **Resolve in:** chunk 6 (ADS scheduler)
@@ -30,7 +30,7 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 ### OQ-4: Straggler threads freed before a walk starts
 
-- **Where:** `src/story/story.ts:274-279`
+- **Where:** `src/story/story.ts:273-278`
 - **What it does:** when the story moves to a walk, stops every thread still running.
 - **Old guess behind it:** threads from the finished scene leak into the walk.
 - **Resolve in:** chunk 7 (story and main loop)
@@ -38,7 +38,7 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 ### OQ-5: Residual threads freed after a walk ends
 
-- **Where:** `src/story/story.ts:306-311`
+- **Where:** `src/story/story.ts:303-308`
 - **What it does:** when the walk is done, stops every thread still running before the next scene starts.
 - **Old guess behind it:** threads survive the walk and block the next scene.
 - **Resolve in:** chunk 7 (story and main loop)
@@ -46,7 +46,7 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 ### OQ-6: Scene picker drops wanted flags when nothing matches
 
-- **Where:** `src/story/story.ts:172-177`
+- **Where:** `src/story/story.ts:173-178`
 - **What it does:** if no scene has all wanted flags, picks a random scene that only avoids the unwanted flags.
 - **Old guess behind it:** some flag and day combinations have no candidate, and an empty pick would crash.
 - **Resolve in:** chunk 7 (story and main loop)
@@ -63,22 +63,24 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 ### OQ-9: Screen pixels with index 0 are see-through in our code
 
-- **Where:** `src/decode/nibbles.ts:10` (`unpackNibbles` maps index 0 to `TRANSPARENT` for screens and bitmaps), `src/gfx/compositor.ts:31` (draws `TRANSPARENT` as black)
+- **Where:** `src/gfx/gdi/display.ts` (`blitScreen`), `src/gfx/present.ts` (`presentSurface`); `src/decode/nibbles.ts:10` still maps index 0 to `TRANSPARENT`, which `rawIndices` (`src/gfx/gdi/surface.ts`) turns back into 0
 - **What it does:** a screen pixel with index 0 shows black, or whatever a lower layer holds.
 - **Original:** `gfx_blitPixelRows` (`1040:0286`) copies screens with `BitBlt` `SRCCOPY`, and `gfx_buildBitmaps` (`1040:0000`) keeps the palette's color 0 in the color table when `1068:2572` is 0, so index 0 is drawn opaque in palette color 0 (`JOHNCAST.PAL` color 0 is 168, 0, 168). Only bitmaps force color 0 to black and use the mask from `1040:035c`. Index 0 appears in `INTRO.SCR` (1,894 pixels), `ISLETEMP.SCR` (18), `OCEAN00.SCR` (9,917), `OCEAN01.SCR` (9,254), and `OCEAN02.SCR` (10,013).
 - **Old guess behind it:** index 0 is a transparent sentinel never used as a visible color.
 - **Model:** `src/gfx/gdi/display.ts` (`blitScreen`) draws screens opaque with index 0 kept, as `1040:0286` does. The old layer pipeline still shows index 0 as black or as a lower layer.
 - **Resolve in:** chunk 5 (TTM interpreter), when the model is wired in; then check in the browser whether palette color 0 shows on the ocean screens (the island may cover those pixels).
-- **Status:** open
+- **Resolution:** the engine draws every screen through Display.blitScreen (TTM screens, the ocean, INTRO.SCR), opaque with index 0 kept, and src/gfx/present.ts shows index 0 as palette color 0. Browser check (2026-10-18): the user saw nothing wrong on the ocean, intro, or scenes; no magenta reported.
+- **Status:** resolved (chunk 5)
 
 ### OQ-10: TTM interpreter frames bytecode and finds tags on its own
 
-- **Where:** `src/ttm/interpreter.ts:26` (`step`), `src/ttm/interpreter.ts:46` (`findTagOffset`), `src/ttm/interpreter.ts:56` (`findPreviousTagOffset`), `src/ads/scheduler.ts:201` (`findTtmTag`)
+- **Where:** `src/ttm/page-runner.ts` (`runTtmPage`, `pageOfTag`), `src/ads/scheduler.ts:174` (`tagPageOf`)
 - **What it does:** re-reads instructions with its own framer (signed args, no `0xAF1F`/`0xAF2F` case, no arg code check) and finds a tag by scanning the bytecode for `0x1111 <id>` each time, starting right after it.
 - **Old guess behind it:** a tag is a jump label inside the bytecode.
 - **Original:** the loader indexes the bytecode once (`1050:04d6`): pages split after each `0x0FF0`, and each `0x1111` is recorded with the page it sits on (`1050:042a`). `decodeTtm` now returns `pageOffsets` and `tags` built the same way, and `readTtmInstruction` (`src/decode/ttm-bytecode.ts`) frames exactly like the original.
 - **Resolve in:** chunk 5 (TTM interpreter): find how the original interpreter uses the page table and tag records, then switch `src/ttm/` and `findTtmTag` to `readTtmInstruction`, `pageOffsets`, and `tags`.
-- **Status:** open
+- **Resolution:** src/ttm/page-runner.ts reads instructions with readTtmInstruction, runs pages from pageOffsets, and finds goto and page-call targets with pageOfTag (1058:13a9); the scheduler takes a scene's first page from ttm.tags (1050:042a). The old framer and findTtmTag are deleted.
+- **Status:** resolved (chunk 5)
 
 ### OQ-11: ADS scheduler frames bytecode with its own size table
 
@@ -134,11 +136,12 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 ### OQ-20: The graphics model is not wired in
 
-- **Where:** `src/gfx/gdi/` (model) versus `src/gfx/{layer,primitives,sprite,clip,zone,compositor}.ts`, `src/ttm/interpreter.ts`, `src/ttm/thread.ts`, `src/ads/scheduler.ts`, `src/island/island.ts`, `src/walk/walk.ts`, `src/story/story.ts`, `src/main.ts` (old pipeline)
+- **Where:** `src/gfx/gdi/`, `src/gfx/present.ts`, `src/ttm/page-runner.ts`, `src/ttm/gdi-device.ts`, `src/ads/scheduler.ts`, `src/island/island.ts`, `src/walk/walk.ts`, `src/story/story.ts`, `src/main.ts`
 - **What it does:** the running engine draws each TTM thread into its own transparent layer, keeps "saved zones" in one more layer, and composites everything every frame. The original draws into three surfaces and erases with dirty-rect restores (`docs/re/graphics.md`, `Dirty rects`, `Display buffers`).
 - **Old guess behind it:** jc_reborn's SDL layer design.
 - **Resolve in:** chunk 5 (TTM interpreter): find which surface each opcode draws on and when the restore pass runs, switch the interpreter, island, and walk drawing to `src/gfx/gdi/`, then delete the old pipeline and its workarounds (`lingeringLayers`, `clearSavedZones`, the zone layer)
-- **Status:** open (user decision, 2026-10-17: build the model in chunk 4, wire it in chunk 5)
+- **Resolution:** the scheduler, island, walk, story, and main loop draw through src/gfx/gdi/ (buffers B and C, dirty rects, restore pass, window). The layer pipeline (src/gfx/layer.ts, primitives.ts, sprite.ts, clip.ts, zone.ts, compositor.ts, src/ttm/interpreter.ts, thread.ts, bmp-slots.ts) and its workarounds (lingeringLayers, clearSavedZones, the zone layer) are deleted. The connections that are not checked yet are OQ-22, OQ-24, OQ-25, OQ-26, and OQ-28.
+- **Status:** resolved (chunk 5)
 
 ### OQ-21: Wipe speed
 
@@ -147,6 +150,47 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Original:** `1020:0512`..`1020:071c` draw every shape in one go, pumping window messages between shapes (`1008:13cd`), with no timer: the speed is whatever the machine manages. The story waits for the call to return.
 - **Old guess behind it:** a visible wipe needs a fixed duration in a browser frame loop.
 - **Resolve in:** chunk 7 (story and main loop): decide a duration from the original's timing model, if any, when the story's call to `1020:0364` (`1018:0673`) is read
+- **Status:** open
+
+### OQ-22: Thread start and pacing in the scheduler adapter
+
+- **Where:** `src/ads/scheduler.ts` (`adsAddScene` line 155, `restartThread` line 178, `adsTick` line 355, `runThread` line 430, `replayEndingPage` line 450, `advancePage` line 455)
+- **What it does:** a new or restarted thread is reset as `1048:0b3e` does (delay 0, first page = the tag's page from `ttm.tags`) and runs at once. Each tick runs the current page of every running thread (first run, then replays), counts timers down by `mini` (the smallest timer, at least 1 tick), and moves a due thread to its next page with replay off. A purge sends the thread back to its tag page and ends it unless the scene has a time limit; scene time limits count down by `mini` every tick. An ending thread (`isRunning = 2`) keeps replaying its page until its timer is due, as `1048:1acb` keeps replaying a purged node until `1048:196e` finds it due. Browser check (2026-10-18): before that replay, Johnny vanished for the whole delay of a purged page (up to 240 ticks) before the next scene; pinned in `src/ads/scheduler.data.test.ts`.
+- **Original:** `1048:1acb` and `1048:196e` compare due times against a clock instead of counting down; on the due tick the page is replayed once more before the page advances; what a purge does next depends on the node's mode (`+0x2f`); how `1048` picks a scene's first page is not checked.
+- **Old guess behind it:** the old scheduler forced delays of at least 4 ticks and averaged `0x2022`. The 1-tick floor replaces that so pages with delay 0 (93 uses) cannot stall the loop.
+- **Resolve in:** chunk 6 (ADS interpreter)
+- **Status:** open
+
+### OQ-24: Island drawing bridge
+
+- **Where:** `src/island/island.ts`, `src/story/story.ts` (`buildSequence` line 116, `storyInit` line 210, `storyRedrawHoliday` line 368)
+- **What it does:** draws the ocean, raft, clouds, island, first waves, and holiday sprite into C when a sequence starts, then copies C to B and marks the whole screen `(B → A, age 0)`. Every 8 ticks a wave is drawn on B with rects `(B → A, 0)` and `(B → C, 0)`. The holiday sprite is redrawn on B when its rect overlaps a `(B → A, age 0)` rect. Scenes off the island start from a C cleared to index 0; `INTRO.SCR` is drawn into C. Seen in a headless run: `startScene` gives a scene without `LEFT_ISLAND` the island offset of a left island (`islandX = -272`), so `ACTIVITY.ADS` tag 4 (`MJDIVE.TTM`) dives off the left edge of the screen; the old pipeline computed the same offset.
+- **Original:** `1010:040e` (waves and island bits), `1010:1e50` (holiday), and the island setup; which surfaces and rects they use is not checked.
+- **Resolve in:** chunk 7 (story and island)
+- **Status:** open
+
+### OQ-25: Walk drawing bridge
+
+- **Where:** `src/walk/walk.ts` (`walkDraw` line 134), `src/ads/scheduler.ts` (`adsTick` line 355)
+- **What it does:** the current walk frame is drawn on B every tick with the TTM sprite rects (`(x, y, w, h + 2)` into `(B → A, 0)`, `(B → A, 1)`, `(C → B, 0)`), and the palm is drawn over Johnny when he is behind it. The last frame is drawn again on the tick the walk ends, so he stays on screen through the 80-tick arrival rest. Browser check (2026-10-18): without that, Johnny vanished for the rest (1.6 s) before the next scene; pinned in `src/ads/scheduler.data.test.ts`.
+- **Original:** walking is driven from `1048` (chunk 8); its draw calls and rects are not checked.
+- **Resolve in:** chunk 8 (walking)
+- **Status:** open
+
+### OQ-26: Random numbers come from Math.random
+
+- **Where:** `src/main.ts:47` (`GdiDevice` hook `random`), `src/ads/scheduler.ts:199` (`adsRandomPickOp`), `src/island/island.ts`, `src/story/story.ts`
+- **What it does:** draws 16-bit values (and fractions) from `Math.random`.
+- **Original:** `1018:1e60` with its own seed; the sequence decides delays of `0x2022`, ADS random picks, and island choices.
+- **Resolve in:** chunk 7 (story and island)
+- **Status:** open
+
+### OQ-28: Engine tick order
+
+- **Where:** `src/main.ts:78` (the loop)
+- **What it does:** `storyTick`, `storyAnimateBg` (waves, with the previous tick's elapsed time), `adsTick`, `storyRedrawHoliday`, `display.restorePass(0)`. Sound 25 and `1048:0766` have no counterpart.
+- **Original:** `1018:06bf`: `1010:040e(0)`, ..., `1048:1acb`, `1048:0766`, `1010:1e50(0)`, sound 25 when due, `1060:03d3(0)`.
+- **Resolve in:** chunk 7 (story and island)
 - **Status:** open
 
 ## Past fixes to re-check against the original

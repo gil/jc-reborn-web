@@ -976,7 +976,7 @@ git commit -m "feat(engine): draw through the display model; delete the layer pi
 
 ## Part F: Browser check
 
-- [ ] **Action 19: Smoke test**
+- [x] **Action 19: Smoke test**
 
 Run in the background: `pnpm dev --port 5173 --strictPort`
 Then run: `curl -s -o /dev/null -w "%{http_code}" http://localhost:5173/`
@@ -995,7 +995,7 @@ Stop the server: `lsof -ti :5173 -sTCP:LISTEN | xargs kill -9`
 
 ## Part G: Open questions and findings
 
-- [ ] **Action 20: Resolve OQ-9, OQ-10, OQ-20**
+- [x] **Action 20: Resolve OQ-9, OQ-10, OQ-20**
 
 In `docs/re/open-questions.md`, set each to `- **Status:** resolved (chunk 5)` and add a resolution line before it:
 
@@ -1005,7 +1005,7 @@ In `docs/re/open-questions.md`, set each to `- **Status:** resolved (chunk 5)` a
 
 Update each one's `Where` line if it names deleted files: point it at the new code.
 
-- [ ] **Action 21: Add OQ-22, OQ-24, OQ-25, OQ-26, OQ-28**
+- [x] **Action 21: Add OQ-22, OQ-24, OQ-25, OQ-26, OQ-28**
 
 Append to `docs/re/open-questions.md` (in number order with the entries steps 2 and 4 added), filling in real line numbers:
 
@@ -1054,11 +1054,11 @@ Append to `docs/re/open-questions.md` (in number order with the entries steps 2 
 
 If the browser check found a bridge problem, add what was seen to that entry's `What it does`.
 
-- [ ] **Action 22: ADS side in the findings**
+- [x] **Action 22: ADS side in the findings**
 
 In `docs/re/ttm.md`, `ADS side`, add: `- Ours: src/ads/scheduler.ts runs pages through runTtmPage with the thread's draw state loaded (loadThreadDrawState) and reset after all threads (resetDrawClip), activates the pending palette after all threads (1050:0799), and paces with countdown timers (OQ-22).`
 
-- [ ] **Action 23: Commit**
+- [x] **Action 23: Commit**
 
 ```bash
 git add docs/re/open-questions.md docs/re/ttm.md
@@ -1067,7 +1067,7 @@ git commit -m "docs(re): engine wiring, bridges logged"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
