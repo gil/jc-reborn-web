@@ -113,6 +113,23 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 - `MRAFT.BMP`: 7 images: 72 × 39, 88 × 39, three 128 × 39 (raft frames 1..5), then two 8 × 1 the raft code never uses.
 - `HOLIDAY.BMP`: 4 images: 40 × 34, 120 × 47, 56 × 65, 152 × 47.
 
+## Emulated
+
+`scripts/re/unicorn/original_island.py` (`dump_island.py` writes `re/fixtures/island/traces.tsv`, gitignored).
+
+- Runs as original code: `1010:0136` and everything it calls in `1010`, `1010:040e`, `1010:1e50`, the clock callback `1008:16c2`, and the random generator (`1018:1e60`, `1018:1eb6`, `1018:1ef5`).
+- Recorded and replaced: `1030:124a` (`sheet`, returns a bitmap table with the real widths and heights, one per sheet), `1030:16d8` (`screen`), `1038:1bd8` (`fill`; any rect that is not a solid fill raises), `1038:0ae4` and `1038:0ac2` (`sprite`, the latter with flags 0), `1030:02ef` (`line`), `1038:06ce` (`copy`), `1060:007e` (`dirty`; any kind but 1 raises), `1060:04b2` (`overlaps`). `1020:081c` does nothing. Nothing else needed a handler.
+- `1060:04b2` does not model the dirty lists: the `n`-th call of a case (zero-based, counted from the second `1010:0136`) answers 1 when `n % 3 == 1`, else 0, so the port sees the same answers by counting its own calls.
+- Each case is a fresh emulator: `1010:0136` once with nothing set (it only loads BACKGRND and MRAFT; its rows are dropped), the case's globals, the clip off over `(0, 0, 639, 479)`, `1018:1eb6(997k)`, `1010:0136` again (rows with step -1, then a `state` row), then for steps 0..59: `1 + step % 4` calls of `1008:16c2`, `1010:040e(0)`, `1010:1e50(0)`, and a `state` row. Surfaces: 0 = A, 1 = B, 2 = C.
+- Case `k` (0..23): mode `[0, 0, 0, 1, 2][k % 5]`; place `[0xffff, 0, 1, 2, 0x10, 0x14, 0x24, 0x28, 0x0c, 0x30][k % 10]`; low tide `[0xffff, 0, 1][k % 3]`; still when `k % 7 == 3`; no raft when `k % 6 == 5`; holiday hidden when `k % 4 == 2`; holiday `k % 5`; slot 13 for odd `k`, else 0; Background off when `k % 8 == 7`; Clouds off when `k % 9 == 8`; Waves off when `k % 10 == 9`; NumDays `[1, 3, 9][k % 3]`; speed 200 for even `k`, else 0.
+- The `state` row: island x `30c4`, y `30c2`, low tide `30c0`, place `30be`, raft frame `30b6`, surf `0282 0284 0286`, wind `0280`, surf timer `0288`, wave timer `028a`, clouds left `2e7a 2e7c 2e7e`, waves left `2f36 2f38 2f3a 2f3c`, random write index `1ce6`, then the 15 cloud records and the 30 wave records as `x,y,frame,kind,period,countdown`.
+- `test_original_island.py` pins the harness: the first call only loads the two sheets, the island goes into C and through B, mode 2 fills with color 5 (after loading HOLIDAY when the case has a holiday), the overlap rule, and a `state` row ending every step.
+- 47548 rows (plus the header): 22986 `dirty`, 11957 `line`, 7612 `sprite`, 3462 `overlaps`, 1464 `state`, 24 `copy`, 19 `sheet`, 17 `screen`, 7 `fill`.
+- Observed: with speed 200 the cases draw 11957 glint lines and 2716 wave sprites (BACKGRND 18..29); with speed 0, none. This is the only way to see them, since the real speed is always 0.
+- Observed: clouds (BACKGRND 15..17) are drawn only in step -1 (10 draws over all cases).
+- Observed: the surf counters move on 30 of the 60 steps (every other step: 1 to 4 clock ticks per step against the 4-tick timer) in every case with an island that is not still; never in mode 2 or with a still island (cases 3, 4, 9, 10, 14, 17, 19).
+- Observed: no sprite index past a sheet's end.
+
 ## Side-by-side checklist
 
 | Original | Name | Ours | Status |

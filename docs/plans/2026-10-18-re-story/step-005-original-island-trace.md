@@ -26,7 +26,7 @@
 
 The island code runs as original code with the original random generator and clock callback. Only the drawing, loading, dirty-list calls, and the debug log are replaced by recorders. `1060:04b2` answers by the overview's rule, so both sides see the same answers without modeling the dirty lists.
 
-- [ ] **Action 1: Write the failing harness test**
+- [x] **Action 1: Write the failing harness test**
 
 Create `scripts/re/unicorn/test_original_island.py`:
 
@@ -92,12 +92,12 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Action 2: Run it to make sure it fails**
+- [x] **Action 2: Run it to make sure it fails**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_island.py' -v`
 Expected: ERROR, `ModuleNotFoundError: No module named 'original_island'`.
 
-- [ ] **Action 3: Write the harness**
+- [x] **Action 3: Write the harness**
 
 Create `scripts/re/unicorn/original_island.py`:
 
@@ -286,12 +286,12 @@ class IslandTracer(TtmTracer):
 
 Check before running: `original_ttm.py` defines `FILL`, `FOREGROUND`, `BACKGROUND`, and `TtmTracer._sprite` records `("sprite", target, name, index, x, y, flags, *clip)` from args `(record, x, y, flags)`, which is the argument order of `1038:0ae4` (`docs/re/graphics.md`); and `_copy` records `("copy", source, target, x, y, w, h)`. If `TtmTracer.__init__` needs a TTM resource named `ISLAND`, it does not: `_load` is overridden. If `docs/re/island.md` shows a call these hooks miss (for example a palette or present call), add a recorder or quiet handler for it and name it in `Emulated`.
 
-- [ ] **Action 4: Run the test**
+- [x] **Action 4: Run the test**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_island.py' -v`
 Expected: all pass. An `UnstubbedImport` or `EmulationLimit` names the call it stopped in: read it in `re/out/functions/`, and add a recorder (if it draws) or a quiet handler (if it only logs). A `KeyError` in `self.images` means a sprite record that no `_bitmap_list` made: print the record pointer and the call site; it is a finding (a null or out-of-range sprite index, see `island.md`, `Bitmaps`).
 
-- [ ] **Action 5: Write the dump script**
+- [x] **Action 5: Write the dump script**
 
 Create `scripts/re/unicorn/dump_island.py`:
 
@@ -336,7 +336,7 @@ Expected: no output.
 Run: `re/.venv/bin/python -I scripts/re/unicorn/dump_island.py`
 Expected: 24 `case` lines on stderr, exit 0, `re/fixtures/island/traces.tsv` written. Note the total row count for `Emulated`.
 
-- [ ] **Action 6: Look at the trace**
+- [x] **Action 6: Look at the trace**
 
 Note for `Emulated`:
 
@@ -345,7 +345,7 @@ Note for `Emulated`:
 3. That surf sprites appear in about every other step (the 4-tick timer against 1 to 4 ticks per step).
 4. Any sprite index past a sheet's end.
 
-- [ ] **Action 7: Document the harness**
+- [x] **Action 7: Document the harness**
 
 Append to `scripts/re/unicorn/README.md`:
 
@@ -359,7 +359,7 @@ Runs the original island code (`1010:0136`, then 60 steps of `1008:16c2` ticks, 
 
 In `docs/re/island.md`, add a section `Emulated` before `Side-by-side checklist`: what runs as original code, what is recorded, the overlap rule, the case grid (copy the formulas from the overview), the row count, and the observations of Action 6.
 
-- [ ] **Action 8: Commit**
+- [x] **Action 8: Commit**
 
 ```bash
 git add scripts/re/unicorn/original_island.py scripts/re/unicorn/dump_island.py scripts/re/unicorn/test_original_island.py scripts/re/unicorn/README.md docs/re/island.md
@@ -368,7 +368,7 @@ git commit -m "test(re): trace the original island drawing and animation"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

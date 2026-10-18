@@ -209,7 +209,7 @@ Read for the interface, left to chunk 8: `1018:0000`, `1018:004d`, `1018:0074`, 
 - [x] `step-002-original-story-trace.md`: Unicorn runs the original random generator and sequence builder and writes `re/fixtures/story/` (traces and table dumps).
 - [x] `step-003-story-port.md`: `src/story/scene-table.ts`, `random.ts`, `calendar.ts`, `sequence.ts`, pinned by unit tests and equal to the original traces.
 - [x] `step-004-island-findings.md`: `docs/re/island.md` written from every `1010` function.
-- [ ] `step-005-original-island-trace.md`: Unicorn runs the original island drawing and animation and writes `re/fixtures/island/traces.tsv`.
+- [x] `step-005-original-island-trace.md`: Unicorn runs the original island drawing and animation and writes `re/fixtures/island/traces.tsv`.
 - [ ] `step-006-island-port.md`: `src/island/` rewritten as a port through `IslandDevice`, pinned by unit tests and equal to the original trace.
 - [ ] `step-007-story-step-and-loop.md`: the story step, ADS by id, settings, the 50 ms step and 16 ms clock, the walk bridge, `src/main.ts`; old story code and its workarounds deleted; open questions updated; browser check.
 - [ ] `step-008-chunk-wrap-up.md`: every in-scope function `verified` or logged, past fixes reviewed, comment audit, full rebuild and test run, spec checkbox ticked.

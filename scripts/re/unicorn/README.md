@@ -76,3 +76,9 @@ Loads each ADS script with the original loader (`1048:0079`) and, for every sect
     re/.venv/bin/python -I scripts/re/unicorn/dump_story.py
 
 Runs the original random generator (`1018:1e60`, `1018:1eb6`, `1018:1ef5`) and the sequence builder (`1018:0540`) for 16 cases of 30 sequences each, with the wall clock, start time, and day counters set per case. Drawing, the wipe, the ADS unload, and the debug log are replaced by handlers that do nothing; the DOS date and time calls return the case's wall clock. Writes `re/fixtures/story/` (gitignored): `sequences.tsv`, `random.tsv`, and the raw scene and random tables. `src/story/sequence.data.test.ts` and `src/story/random.data.test.ts` compare them with the TypeScript port. Formats: `docs/plans/2026-10-18-re-story/step-000-overview.md`, `Trace formats`, and `docs/re/story.md`, `Emulated`.
+
+## Original island
+
+    re/.venv/bin/python -I scripts/re/unicorn/dump_island.py
+
+Runs the original island code (`1010:0136`, then 60 steps of `1008:16c2` ticks, `1010:040e(0)`, and `1010:1e50(0)`) for 24 cases of island flags, settings, holiday, slot, and day count, with the original random generator. Loading, drawing, copying, and dirty-list calls are replaced by recorders (`original_island.py`, `IslandTracer` extends `TtmTracer`); `1060:04b2` answers 1 on every third call. Writes `re/fixtures/island/traces.tsv` (gitignored), which `src/island/island.data.test.ts` compares with the TypeScript port. Format: `docs/plans/2026-10-18-re-story/step-000-overview.md`, `Trace formats`, and `docs/re/island.md`, `Emulated`.
