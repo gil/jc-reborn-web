@@ -231,9 +231,7 @@ export function storyInit(_archive: ParsedArchive, game: GameState, debugAds: st
 
 export function storyTick(state: StoryState, game: GameState): void {
   // Chain instant phase transitions so a scene-end → walk-start (or walk-end →
-  // new-scene-start) completes in one tick. Without this, each transition costs
-  // one mini-paced tick (~80ms) of empty layer = visible character disappearance.
-  // Cap iterations to prevent runaway if a wait-state ever loops.
+  // new-scene-start) completes in one tick, capped in case a wait-state ever loops.
   for (let i = 0; i < 5; i++) {
     const prevPhase = state.phase.kind;
     storyTickStep(state, game);

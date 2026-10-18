@@ -33,7 +33,7 @@ The spec's done rule for a chunk:
 
 ## Part A: Status
 
-- [ ] **Action 1: List what is still not verified**
+- [x] **Action 1: List what is still not verified**
 
 Run:
 
@@ -48,11 +48,11 @@ for (const a of scope) if (names[a]?.status !== 'verified') console.log(a, names
 
 Expected: only addresses that appear in `docs/re/open-questions.md`. Check each with `rg -n "<address>" docs/re/open-questions.md`. For any that is missing from both, read it in `re/out/`, write its finding and checklist row in `docs/re/ttm.md`, and set its status to `verified` in `scripts/re/names.json`; or add an open-questions entry saying exactly what is unknown. Then run `node scripts/re/function-map.mjs`.
 
-- [ ] **Action 2: Check the checklist**
+- [x] **Action 2: Check the checklist**
 
 Every address in the scope list above has exactly one row in the `Side-by-side checklist` of `docs/re/ttm.md`, and every `open` row has an entry in `docs/re/open-questions.md` that names that address. Rows written in steps 4 and 5 point at `src/ttm/page-runner.ts`, `src/ttm/gdi-device.ts`, and `src/gfx/gdi/display.ts`; check that their line numbers still match (`rg -n "function runPage|function drawOpcode|function zoneEffect|function addDrawnRect|function screenToBackground|function copyToBackground|function surfaceByNumber|export function pageOfTag|export function activatePendingPalette" src/ttm/page-runner.ts`). Fix whatever is missing or stale.
 
-- [ ] **Action 3: Check the carry-over notes**
+- [x] **Action 3: Check the carry-over notes**
 
 Run: `rg -n "Resolve in:\*\* chunk 5" docs/re/open-questions.md`
 Expected: every match belongs to an entry whose status is `resolved (chunk 5)` or `open, by choice`. That covers OQ-8, OQ-9, OQ-10, OQ-14, OQ-16, OQ-17, OQ-19, OQ-20. Any other open entry with chunk 5 is either finished now or moved to the chunk that owns it, with a sentence saying why.
@@ -65,7 +65,7 @@ Expected: matches only in resolved entries, past-fix notes, or text that says th
 
 ## Part B: Past fixes
 
-- [ ] **Action 4: Review the chunk 5 rows of "Past fixes to re-check"**
+- [x] **Action 4: Review the chunk 5 rows of "Past fixes to re-check"**
 
 The table in `docs/re/open-questions.md` lists these commits for chunk 5: `d670686` (SET_DELAY missing timer), `5f4e3a0` (DRAW_RECT/DRAW_CIRCLE no longer offset width and height), `9a40bb2` (LOAD_SCREEN resets dx/dy), `0d4078d` (DRAW_BACKGROUND is a no-op), `7a9d964` (TIMER sets delay and timer directly), `e1d3bae` (GOTO_TAG defers the jump), `cacfdb0` (PURGE schedules a jump), `31988b3` (revert DRAW_SCREEN), `2ed4424` (GOTO_TAG must yield), `c7f3c6b` (DRAW_SCREEN for scaled sprites), `037819f` (GOTO_TAG searched LOCAL_TAG instead of TAG). For each:
 
@@ -91,7 +91,7 @@ Then, in the table, change the Chunk cell of each reviewed row from `5` to `5 (r
 
 ## Part C: Comments and docs
 
-- [ ] **Action 5: Audit the comments**
+- [x] **Action 5: Audit the comments**
 
 Run: `rg -n "//|/\*" src/ttm src/testing/ttm-recorder.ts src/gfx/present.ts src/ads/scheduler.ts src/island/island.ts src/walk/walk.ts src/story/story.ts src/main.ts`
 
@@ -107,18 +107,18 @@ For each comment, apply the overview's rule: keep it only if a competent enginee
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 6: Update the TTM opcode coverage**
+- [x] **Action 6: Update the TTM opcode coverage**
 
 In `docs/re/decoders.md`, `TTM opcode coverage`, for each row: set `Our name` to the key in `src/ttm/opcodes.ts` (`OP`), and `Our handler` to `src/ttm/page-runner.ts:<line>` of the code that handles it (`controlOpcode`, `drawOpcode`, `markDrawn`, `zoneEffect`, or the `0xc000` branch of `runPage`), with a short note where it does nothing on purpose (for example `nothing (tag, read by pageOfTag)`, `nothing (1058:0860)`). Add one sentence under the table: `Handlers were checked against the original in chunk 5 (docs/re/ttm.md).`
 
 Run: `rg -n "interpreter\.ts" docs/re/decoders.md`
 Expected: no output.
 
-- [ ] **Action 7: Update the segment overview**
+- [x] **Action 7: Update the segment overview**
 
 In `docs/re/segments.md`, update the rows for Code12 (`1058`: the TTM page runner, opcode handlers, effects) and Code11 (`1050`: TTM setup, page check, pending palette, dirty-rect helper, screen to background), and add one line each under "Tables found": `1068:46d8` (replay flag), `1068:4644` (goto page), `1068:4642` (purge flag), `1068:46e6` (delay), `1068:4646` (pending palette), `1068:46d6` / `1068:4106` (mirror next load), `1068:27c0` (keep drawings), `1068:27c2` (page-call depth), `1068:46e4` / `1068:46e2` (island offsets), `1068:46e0` / `1068:46de` (page-call offsets), `1068:4640` (screen loaded), `1068:30d2` (shared walk bitmaps), `1068:263c` / `1068:263e` (thread list, current thread), `1068:2638` (current TTM record), and the 11 jump tables of step 1 (`scripts/re/jump-tables.json`). If step 2 named a segment row differently, keep its wording and add what is missing.
 
-- [ ] **Action 8: Commit**
+- [x] **Action 8: Commit**
 
 ```bash
 git add scripts/re/names.json docs/re/function-map.md docs/re/ttm.md docs/re/open-questions.md docs/re/decoders.md docs/re/segments.md src

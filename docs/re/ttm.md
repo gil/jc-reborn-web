@@ -306,7 +306,19 @@ Trace rows: `ttm	page	pass	event	values`. `pass` is `first` or `replay`; `values
 
 ## Past fixes reviewed
 
-Filled in at the end of chunk 5.
+Every commit below changed the old interpreter (`src/ttm/interpreter.ts`, deleted in chunk 5).
+
+- `d670686` (SET_DELAY missing timer): `0x1021` set the thread's countdown timer as well as its delay, both at least 4 ticks. Original: `1058:0e37` only sets `1068:46e6 = arg0`, with no minimum; `1048:1acb` turns a changed delay into a due time after the page ends. Verdict: differs: the 4-tick floor has no counterpart; `src/ttm/page-runner.ts` returns the delay as is and the scheduler's 1-tick pacing floor is OQ-22.
+- `5f4e3a0` (DRAW_RECT/DRAW_CIRCLE no longer offset width and height): `0xa104` and `0xa404` stopped adding the island offset to args 2 and 3. Original: `1058:05b9` adds the island offset to args 0 and 1 only, except `0x4004` and `0xa0a4`, which get it on both corners. Verdict: matches the original.
+- `9a40bb2` (LOAD_SCREEN resets dx/dy): `0xf01f` set the island offset to 0 after loading a screen. Original: `1058:06c5` loads the screen on B and calls `1050:0b31`; nothing in it touches `1068:46e4`/`46e2`, which only `1010:00fc` sets. Verdict: differs: our runner keeps the offset, and which offset a scene runs with is set per scene by the story (OQ-24, chunk 7).
+- `0d4078d` (DRAW_BACKGROUND is a no-op): `0x0080` stopped clearing the thread's layer. Original: `1058:0806` frees the BMP slot's bitmaps (not the shared walk list) and clears the slot; it draws nothing. Verdict: matches on drawing; our runner also clears the slot (`FREE_IMAGES`).
+- `7a9d964` (TIMER sets delay and timer directly): `0x2022` set the delay to the average of its args and kept running the page. Original: `1058:0e08` picks `arg0 + |rand % (arg1 - arg0)|` with `1018:1e60`, skips on replay, and the page always runs to its `0x0FF0`. Verdict: differs: the delay is random, not an average; our runner follows `1058:0e08` (`randomDelay`), with `Math.random` as the source (OQ-26).
+- `e1d3bae` (GOTO_TAG defers the jump): `0x1201` stored the target and kept running instead of jumping at once. Original: `1058:0fc3` sets `1068:4644 = 1058:13a9(arg0)`; the page runs on to its `0x0FF0`, and `1048:1acb` moves the node to that page through `[3]` and `1048:196e`. Verdict: matches the original in spirit; replaced by `src/ttm/page-runner.ts` (`gotoPage`).
+- `cacfdb0` (PURGE schedules a jump): `0x0110` jumped back to the previous tag when the scene had a time limit, else ended the thread, and kept running. Original: `1058:0f73` only sets the purge flag `1068:4642`; `1048:1acb` sends the node back to its tag page (`[3] = [2]`, not the last tag before the instruction) and decides the rest from the node's mode. Verdict: only mattered in the old interpreter; replaced by `src/ttm/page-runner.ts` (`purge`), with the scheduler side in OQ-22.
+- `31988b3` (revert DRAW_SCREEN): removed the scaled draw for `0xb606` again. Original: `1058:0eb4` copies a rect between surfaces, C to B in all 6 uses; it does not scale. Verdict: only mattered in the old interpreter; replaced by `src/ttm/page-runner.ts` (`COPY_SURFACE_RECT`).
+- `2ed4424` (GOTO_TAG must yield): `0x1201` jumped and returned at once, to stop loops without a `0x0FF0`. Original: every page ends at `0x0FF0` (`1058:040c`), and the jump happens between ticks (`1048:196e`). Verdict: only mattered in the old interpreter, which had no pages; replaced by `src/ttm/page-runner.ts`.
+- `c7f3c6b` (DRAW_SCREEN for scaled sprites): `0xb606` drew a sprite scaled to `(w, h)`. Original: `1058:0eb4` copies `(x, y, w, h)` from surface arg4 to surface arg5 with `1038:06ce`; stretched sprites are `0xa506`..`0xa536` (`1030:03d7`), unused in the data. Verdict: differs: wrong opcode meaning, reverted by `31988b3`; replaced by `src/ttm/page-runner.ts`.
+- `037819f` (GOTO_TAG searched LOCAL_TAG instead of TAG): the goto search changed from `0x1101` to `0x1111`. Original: `1058:13a9` takes the first page whose first instruction is `0x1101` or `0x1111` with the tag. Verdict: only mattered in the old interpreter; replaced by `pageOfTag`, which takes both.
 
 ## Side-by-side checklist
 
@@ -314,6 +326,9 @@ Filled in at the end of chunk 5.
 | --- | --- | --- | --- |
 | `1028:17fa` | `decoders_callLoadBmp` | `src/ttm/gdi-device.ts:86` `GdiDevice.loadBitmaps` | fixed |
 | `1028:1813` | `decoders_callLoadScreen` | `src/ttm/gdi-device.ts:79` `GdiDevice.loadScreen` | fixed |
+| `1030:04ce` | `gfx_drawTextNear` | none (text not modeled, OQ-16) | open |
+| `1030:04ee` | `gfx_drawText` | none (text not modeled, OQ-16) | open |
+| `1030:0765` | `gfx_loadFont` | none (text not modeled, OQ-16) | open |
 | `1030:07c3` | `gfx_selectFontStub` | none (empty) | match |
 | `1030:07d4` | `gfx_deleteFontStub` | none (empty) | match |
 | `1038:07e8` | `gfx_presentRect` | `src/gfx/gdi/display.ts:87` `Display.present` (the old pipeline shows a whole buffer) | fixed |

@@ -10,8 +10,8 @@ import { SCREEN_H, SCREEN_W } from '../types.js';
 export interface IslandState {
   lowTide: boolean;
   night: boolean;
-  raft: number;     // 0=none, 1-5
-  holiday: number;  // 0=none, 1=Halloween, 2=StPatrick, 3=Xmas, 4=NewYear
+  raft: number;
+  holiday: number;
   xPos: number;
   yPos: number;
 }
@@ -19,7 +19,7 @@ export interface IslandState {
 export function randomIslandState(): IslandState {
   const r = Math.random;
   const lowTide = r() < 0.33;
-  // xPos/yPos ranges from story.c:135-144 (medium zoom — most common)
+  // Position ranges not checked against the original (OQ-24).
   const xPos = -114 + Math.floor(r() * 134);
   const yPos = -14  + Math.floor(r() * 99);
   return { lowTide, night: false, raft: 0, holiday: 0, xPos, yPos };
@@ -77,7 +77,7 @@ export function islandInit(display: Display, archive: ParsedArchive, state: Isla
   const sprites = loadSprites(archive, 'BACKGRND.BMP');
   const rt: IslandRuntime = { sprites, holiday: null, state, counter1: 0, counter2: 0 };
 
-  // Clouds (grDx=grDy=0 in C — no island offset)
+  // Clouds ignore the island offset (OQ-24).
   const windDir = Math.random() < 0.5;
   const r = Math.random;
   const numClouds = Math.floor(r() * 6);
@@ -125,7 +125,6 @@ function nextWave(rt: IslandRuntime): [number, number, number] {
   return placed;
 }
 
-// Called every 8 ticks (delay set in adsInitIsland).
 export function islandAnimate(rt: IslandRuntime, display: Display): void {
   const [x, y, sprNo] = nextWave(rt);
   const image = rt.sprites[sprNo];

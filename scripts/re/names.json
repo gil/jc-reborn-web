@@ -979,7 +979,7 @@
     "1030:07c3": {
       "name": "gfx_selectFontStub",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Empty: returns 1; the TTM font and text opcodes call it with a font handle",
       "signature": null,
       "callingConvention": null
@@ -987,7 +987,7 @@
     "1030:07d4": {
       "name": "gfx_deleteFontStub",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Empty: returns DS; TTM opcodes 0x0090 and 0xf04f and 1050:080c call it with a font handle",
       "signature": null,
       "callingConvention": null
@@ -1411,7 +1411,7 @@
     "1040:0c13": {
       "name": "gfx_paletteLevelStub",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Empty: returns DS; the TTM palette fade opcodes call it",
       "signature": null,
       "callingConvention": null
@@ -1419,7 +1419,7 @@
     "1040:0c21": {
       "name": "gfx_paletteCycleStub",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Empty: returns 0; TTM opcodes 0x0400 and 0x2402 reach it",
       "signature": null,
       "callingConvention": null
@@ -1427,7 +1427,7 @@
     "1040:0c31": {
       "name": "gfx_paletteEmptyStub",
       "subsystem": "gfx",
-      "status": "named",
+      "status": "verified",
       "note": "Empty: returns DS; nothing calls it",
       "signature": null,
       "callingConvention": null
@@ -1547,7 +1547,7 @@
     "1050:0000": {
       "name": "ttm_measureSlotImages",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Stores the widest image of the thread's BMP slot in 1068:463c and clears 1068:463e; TTM opcode 0xb000",
       "signature": null,
       "callingConvention": null
@@ -1555,7 +1555,7 @@
     "1050:0061": {
       "name": "ttm_scrollSlotImages",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Draws the BMP slot's images in a column at x = arg2, starting 1068:463e above the screen bottom and spaced by arg0, marks them dirty, adds arg1 to 463e, and raises the purge flag when none was drawn; TTM opcode 0xb013",
       "signature": null,
       "callingConvention": null
@@ -1571,7 +1571,7 @@
     "1050:0152": {
       "name": "ttm_initDirtyPool",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Grows the dirty-rect pool by 100 nodes; sets 1068:2641 to 2 in color mode 12",
       "signature": null,
       "callingConvention": null
@@ -1619,7 +1619,7 @@
     "1050:074a": {
       "name": "ttm_runPageChecked",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Runs page n of the current TTM with 1058:040c when the page exists; returns 0 otherwise",
       "signature": null,
       "callingConvention": null
@@ -1627,7 +1627,7 @@
     "1050:0799": {
       "name": "ttm_activatePendingPalette",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Makes the pending palette 1068:4646 active and clears it",
       "signature": null,
       "callingConvention": null
@@ -1635,7 +1635,7 @@
     "1050:07c6": {
       "name": "ttm_unloadAll",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Unloads every TTM (1050:080c) and frees every thread node",
       "signature": null,
       "callingConvention": null
@@ -1643,7 +1643,7 @@
     "1050:080c": {
       "name": "ttm_unload",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Frees one TTM record: matrix, fonts, bitmaps (not the shared walk list), palettes, zone buffers, page table, bytecode",
       "signature": null,
       "callingConvention": null
@@ -1651,7 +1651,7 @@
     "1050:0a6e": {
       "name": "ttm_shutdown",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Frees the dirty-rect pool and unloads every TTM; nothing references it",
       "signature": null,
       "callingConvention": null
@@ -1659,7 +1659,7 @@
     "1050:0a85": {
       "name": "ttm_markDrawn",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Marks a drawn rect dirty: B to A at ages 0 and 1, and C to B at age 0 unless 1068:27c0 is set",
       "signature": null,
       "callingConvention": null
@@ -1667,7 +1667,7 @@
     "1050:0b31": {
       "name": "ttm_screenToBackground",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Sets 1068:4640, copies all of B into C, drops the C-to-B dirty list",
       "signature": null,
       "callingConvention": null
@@ -1675,7 +1675,7 @@
     "1050:0b74": {
       "name": "ttm_copyToBackground",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Copies a rect of B into C, keeping the copy source and draw target",
       "signature": null,
       "callingConvention": null
@@ -1683,7 +1683,7 @@
     "1058:0000": {
       "name": "ttm_soundOpcode",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Dispatches 0xCxxx opcodes: 0xc051 plays a sample, the rest reach return-0 stubs or copy strings",
       "signature": null,
       "callingConvention": null
@@ -1691,7 +1691,7 @@
     "1058:0144": {
       "name": "ttm_drawOpcode",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Dispatches 0xAxxx opcodes to the primitives, sprites, effects (1058:1510) and text",
       "signature": null,
       "callingConvention": null
@@ -1699,7 +1699,7 @@
     "1058:040c": {
       "name": "ttm_runPage",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Runs one TTM page until 0x0FF0: frames each instruction, applies offsets, dispatches, marks drawings dirty",
       "signature": null,
       "callingConvention": null
@@ -1707,7 +1707,7 @@
     "1058:13a9": {
       "name": "ttm_pageOfTag",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Returns the first page whose first instruction is 0x1101 or 0x1111 with the tag, or 0xFFFF; stops at the first unset page table entry",
       "signature": null,
       "callingConvention": null
@@ -1715,7 +1715,7 @@
     "1058:141f": {
       "name": "ttm_copyStringArg",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Copies a string argument (or n bytes when n is not 0) into 1068:464a, terminates it, and returns it; copies nothing when n is at least the screen height",
       "signature": null,
       "callingConvention": null
@@ -1723,7 +1723,7 @@
     "1058:147a": {
       "name": "ttm_fontSlotPointer",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Returns a pointer to the thread's font handle in the TTM record (+0x18)",
       "signature": null,
       "callingConvention": null
@@ -1731,7 +1731,7 @@
     "1058:14a8": {
       "name": "ttm_paletteRangeEffect",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Calls the empty 1040:0c21 for a color range stored by opcodes 0x2302..0x2322",
       "signature": null,
       "callingConvention": null
@@ -1739,7 +1739,7 @@
     "1058:14e0": {
       "name": "ttm_surfaceByNumber",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Maps 0 to A, 1 to B, 2 to C, anything else to B",
       "signature": null,
       "callingConvention": null
@@ -1747,7 +1747,7 @@
     "1058:1510": {
       "name": "ttm_effectOpcode",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Runs the 0xa014..0xa094 and 0xa0b5 effects with target A (B for the zone 0 restore): zone 0 save and restore, slides, strips, blinds, copies; puts the target back after",
       "signature": null,
       "callingConvention": null
@@ -1755,7 +1755,7 @@
     "1058:1920": {
       "name": "ttm_effectPause",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Calls 1058:1949 with an empty rect 100 times (a busy wait)",
       "signature": null,
       "callingConvention": null
@@ -1763,7 +1763,7 @@
     "1058:1949": {
       "name": "ttm_effectCopy",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "gfx_copyRect when width and height are both above 2",
       "signature": null,
       "callingConvention": null
@@ -1771,7 +1771,7 @@
     "1058:197c": {
       "name": "ttm_emptyMirrorHook",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Empty function; TTM opcode 0x2012 calls it",
       "signature": null,
       "callingConvention": null
@@ -1779,7 +1779,7 @@
     "1058:198a": {
       "name": "ttm_dissolveEffect",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Opcode 0xa0b5: copies a rect of B to A; with 1068:1ebf set (never) dissolves it pixel by pixel in LFSR order",
       "signature": null,
       "callingConvention": null
@@ -1787,7 +1787,7 @@
     "1058:1ad0": {
       "name": "ttm_timerExpired",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Returns 1 when a timer record (start, duration) has run out, or when 1068:45e2 is 0",
       "signature": null,
       "callingConvention": null
@@ -1795,7 +1795,7 @@
     "1058:1b1f": {
       "name": "ttm_timerLerp",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Interpolates between two values by the elapsed share of a timer record",
       "signature": null,
       "callingConvention": null
@@ -1803,7 +1803,7 @@
     "1058:1be1": {
       "name": "ttm_startTimer",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Fills a timer record with the clock 1068:2e70/2e72 and a duration",
       "signature": null,
       "callingConvention": null
@@ -1811,7 +1811,7 @@
     "1058:1c06": {
       "name": "ttm_expireTimer",
       "subsystem": "ttm",
-      "status": "named",
+      "status": "verified",
       "note": "Fills a timer record that has already run out; nothing references it",
       "signature": null,
       "callingConvention": null

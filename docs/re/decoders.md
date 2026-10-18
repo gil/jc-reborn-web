@@ -145,38 +145,38 @@ Every opcode the 41 TTM scripts use, framed with `readTtmInstruction`. Counts co
 
 | Opcode | Our name | Uses in the data | Our handler |
 | --- | --- | --- | --- |
-| `0x0080` | `DRAW_BACKGROUND` | 190 | `src/ttm/interpreter.ts:86` (empty case, ignored) |
-| `0x0110` | `PURGE` | 528 | `src/ttm/interpreter.ts:89` |
-| `0x0ff0` | `UPDATE` | 6,631 | `src/ttm/interpreter.ts:97` |
-| `0x1021` | `SET_DELAY` | 1,148 | `src/ttm/interpreter.ts:99` |
-| `0x1051` | `SET_BMP_SLOT` | 456 | `src/ttm/interpreter.ts:102` |
-| `0x1061` | `SET_PALETTE_SLOT` | 41 | `src/ttm/interpreter.ts:105` (empty case, ignored) |
-| `0x1101` | `LOCAL_TAG` | 5 | `src/ttm/interpreter.ts:108` (empty case, ignored) |
-| `0x1111` | `TAG` | 611 | `src/ttm/interpreter.ts:108` (empty case, ignored) |
-| `0x1121` | `TTM_UNKNOWN_1` | 61 | `src/ttm/interpreter.ts:110` (empty case, ignored) |
-| `0x1201` | `GOTO_TAG` | 75 | `src/ttm/interpreter.ts:112` |
-| `0x2002` | `SET_COLORS` | 217 | `src/ttm/interpreter.ts:117` |
-| `0x2012` | `SET_FRAME1` | 52 | `src/ttm/interpreter.ts:121` (empty case, ignored) |
-| `0x2022` | `TIMER` | 152 | `src/ttm/interpreter.ts:123` |
-| `0x4004` | `SET_CLIP_ZONE` | 52 | `src/ttm/interpreter.ts:129` |
-| `0x4204` | `COPY_ZONE_TO_BG` | 38 | `src/ttm/interpreter.ts:135` |
-| `0x4214` | `SAVE_IMAGE1` | 60 | `src/ttm/interpreter.ts:138` |
-| `0xa002` | `DRAW_PIXEL` | 63 | `src/ttm/interpreter.ts:147` |
-| `0xa054` | `SAVE_ZONE` | 1 | `src/ttm/interpreter.ts:141` |
-| `0xa064` | `RESTORE_ZONE` | 1 | `src/ttm/interpreter.ts:144` |
-| `0xa0a4` | `DRAW_LINE` | 784 | `src/ttm/interpreter.ts:150` |
-| `0xa104` | `DRAW_RECT` | 111 | `src/ttm/interpreter.ts:153` |
-| `0xa404` | `DRAW_CIRCLE` | 437 | `src/ttm/interpreter.ts:156` |
-| `0xa504` | `DRAW_SPRITE` | 12,546 | `src/ttm/interpreter.ts:159` |
-| `0xa524` | `DRAW_SPRITE_FLIP` | 2,822 | `src/ttm/interpreter.ts:166` |
-| `0xa601` | `CLEAR_SCREEN` | 6,814 | `src/ttm/interpreter.ts:172` |
-| `0xb606` | `DRAW_SCREEN` | 6 | `src/ttm/interpreter.ts:175` (empty case, ignored) |
-| `0xc051` | `PLAY_SAMPLE` | 535 | `src/ttm/interpreter.ts:177` |
-| `0xf01f` | `LOAD_SCREEN` | 40 | `src/ttm/interpreter.ts:180` |
-| `0xf02f` | `LOAD_IMAGE` | 263 | `src/ttm/interpreter.ts:186` |
-| `0xf05f` | `LOAD_PALETTE` | 41 | `src/ttm/interpreter.ts:191` |
+| `0x0080` | `FREE_IMAGES` | 190 | `src/ttm/page-runner.ts:242` |
+| `0x0110` | `PURGE` | 528 | `src/ttm/page-runner.ts:248` |
+| `0x0ff0` | `UPDATE` | 6,631 | `src/ttm/page-runner.ts:93` (ends the page in `runPage`) |
+| `0x1021` | `SET_DELAY` | 1,148 | `src/ttm/page-runner.ts:257` |
+| `0x1051` | `SET_BMP_SLOT` | 456 | `src/ttm/page-runner.ts:260` |
+| `0x1061` | `SET_PALETTE_SLOT` | 41 | `src/ttm/page-runner.ts:263` |
+| `0x1101` | `LOCAL_TAG` | 5 | `src/ttm/page-runner.ts:65` (nothing when run; read by `pageOfTag`) |
+| `0x1111` | `TAG` | 611 | `src/ttm/page-runner.ts:65` (nothing when run; read by `pageOfTag`) |
+| `0x1121` | `SET_ZONE_SLOT` | 61 | `src/ttm/page-runner.ts:267` |
+| `0x1201` | `GOTO_TAG` | 75 | `src/ttm/page-runner.ts:270` |
+| `0x2002` | `SET_COLORS` | 217 | `src/ttm/page-runner.ts:275` |
+| `0x2012` | `MIRROR_NEXT_LOAD` | 52 | `src/ttm/page-runner.ts:279` |
+| `0x2022` | `RANDOM_DELAY` | 152 | `src/ttm/page-runner.ts:282` |
+| `0x4004` | `SET_CLIP_ZONE` | 52 | `src/ttm/page-runner.ts:291` |
+| `0x4204` | `COPY_TO_BACKGROUND` | 38 | `src/ttm/page-runner.ts:296` |
+| `0x4214` | `NO_OP_4214` | 60 | `src/ttm/page-runner.ts:228` (nothing, `1058:0860`; no case in `controlOpcode`) |
+| `0xa002` | `DRAW_PIXEL` | 63 | `src/ttm/page-runner.ts:143`, dirty rect `src/ttm/page-runner.ts:195` |
+| `0xa054` | `SAVE_ZONE` | 1 | `src/ttm/page-runner.ts:163`, `src/ttm/page-runner.ts:177` (`zoneEffect`) |
+| `0xa064` | `RESTORE_ZONE` | 1 | `src/ttm/page-runner.ts:164`, `src/ttm/page-runner.ts:177` (`zoneEffect`) |
+| `0xa0a4` | `DRAW_LINE` | 784 | `src/ttm/page-runner.ts:146`, dirty rect `src/ttm/page-runner.ts:198` |
+| `0xa104` | `DRAW_RECT` | 111 | `src/ttm/page-runner.ts:149`, dirty rect `src/ttm/page-runner.ts:218` |
+| `0xa404` | `DRAW_CIRCLE` | 437 | `src/ttm/page-runner.ts:155`, dirty rect `src/ttm/page-runner.ts:201` |
+| `0xa504` | `DRAW_SPRITE` | 12,546 | `src/ttm/page-runner.ts:168`, dirty rect `src/ttm/page-runner.ts:211` |
+| `0xa524` | `DRAW_SPRITE_MIRRORED` | 2,822 | `src/ttm/page-runner.ts:168`, dirty rect `src/ttm/page-runner.ts:211` |
+| `0xa601` | `MARK_ZONE_DIRTY` | 6,814 | `src/ttm/page-runner.ts:205` (draws nothing; dirty rect of a zone) |
+| `0xb606` | `COPY_SURFACE_RECT` | 6 | `src/ttm/page-runner.ts:301` |
+| `0xc051` | `PLAY_SAMPLE` | 535 | `src/ttm/page-runner.ts:97` (the `0xc000` branch of `runPage`) |
+| `0xf01f` | `LOAD_SCREEN` | 40 | `src/ttm/page-runner.ts:307` |
+| `0xf02f` | `LOAD_IMAGE` | 263 | `src/ttm/page-runner.ts:312` |
+| `0xf05f` | `LOAD_PALETTE` | 41 | src/ttm/page-runner.ts:315 |
 
-Checking what each opcode means against the original is chunk 5's job; this table only proves the data uses no opcode we lack a name for. Every opcode has a `case`, but these do nothing: `0x0080` `DRAW_BACKGROUND`, `0x1061` `SET_PALETTE_SLOT`, `0x1101` `LOCAL_TAG`, `0x1111` `TAG`, `0x1121` `TTM_UNKNOWN_1`, `0x2012` `SET_FRAME1`, and `0xb606` `DRAW_SCREEN`.
+Handlers were checked against the original in chunk 5 (docs/re/ttm.md).
 
 ## ADS loader
 

@@ -14,8 +14,8 @@ Which NE segment holds which subsystem, based on the functions named so far. Upd
 | Code8 | `1038` | `0x1ec8` | `decoders`, `gfx` | `1038:0000`..`1038:0619` is the chunk reader every loader uses (`decoders_openChunkFile`, `decoders_findChunk`, `decoders_chunkSize`, `decoders_closeChunkFile`, and helpers) plus `platform_nearMalloc`. Then `gfx_copyRect`, `gfx_presentRect`, the sprite blit (`gfx_drawSprite`, `gfx_drawSpritePlain`), scaling dead code (`gfx_rescaleSprite`, `gfx_doubleBitmap`, `gfx_halveBitmap`, `gfx_rescaleDisplay`), display setup (`gfx_initDisplay`, `gfx_closeDisplay`), `gfx_applyClip`, `gfx_drawRect`, `gfx_createColorBrush`. See `decoders.md` and `graphics.md` |
 | Code9 | `1040` | `0x11db` | `gfx`, `decoders` | The bitmap builder (`gfx_buildBitmaps`, `gfx_buildBitmapMask`, `gfx_flipPixelRows`, `gfx_mirrorPixelRows`), `gfx_blitPixelRows`, `gfx_drawCircle`, `gfx_paletteColor`, the palette loader (`decoders_loadPalette`) and palette slots (`gfx_selectPalette`, `gfx_freePalette`), `gfx_drawPixel`, the bitmap matrix (`decoders_loadBmpMatrix`, `gfx_freeBmpMatrix`, `gfx_blitBmpMatrix`, `gfx_scrollBmpMatrix`), timer callback table. See `decoders.md` and `graphics.md` |
 | Code10 | `1048` | `0x1f1f` | `ads` | Starts with the ADS loader: `ttm_loadTtmWithId`, `ads_loadAds`, its size table (`ads_nextInstruction`, table at `1048:0383`), and the section index (`ads_indexSections`, `ads_sectionSceneIds`). See `decoders.md` |
-| Code11 | `1050` | `0x0bc7` | `ttm` | Starts with the TTM loader and page index: `ttm_loadTtm`, `ttm_selectTtm`, `ttm_addTagRecord`, `ttm_skipStringArg`, `ttm_indexPages`. See `decoders.md` |
-| Code12 | `1058` | `0x1c30` | `ttm` (not named yet) | `1058:040c` is the TTM opcode interpreter (current opcode at `1068:46da`, jump tables in the code segment); it loads screens, bitmaps, and matrices through the `1028` thunks. Chunk 5 |
+| Code11 | `1050` | `0x0bc7` | `ttm` | Starts with the TTM loader and page index: `ttm_loadTtm`, `ttm_selectTtm`, `ttm_addTagRecord`, `ttm_skipStringArg`, `ttm_indexPages`. Then TTM setup and helpers: the checked page run (`ttm_runPageChecked`), the pending palette (`ttm_activatePendingPalette`), unloading (`ttm_unload`, `ttm_unloadAll`), the dirty-rect helper (`ttm_markDrawn`), and screen to background (`ttm_screenToBackground`, `ttm_copyToBackground`). See `decoders.md` and `ttm.md` |
+| Code12 | `1058` | `0x1c30` | `ttm` | The TTM page runner `ttm_runPage` (`1058:040c`, current opcode at `1068:46da`), the opcode handlers (`ttm_soundOpcode`, `ttm_drawOpcode`, and the cases of its control table), `ttm_pageOfTag`, and the effects (`ttm_effectOpcode` and helpers). Its switches are linear-search jump tables in the code segment (`scripts/re/jump-tables.json`). It loads screens, bitmaps, and matrices through the `1028` thunks. See `ttm.md` |
 | Code13 | `1060` | `0x0a7e` | `gfx` dirty rects, `platform` | `1060:0000`..`1060:0780` are the dirty-rect lists: node pool, `gfx_addDirtyRect`, `gfx_replayDirtyList`, and the restore pass `gfx_restoreDirtyRects`. Then `platform_globalAllocLock`, `platform_globalUnlockFree`. See `graphics.md` |
 | Data14 | `1068` | `0x47c0` | data | Auto data segment: globals, strings, heap, stack |
 
@@ -33,7 +33,7 @@ Which NE segment holds which subsystem, based on the functions named so far. Upd
 - `1068:45e4`: palette slots, near pointers; slot 0 is the active palette, 1..9 are loaded ones. Filled by `decoders_loadPalette` (`1040:09eb`).
 - `1068:460c`: 10 ADS slots, far pointers to `0x472`-byte records. Filled by `ads_loadAds` (`1048:0079`).
 - `1068:2634` / `1068:2638`: head of the TTM record list and the current TTM record. Filled by `ttm_loadTtm` (`1050:0177`), selected by `ttm_selectTtm` (`1050:03e2`).
-- `1068:263c`: head of the TTM tag record list (`0x3d`-byte near nodes). Filled by `ttm_addTagRecord` (`1050:042a`).
+- `1068:263c` / `1068:263e`: head of the TTM tag record (thread node) list (`0x3d`-byte near nodes) and the current node. Filled by `ttm_addTagRecord` (`1050:042a`).
 - `1048:0383`: ADS size table in the code segment, 35 opcodes with handler offsets at `+0x46`. Read by `ads_nextInstruction` (`1048:0303`).
 - `1068:260a`: the 2 ADS opcodes that name scenes (`0x2000`, `0x2005`). Read by `ads_sectionSceneIds` (`1048:040f`).
 - `1068:1e24`: function pointer to `decoders_bmpPixelBytes` (`1030:000e`), called by `decoders_loadBmp` (`1030:124a`).
@@ -48,5 +48,19 @@ Which NE segment holds which subsystem, based on the functions named so far. Upd
 - `1068:45a0`..`1068:45a4`: the three 640 × 480 offscreen bitmaps.
 - `1068:361a`: wipe counter, picks the next wipe in `gfx_wipeScreen` (`1020:0364`).
 - `1068:2e74`..`1068:2e77`: scale modes, all 3 at runtime, so every scaling branch is dead.
+- `1068:46d8`: TTM replay flag, a copy of the thread node's word `[7]`.
+- `1068:4644`: goto page (`0xFFFF` = none).
+- `1068:4642`: purge flag.
+- `1068:46e6`: delay set by the page (`0xFFFF` = none).
+- `1068:4646`: pending palette (near offset, segment at `4648`).
+- `1068:46d6` / `1068:4106`: mirror next load: set by `0x2012`, copied for the load.
+- `1068:27c0`: keep drawings (no `C → B` rect when set).
+- `1068:27c2`: page-call depth.
+- `1068:46e4` / `1068:46e2`: island offset x, y.
+- `1068:46e0` / `1068:46de`: page-call offset x, y.
+- `1068:4640`: screen loaded in this page.
+- `1068:30d2`: shared `JOHNWALK.BMP` bitmap list.
+- `1068:2638`: current TTM record.
+- The 11 opcode jump tables (linear-search `switch`es in the `1048` and `1058` code segments): `scripts/re/jump-tables.json`.
 
-Strings with no code reference: `JOHNWALK.BMP` and `Unable to load bitmap file %s` at `1068:27d2` and `1068:27df`. Code loads `JOHNWALK.BMP` from the copy at `1068:0355` instead.
+`JOHNWALK.BMP` at `1068:27d2` is the name `0xf02f` compares against (`1058:079f`), and `Unable to load bitmap file %s` at `1068:27df` its failure log (`1058:07c5`); both are referenced only from case code the export missed before chunk 5. Other code loads `JOHNWALK.BMP` from the copy at `1068:0355`.

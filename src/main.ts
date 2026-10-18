@@ -79,10 +79,9 @@ startLoop(
   () => {
     pumpMs();
 
-    // Advance the engine one mini-step for every mini * 20ms of accumulated
-    // wall-clock time.  Matches the DOS game loop: adsPlay() → delay(mini*20).
-    // rAF may call us more often than the engine needs; the accumulation gates
-    // the actual tick rate so animations don't run too fast.
+    // Advance the engine one mini-step for every mini ticks of accumulated
+    // wall-clock time (pacing: OQ-22). rAF may call us more often than the engine
+    // needs; the accumulation gates the actual tick rate.
     while (hasEnoughMs(pacedMini * msPerTick())) {
       consumeMs(pacedMini * msPerTick());
       storyTick(storyState, game);
