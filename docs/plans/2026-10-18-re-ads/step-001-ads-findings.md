@@ -29,7 +29,7 @@ This step writes no TypeScript. It is the reading step: the port in steps 3 and 
 
 ## Part A: Names and export
 
-- [ ] **Action 1: Add the names**
+- [x] **Action 1: Add the names**
 
 Insert these entries into `scripts/re/names.json` under `"functions"`, each at its address-sorted position (the file already has `1048:0044`, `0079`, `0303`, `040f`, `04fc`, `0b3e`, `196e`, `1acb`, `1e5a`; leave those as they are). Every entry has `"subsystem": "ads"`, `"status": "named"`, `"signature": null`, `"callingConvention": null`. Same shape as the existing entries:
 
@@ -86,12 +86,12 @@ Insert these entries into `scripts/re/names.json` under `"functions"`, each at i
 
 `1048:118a` is not a function in the export yet (it is called from `1048:1853`). `ApplyNames.java` disassembles and creates a function at any named address that has none.
 
-- [ ] **Action 2: Regenerate the function map**
+- [x] **Action 2: Regenerate the function map**
 
 Run: `node scripts/re/function-map.mjs`
 Expected: exits 0 and rewrites `docs/re/function-map.md`. An "unsorted" error means an entry is out of address order; move it.
 
-- [ ] **Action 3: Rebuild the export**
+- [x] **Action 3: Rebuild the export**
 
 Run: `scripts/re/ghidra-import.sh`
 Expected: ends with `export written to .../re/out`.
@@ -99,7 +99,7 @@ Expected: ends with `export written to .../re/out`.
 Run: `ls re/out/functions/1048_118a_ads_whileEnd.c re/out/functions/1048_1519_ads_runInstruction.asm`
 Expected: both files exist. If `1048_118a` is missing, read `re/ghidra-import.log` for `JCR_FAIL`.
 
-- [ ] **Action 4: Commit**
+- [x] **Action 4: Commit**
 
 ```bash
 git add scripts/re/names.json docs/re/function-map.md
@@ -110,7 +110,7 @@ git commit -m "docs(re): name every ADS function"
 
 Read every in-scope function's `.c` file, and its `.asm` wherever the pseudo-C is unclear (signed versus unsigned compares, far pointer arithmetic, the switch cases; case addresses map to opcodes in `re/out/jump-tables.tsv`). For each bullet of the overview's `Binary facts`, decide: confirmed, or corrected. Keep a list of corrections; they go in the commit message and into `ads.md`.
 
-- [ ] **Action 5: Confirm the details most likely to be wrong**
+- [x] **Action 5: Confirm the details most likely to be wrong**
 
 Check each in the assembly and note the answer:
 
@@ -124,7 +124,7 @@ Check each in the assembly and note the answer:
 8. `1048:106b`: confirm that only `0x1310`..`0x13c1` count as nested blocks (the table at `1048:1142`), and that the nested condition chain goes through `1048:1223`.
 9. `1018:06bf`: confirm that a walk entry (byte `+0x0f` of the queue entry is `-1`) does not reach `1048:1acb`.
 
-- [ ] **Action 6: Check the data against the edge cases**
+- [x] **Action 6: Check the data against the edge cases**
 
 Write `re/scratch/ads/scan.py` (gitignored scratch):
 
@@ -164,7 +164,7 @@ Expected: no "as an instruction" line (so `1048:0c30` always returns the section
 
 ## Part C: Write the findings
 
-- [ ] **Action 7: Write `docs/re/ads.md`**
+- [x] **Action 7: Write `docs/re/ads.md`**
 
 Create the file with this header, then the sections below in this order. One claim per bullet, each starting with its address, in our own words. Follow `docs/re/ttm.md` for tone and density.
 
@@ -206,11 +206,11 @@ One row per function of the overview's `Function scope`, in address order. For n
 
 Leave `Emulated` and `Past fixes reviewed` out; steps 2 and 6 add them.
 
-- [ ] **Action 8: Update the segment overview**
+- [x] **Action 8: Update the segment overview**
 
 In `docs/re/segments.md`, set the `1048` row (Code10) to describe it as the ADS loader, section scripts, and tick. Under "Tables found", add one line each for `1068:460c` (ADS slots), `1068:2608` (current slot), `1068:2606` (current section), `1068:4608` (end-of-block counter, high word), `1068:4634` (condition result), `1068:2e70` (clock), and the four `1048` switch tables (`1048:0383`, `1048:1142`, `1048:14bd`, `1048:1875`).
 
-- [ ] **Action 9: Commit**
+- [x] **Action 9: Commit**
 
 ```bash
 git add docs/re/ads.md docs/re/segments.md
@@ -221,7 +221,7 @@ If Action 5 or 6 corrected a fact of the overview, list each correction in the c
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

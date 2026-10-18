@@ -1604,7 +1604,7 @@
       "name": "ads_restartAllSections",
       "subsystem": "ads",
       "status": "named",
-      "note": "State 3 for every section of a slot; unreferenced",
+      "note": "State 3 through 1048:0805 for the sections whose tags are 1 to the slot's section count (numbers passed as tags); unreferenced",
       "signature": null,
       "callingConvention": null
     },
@@ -1612,7 +1612,7 @@
       "name": "ads_startAllSections",
       "subsystem": "ads",
       "status": "named",
-      "note": "State 4 for every section of a slot; unreferenced",
+      "note": "State 4 through 1048:0805 for the sections whose tags are 1 to the slot's section count (numbers passed as tags); unreferenced",
       "signature": null,
       "callingConvention": null
     },
@@ -1620,7 +1620,7 @@
       "name": "ads_hideAllSections",
       "subsystem": "ads",
       "status": "named",
-      "note": "State 6 for every section; unreferenced",
+      "note": "State 6 through 1048:08b4 (current slot) for the sections whose tags are 1 to slot n's section count; unreferenced",
       "signature": null,
       "callingConvention": null
     },
@@ -1628,7 +1628,7 @@
       "name": "ads_freezeAllSections",
       "subsystem": "ads",
       "status": "named",
-      "note": "State 5 for every section; unreferenced",
+      "note": "State 5 through 1048:08b4 (current slot) for the sections whose tags are 1 to slot n's section count; unreferenced",
       "signature": null,
       "callingConvention": null
     },
@@ -1636,7 +1636,7 @@
       "name": "ads_resetAllSections",
       "subsystem": "ads",
       "status": "named",
-      "note": "State 8 for every section of a slot, then resets every node; unreferenced",
+      "note": "State 8 through 1048:08b4 for the sections whose tags are 1 to the slot's section count, then resets every node of that slot; unreferenced",
       "signature": null,
       "callingConvention": null
     },
