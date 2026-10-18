@@ -28,7 +28,7 @@ The trace format is in the overview (`Trace format`). If `docs/re/ads.md` says s
 
 ## Part A: The tick
 
-- [ ] **Action 1: Write the failing tick tests**
+- [x] **Action 1: Write the failing tick tests**
 
 Create `src/ads/tick.test.ts`:
 
@@ -193,7 +193,7 @@ How the expectations follow from the overview's `Tick` and `Page advance` facts:
 Run: `fnm use`, then `pnpm exec vitest run src/ads/tick.test.ts`
 Expected: FAIL, cannot resolve `./tick.js`.
 
-- [ ] **Action 2: Write the tick**
+- [x] **Action 2: Write the tick**
 
 Create `src/ads/tick.ts`:
 
@@ -328,7 +328,7 @@ function playNode(env: TtmEnv, node: AdsNode, now: number): boolean {
 
 `runTtmPage` takes a `TtmThread`; an `AdsNode` is one. The node's `replay` flag is the original's `[7]`, which the page runner reads to skip loads and sounds on replays.
 
-- [ ] **Action 3: Run the tick tests**
+- [x] **Action 3: Run the tick tests**
 
 Run: `pnpm exec vitest run src/ads/tick.test.ts`
 Expected: all PASS.
@@ -336,7 +336,7 @@ Expected: all PASS.
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 4: Commit**
+- [x] **Action 4: Commit**
 
 ```bash
 git add src/ads/tick.ts src/ads/tick.test.ts
@@ -345,7 +345,7 @@ git commit -m "feat(ads): port the original ADS tick, page advance, start, and b
 
 ## Part B: Equal to the original on the corpus
 
-- [ ] **Action 5: Export the trace island offsets**
+- [x] **Action 5: Export the trace island offsets**
 
 In `src/testing/ttm-recorder.ts`, change
 
@@ -361,7 +361,7 @@ export const TRACE_ISLAND_X = 7;
 export const TRACE_ISLAND_Y = 5;
 ```
 
-- [ ] **Action 6: Write the trace builder**
+- [x] **Action 6: Write the trace builder**
 
 Check the tick limit the Python harness ended up with: `rg -n "^TICK_LIMIT" scripts/re/unicorn/original_ads.py`. Use the same number below (2000 unless step 2 lowered it).
 
@@ -434,7 +434,7 @@ function nodeValues(node: AdsNode): number[] {
 
 The ADS random picks call `device.random()`, so they share the recorder's call counter with the TTM `0x2022` delays, as both share `1018:1e60` in the original.
 
-- [ ] **Action 7: Write the corpus comparison**
+- [x] **Action 7: Write the corpus comparison**
 
 Create `src/ads/tick.data.test.ts`:
 
@@ -473,7 +473,7 @@ describe.skipIf(!hasFixture('ads/traces.tsv'))('ADS tick matches the original SC
 
 If an ADS has two sections with the same tag, the key list will not match (both the dump and `1048:19e7` only ever start the first). In that case, say so in `docs/re/ads.md` (`Sections`) and compare only the first.
 
-- [ ] **Action 8: Run it and fix every difference**
+- [x] **Action 8: Run it and fix every difference**
 
 Run: `pnpm exec vitest run src/ads/tick.data.test.ts`
 Expected: PASS. It may take minutes.
@@ -489,7 +489,7 @@ When it fails, each entry names the section, the first differing row, ours, and 
 Run: `pnpm test`
 Expected: all PASS.
 
-- [ ] **Action 9: Commit**
+- [x] **Action 9: Commit**
 
 ```bash
 git add src/testing/ttm-recorder.ts src/testing/ads-trace.ts src/ads/tick.data.test.ts src/ads
@@ -498,11 +498,11 @@ git commit -m "test(ads): the ADS tick matches the original on every section"
 
 ## Part C: Docs
 
-- [ ] **Action 10: Mark what is now verified**
+- [x] **Action 10: Mark what is now verified**
 
 In `scripts/re/names.json`, set `"status": "verified"` for every function whose port is now checked by the corpus trace or by unit tests against the findings: `1048:0079`, `040f`, `0766`, `0805`, `0874`, `0b3e`, `0bc5`, `0bf4`, `0c30`, `0c8d`, `0cda`, `0db6`, `0e2e`, `0e6e`, `0e9b`, `0ec8`, `0ef2`, `0f8c`, `106b`, `118a`, `11db`, `1223`, `1519`, `1925`, `196e`, `19e7`, `1acb`. Leave the others for step 6. Then run `node scripts/re/function-map.mjs`.
 
-- [ ] **Action 11: Update `docs/re/ads.md`**
+- [x] **Action 11: Update `docs/re/ads.md`**
 
 In `Side-by-side checklist`, replace the rows of the functions this step ported (status `fixed`, `Ours` with `file:line` from `rg -n "function <name>" src/ads/tick.ts`):
 
@@ -515,7 +515,7 @@ In `Side-by-side checklist`, replace the rows of the functions this step ported 
 
 In `Emulated`, add one bullet: `src/ads/tick.data.test.ts` runs `traceAdsSection` (`src/testing/ads-trace.ts`) on every section and finds no difference with `re/fixtures/ads/traces.tsv`, plus a sentence for each fix Action 8 needed (what was wrong, the address that settled it).
 
-- [ ] **Action 12: Commit**
+- [x] **Action 12: Commit**
 
 ```bash
 git add scripts/re/names.json docs/re/function-map.md docs/re/ads.md docs/re/open-questions.md
@@ -524,7 +524,7 @@ git commit -m "docs(re): ADS tick verified against the original"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

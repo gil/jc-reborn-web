@@ -187,6 +187,7 @@ No call in `re/out/index.tsv` and no relocation in `re/out/relocations.tsv` reac
 - `ACTIVITY.ADS`, tag 6: the last block is a random pick between `0x2005 4 22` (weight 2) and `0x2005 4 21` (weight 1), and only a playing 4:21 reaches the `0xF010 0xFFFF` that stops the section. With the trace's random source (`1048:0cda`) every pick is 4:22, which restarts the cycle, so the section stays in state 1 for all 2000 ticks. Nothing else in the section stops it.
 - `STAND.ADS`, tag 14: ends after one tick. Its pass starts 1:42 and stops the section (state 2) in the same pass; 1:42's tag page ends with a purge and no delay, so `1048:1acb` makes it mode 4 at once and `1048:0766` returns 0 on tick 0.
 - No run faulted or reached an unstubbed import.
+- `src/ads/tick.data.test.ts` runs `traceAdsSection` (`src/testing/ads-trace.ts`) on every section and finds no difference with `re/fixtures/ads/traces.tsv`: all 66 sections, every row. The port matched on the first run, so no fix was needed. Changing `1048:196e`'s due check from `<` to `<=` breaks 64 of the 66 sections, so the comparison does catch timing errors.
 
 ## Side-by-side checklist
 
@@ -199,9 +200,9 @@ No call in `re/out/index.tsv` and no relocation in `re/out/relocations.tsv` reac
 | `1048:040f` | `ads_sectionSceneIds` | `src/ads/state.ts:155` `sectionScenes` | fixed |
 | `1048:04fc` | `ads_indexSections` | `src/decode/ads-bytecode.ts:18` (`indexAdsSections`); the scheduler still scans on its own: OQ-11 | open |
 | `1048:067f` | `ads_unload` | none (the scheduler state is dropped with the scene) | open |
-| `1048:0766` | `ads_sectionBusy` | `src/ads/scheduler.ts:462` `adsActiveThreadCount` (any running thread): OQ-22 | open |
-| `1048:0805` | `ads_setSectionState` | none (no section states): OQ-22 | open |
-| `1048:0874` | `ads_startSection` | `src/ads/scheduler.ts:140` (`adsPlayChunk` from the tag once): OQ-22 | open |
+| `1048:0766` | `ads_sectionBusy` | `src/ads/tick.ts:21` `adsSectionBusy` | fixed |
+| `1048:0805` | `ads_setSectionState` | `src/ads/tick.ts:13` `adsStartSection` | fixed |
+| `1048:0874` | `ads_startSection` | `src/ads/tick.ts:13` `adsStartSection` | fixed |
 | `1048:0894` | `ads_resumeSection` | none (unreferenced) | match |
 | `1048:08b4` | `ads_setSectionStateUnlessFresh` | none (only unreferenced callers) | match |
 | `1048:0920` | `ads_hideSection` | none (unreferenced) | match |
@@ -231,9 +232,9 @@ No call in `re/out/index.tsv` and no relocation in `re/out/relocations.tsv` reac
 | `1048:1223` | `ads_evalConditions` | `src/ads/script.ts:179` `evalConditions`, `src/ads/script.ts:208` `conditionHolds`, `src/ads/script.ts:228` `storyValueHolds` | fixed |
 | `1048:1519` | `ads_runInstruction` | `src/ads/script.ts:54` `runInstruction`, `src/ads/script.ts:125` `ifBlock`, `src/ads/script.ts:132` `whileBlock`, `src/ads/script.ts:304` `startSection` | fixed |
 | `1048:1925` | `ads_runBlock` | `src/ads/script.ts:41` `runBlock` | fixed |
-| `1048:196e` | `ads_advancePage` | `src/ads/scheduler.ts:455` `advancePage` (countdown timers): OQ-22 | open |
+| `1048:196e` | `ads_advancePage` | `src/ads/tick.ts:34` `advancePage` | fixed |
 | `1048:19e7` | `ads_sectionIndex` | `src/ads/state.ts:142` `sectionIndex` | fixed |
 | `1048:1a4b` | `ads_nextSectionTag` | none (unreferenced) | match |
 | `1048:1aaf` | `ads_firstSectionTag` | none (unreferenced) | match |
-| `1048:1acb` | `ads_tick` | `src/ads/scheduler.ts:355` `adsTick`, `src/ads/scheduler.ts:430` `runThread`: OQ-2, OQ-3, OQ-22 | open |
+| `1048:1acb` | `ads_tick` | `src/ads/tick.ts:49` `adsTick`, `src/ads/tick.ts:68` `runSection`, `src/ads/tick.ts:82` `playNode` | fixed |
 | `1048:1e5a` | `ads_redrawThreads` | none (unreferenced) | match |

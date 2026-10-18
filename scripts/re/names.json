@@ -1515,7 +1515,7 @@
     "1048:040f": {
       "name": "ads_sectionSceneIds",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Walks one ADS section to its 0xFFFF and returns a zero-terminated near list of the distinct tag nodes (1048:0bf4) named by its 0x2000/0x2005 instructions, or 0 when there are none",
       "signature": null,
       "callingConvention": null
@@ -1539,7 +1539,7 @@
     "1048:0766": {
       "name": "ads_sectionBusy",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Story busy check for a section tag: 1 while the section runs or starts, or while a node of its scene list plays without a self-goto",
       "signature": null,
       "callingConvention": null
@@ -1547,7 +1547,7 @@
     "1048:0805": {
       "name": "ads_setSectionState",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Sets a section's state, keeping the fresh bit 8, and clears its resume pointer",
       "signature": null,
       "callingConvention": null
@@ -1555,7 +1555,7 @@
     "1048:0874": {
       "name": "ads_startSection",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Story start of a section: state 3 (reset its nodes, then run) through 1048:0805",
       "signature": null,
       "callingConvention": null
@@ -1643,7 +1643,7 @@
     "1048:0b3e": {
       "name": "ads_resetThread",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Resets a thread node: palette, BMP and zone slots 0, page = tag page, no next page, colors 15, delay 0, clip on over the whole screen",
       "signature": null,
       "callingConvention": null
@@ -1651,7 +1651,7 @@
     "1048:0bc5": {
       "name": "ads_resetAllNodes",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Resets every node of the current ADS (1048:0b3e)",
       "signature": null,
       "callingConvention": null
@@ -1659,7 +1659,7 @@
     "1048:0bf4": {
       "name": "ads_findNode",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "First node of the current ADS with a TTM id and tag, or 0",
       "signature": null,
       "callingConvention": null
@@ -1667,7 +1667,7 @@
     "1048:0c30": {
       "name": "ads_sectionResumePoint",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "The section start, or just past the first word 0x0005 met before 0xFFFF",
       "signature": null,
       "callingConvention": null
@@ -1675,7 +1675,7 @@
     "1048:0c8d": {
       "name": "ads_randomWeight",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Weight of an instruction in a random block: word +8 for 0x2000/0x2005, +2 for 0x3020, +6 otherwise",
       "signature": null,
       "callingConvention": null
@@ -1683,7 +1683,7 @@
     "1048:0cda": {
       "name": "ads_randomBlock",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Runs one weighted pick (1018:1e60) among the instructions up to 0x30FF, unless it is 0x3020; returns the pointer past 0x30FF",
       "signature": null,
       "callingConvention": null
@@ -1691,7 +1691,7 @@
     "1048:0db6": {
       "name": "ads_addScene",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "0x2005: sets a node's mode from its count argument (0 once, n > 0 n times, n < 0 until now - n) and counts the play",
       "signature": null,
       "callingConvention": null
@@ -1699,7 +1699,7 @@
     "1048:0e2e": {
       "name": "ads_restartScene",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "0x2000: page = tag page, then 1048:0db6",
       "signature": null,
       "callingConvention": null
@@ -1707,7 +1707,7 @@
     "1048:0e6e": {
       "name": "ads_holdScene",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "0x2015: node mode 5 (replays its page, never advances)",
       "signature": null,
       "callingConvention": null
@@ -1715,7 +1715,7 @@
     "1048:0e9b": {
       "name": "ads_stopScene",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "0x2010: node mode 0",
       "signature": null,
       "callingConvention": null
@@ -1723,7 +1723,7 @@
     "1048:0ec8": {
       "name": "ads_resetScene",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "0x2020: resets the node (1048:0b3e)",
       "signature": null,
       "callingConvention": null
@@ -1731,7 +1731,7 @@
     "1048:0ef2": {
       "name": "ads_drawFirst",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "0x4010: moves a node to the head of the node list",
       "signature": null,
       "callingConvention": null
@@ -1739,7 +1739,7 @@
     "1048:0f8c": {
       "name": "ads_drawLast",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "0x4000: moves a node to the tail of the node list",
       "signature": null,
       "callingConvention": null
@@ -1747,7 +1747,7 @@
     "1048:106b": {
       "name": "ads_skipBlock",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Skips forward to the 0x1500 or 0x1510 that ends a block, stepping over nested 0x13xx blocks; 0 at 0xFFFF or a 0 word",
       "signature": null,
       "callingConvention": null
@@ -1755,7 +1755,7 @@
     "1048:118a": {
       "name": "ads_whileEnd",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Scans forward to the 0x1520 that ends a while block; 0 at 0xFFFF or a 0 word",
       "signature": null,
       "callingConvention": null
@@ -1763,7 +1763,7 @@
     "1048:11db": {
       "name": "ads_skipFalseBlock",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Skips a block whose condition is false and runs its else part when it has one",
       "signature": null,
       "callingConvention": null
@@ -1771,7 +1771,7 @@
     "1048:1223": {
       "name": "ads_evalConditions",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Evaluates a chain of conditions joined by 0x1420 (and) and 0x1430 (or) into 1068:4634; returns the pointer after the chain",
       "signature": null,
       "callingConvention": null
@@ -1779,7 +1779,7 @@
     "1048:1519": {
       "name": "ads_runInstruction",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Runs one ADS instruction (44-entry table at 1048:1875); returns the next pointer, or 0 to end the block",
       "signature": null,
       "callingConvention": null
@@ -1787,7 +1787,7 @@
     "1048:1925": {
       "name": "ads_runBlock",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Runs instructions until 0xFFFF, a null pointer, or an end-of-block marker; returns where it stopped",
       "signature": null,
       "callingConvention": null
@@ -1795,7 +1795,7 @@
     "1048:196e": {
       "name": "ads_advancePage",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "When the thread's delay is due (or 0): next due time = now + delay, clears the ran flag, moves to the next page or the goto page; returns 1, else 0",
       "signature": null,
       "callingConvention": null
@@ -1803,7 +1803,7 @@
     "1048:19e7": {
       "name": "ads_sectionIndex",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Index of the section of the current ADS whose tag word is the argument, or -1",
       "signature": null,
       "callingConvention": null
@@ -1827,7 +1827,7 @@
     "1048:1acb": {
       "name": "ads_tick",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "One ADS tick: runs every active thread's current page, applies delay, goto and purge, then activates the pending palette and resets the clip",
       "signature": null,
       "callingConvention": null
