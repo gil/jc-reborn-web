@@ -12,6 +12,7 @@ describe('Display', () => {
     const display = new Display();
     expect([display.source, display.target, display.screenIsB]).toEqual([SURFACE_A, SURFACE_A, false]);
     expect(display.surfaces.every((surface) => surface.width === 640 && surface.height === 480 && count(surface, 0) === 640 * 480)).toBe(true);
+    expect(count(display.window, 0)).toBe(640 * 480);
   });
 
   it('copies whole 8-pixel columns and always adds one more column', () => {
@@ -35,7 +36,7 @@ describe('Display', () => {
     expect(count(display.surfaces[SURFACE_A]!, 7)).toBe(0);
   });
 
-  it('skips copies into A while B is the screen', () => {
+  it('skips copies into A while B is the screen, and presents them from the source', () => {
     // SCRANTIC 1038:06ce 1038:07e8
     const display = new Display();
     display.screenIsB = true;
@@ -43,7 +44,33 @@ describe('Display', () => {
     display.source = SURFACE_B;
     display.copyRect(0, 0, 8, 8);
     expect(count(display.surfaces[SURFACE_A]!, 7)).toBe(0);
-    expect(display.shown()).toBe(display.surfaces[SURFACE_B]);
+    expect(count(display.window, 7)).toBe(128);
+    expect(display.shown()).toBe(display.window);
+  });
+
+  it('presents copies into A from A, and nothing for other targets', () => {
+    // SCRANTIC 1038:06ce 1038:07e8
+    const display = new Display();
+    display.surfaces[SURFACE_B]!.pixels.fill(7);
+    display.source = SURFACE_B;
+    display.copyRect(3, 0, 5, 1);
+    expect(count(display.window, 7)).toBe(16);
+    display.target = SURFACE_C;
+    display.copyRect(0, 10, 8, 1);
+    expect(count(display.window, 7)).toBe(16);
+  });
+
+  it('presents restored rects and screens drawn into A', () => {
+    // SCRANTIC 1030:0250 1040:0286 1038:07e8
+    const display = new Display();
+    display.blitScreen({ width: 2, height: 1, pixels: Uint8Array.of(5, 3) }, 4, 4);
+    expect([at(display.window, 4, 4), at(display.window, 5, 4)]).toEqual([5, 3]);
+    display.surfaces[SURFACE_C]!.pixels[0] = 9;
+    display.source = SURFACE_C;
+    display.saveRect(1, 0, 0, 1, 1);
+    display.source = SURFACE_A;
+    display.restoreRect(1, 20, 20, 1, 1);
+    expect(at(display.window, 20, 20)).toBe(9);
   });
 
   it('saves a rect from the source and restores it into the target', () => {

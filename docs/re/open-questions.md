@@ -120,7 +120,8 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **What it does:** the original copies only the dirty rect of each drawing call to the window, so a wrong rect leaves part of a line on screen later than the rest, or presents too much.
 - **Ours:** the browser shows the whole surface every frame.
 - **Resolve in:** chunk 5, when the model is wired in: decide whether any visible difference is worth modeling
-- **Status:** open
+- **Resolution:** `Display.window` is painted only by presents, rect by rect, from the same source the original uses (`src/gfx/gdi/display.ts`, `present`). Drawing the window whole each frame shows the same picture, so nothing visible is left to model. A wrong dirty rect now shows on screen exactly as it would in the original.
+- **Status:** resolved (chunk 5)
 
 ### OQ-18: Where GDI puts a mirrored or flipped sprite
 

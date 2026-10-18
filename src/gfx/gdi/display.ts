@@ -28,6 +28,7 @@ interface SavedRect {
 
 export class Display {
   readonly surfaces: Surface[] = [makeSurface(), makeSurface(), makeSurface()];
+  readonly window = makeSurface();
   readonly dirty = new DirtyLists(SCREEN_W, SCREEN_H);
   source = SURFACE_A;
   target = SURFACE_A;
@@ -35,7 +36,7 @@ export class Display {
   private readonly saved = new Map<number, SavedRect>();
 
   shown(): Surface {
-    return this.surfaces[this.screenIsB ? SURFACE_B : SURFACE_A]!;
+    return this.window;
   }
 
   copyRect(x: number, y: number, w: number, h: number): void {
@@ -43,8 +44,10 @@ export class Display {
     w += x % 8;
     x -= x % 8;
     w += 8 - (w % 8);
-    if (this.screenIsB && this.target === SURFACE_A) return;
-    copyPixels(this.surfaces[this.source]!, x, y, this.surfaces[this.target]!, x, y, w, h);
+    if (!(this.screenIsB && this.target === SURFACE_A)) {
+      copyPixels(this.surfaces[this.source]!, x, y, this.surfaces[this.target]!, x, y, w, h);
+    }
+    this.present(x, y, w, h);
   }
 
   saveRect(id: number, x: number, y: number, w: number, h: number): void {
@@ -55,11 +58,14 @@ export class Display {
 
   restoreRect(id: number, x: number, y: number, w: number, h: number): void {
     const rect = this.saved.get(id);
-    if (rect) copyPixels(rect, 0, 0, this.surfaces[this.target]!, x, y, w, h);
+    if (!rect) return;
+    copyPixels(rect, 0, 0, this.surfaces[this.target]!, x, y, w, h);
+    this.present(x, y, w, h);
   }
 
   blitScreen(image: Surface, x: number, y: number): void {
     copyPixels(image, 0, 0, this.surfaces[this.target]!, x, y, image.width, image.height);
+    this.present(x, y, image.width, image.height);
   }
 
   restorePass(which: number): void {
@@ -76,6 +82,12 @@ export class Display {
     }
     this.source = source;
     this.target = target;
+  }
+
+  private present(x: number, y: number, w: number, h: number): void {
+    if (this.target !== SURFACE_A) return;
+    const from = this.surfaces[this.screenIsB ? this.source : SURFACE_A]!;
+    copyPixels(from, x, y, this.window, x, y, w, h);
   }
 }
 
