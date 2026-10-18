@@ -28,7 +28,7 @@ The tracer runs the original page runner with every drawing, loading, sound, and
 
 ## Part A: The tracer
 
-- [ ] **Action 1: Write the failing test**
+- [x] **Action 1: Write the failing test**
 
 Create `scripts/re/unicorn/test_original_ttm.py`:
 
@@ -112,12 +112,12 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Action 2: Run it to make sure it fails**
+- [x] **Action 2: Run it to make sure it fails**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_ttm.py' -v`
 Expected: `ModuleNotFoundError: No module named 'original_ttm'`.
 
-- [ ] **Action 3: Write the tracer**
+- [x] **Action 3: Write the tracer**
 
 Create `scripts/re/unicorn/original_ttm.py`:
 
@@ -452,7 +452,7 @@ class TtmTracer:
 
 If an address in `_install_hooks` turns out (from step 2) to take its arguments in another order, fix the handler, not the trace format: the format describes the callee's meaning, not its stack layout.
 
-- [ ] **Action 4: Run the test**
+- [x] **Action 4: Run the test**
 
 Run: `re/.venv/bin/python -I -m py_compile scripts/re/unicorn/original_ttm.py`
 Expected: no output.
@@ -460,7 +460,7 @@ Expected: no output.
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_ttm.py' -v`
 Expected: 4 tests pass. If `test_draws_a_line...` differs, compare the row with the overview's facts and step 2's findings before touching the expectation: the expectation was derived by hand from `1058:0608` (island offset on both corners), `1058:119e` (dirty `min x, min y, abs(dx) + 8, abs(dy) + 2`), and `1050:0a85`.
 
-- [ ] **Action 5: Commit**
+- [x] **Action 5: Commit**
 
 ```bash
 git add scripts/re/unicorn/original_ttm.py scripts/re/unicorn/test_original_ttm.py
