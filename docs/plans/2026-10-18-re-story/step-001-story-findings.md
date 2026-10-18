@@ -30,7 +30,7 @@ This step writes no TypeScript. It is the reading step for the story, timing, se
 
 ## Part A: Names and export
 
-- [ ] **Action 1: Add and rename the names**
+- [x] **Action 1: Add and rename the names**
 
 Insert these entries into `scripts/re/names.json` under `"functions"`, each at its address-sorted position. Every new entry has `"status": "named"`, `"signature": null`, `"callingConvention": null`, and the subsystem of its name prefix. Same shape as the existing entries:
 
@@ -106,12 +106,12 @@ Rename these existing entries (keep their status; rewrite the note in our words 
 | `1010:0136` | `story_drawIsland` | keep |
 | `1008:15c8` | `story_idleTick` | keep |
 
-- [ ] **Action 2: Regenerate the function map**
+- [x] **Action 2: Regenerate the function map**
 
 Run: `node scripts/re/function-map.mjs`
 Expected: exits 0 and rewrites `docs/re/function-map.md`. An "unsorted" error means an entry is out of address order; move it.
 
-- [ ] **Action 3: Rebuild the export**
+- [x] **Action 3: Rebuild the export**
 
 Run: `scripts/re/ghidra-import.sh`
 Expected: ends with `export written to .../re/out`.
@@ -119,7 +119,7 @@ Expected: ends with `export written to .../re/out`.
 Run: `ls re/out/functions/1018_0540_story_newSequence.c re/out/functions/1010_0e74_story_drawSurf.asm re/out/functions/1008_16c2_platform_clockTick.c`
 Expected: all three exist.
 
-- [ ] **Action 4: Commit**
+- [x] **Action 4: Commit**
 
 ```bash
 git add scripts/re/names.json docs/re/function-map.md
@@ -130,7 +130,7 @@ git commit -m "docs(re): name the story, island, timing, and settings functions"
 
 Read every in-scope function's `.c` file of segments `1000`, `1008`, `1018`, `1020`, `1040`, and its `.asm` wherever the pseudo-C is unclear (signed versus unsigned compares, byte versus word reads, which local is which). For each bullet of the overview's `Binary facts` sections `Timing and the main loop`, `Random numbers`, `Settings`, `Scene table`, `Sequence building`, `The story step`, decide: confirmed, or corrected. Keep a list of corrections; they go in the commit message and into `story.md`.
 
-- [ ] **Action 5: Confirm the details most likely to be wrong**
+- [x] **Action 5: Confirm the details most likely to be wrong**
 
 Check each in the assembly and note the answer:
 
@@ -145,7 +145,7 @@ Check each in the assembly and note the answer:
 9. `1008:0fcd`: the `SetTimer` interval (`0x32`), and that the `WM_TIMER` branch runs the idle callback once and then loops on `PeekMessage`.
 10. `1018:1ef5`: the multiply constant (`0x28f`) and that the compare is `JBE` (unsigned, `t > r` returns).
 
-- [ ] **Action 6: Dump the scene table and globals for reading**
+- [x] **Action 6: Dump the scene table and globals for reading**
 
 Write `re/scratch/story/dump.py` (gitignored scratch):
 
@@ -173,7 +173,7 @@ for name, at in (("settings 00b6..00bf", 0xB6), ("days 2d94..2d9b", 0x2D94), ("r
 Run: `re/.venv/bin/python -I re/scratch/story/dump.py`
 Expected: 80 entries (indices 0..79), entry 0 all zero, entries 54..67 with ADS id -1. Use the output for the `Scene table` section of `story.md` (describe the columns and the groups; do not paste the 80 rows).
 
-- [ ] **Action 7: Check the data against the story rules**
+- [x] **Action 7: Check the data against the story rules**
 
 Extend the scratch script (or write `re/scratch/story/check.py`) to answer, and note the answers for `story.md`:
 
@@ -184,7 +184,7 @@ Extend the scratch script (or write `re/scratch/story/check.py`) to answer, and 
 
 ## Part C: Write the findings
 
-- [ ] **Action 8: Write `docs/re/story.md`**
+- [x] **Action 8: Write `docs/re/story.md`**
 
 Create the file with this header, then the sections below in this order. One claim per bullet, each starting with its address, in our own words. Follow `docs/re/ads.md` for tone and density.
 
@@ -223,7 +223,7 @@ One row per function of the overview's `Function scope` in segments `1000`, `100
 
 Leave `Emulated` and `Past fixes reviewed` out; steps 2 and 8 add them.
 
-- [ ] **Action 9: Log OQ-35**
+- [x] **Action 9: Log OQ-35**
 
 Add to `docs/re/open-questions.md`, section `Not reviewed on purpose`, after OQ-31:
 
@@ -236,11 +236,11 @@ Add to `docs/re/open-questions.md`, section `Not reviewed on purpose`, after OQ-
 - **Status:** open, by choice
 ```
 
-- [ ] **Action 10: Update the segment overview**
+- [x] **Action 10: Update the segment overview**
 
 In `docs/re/segments.md`: set the `1008` row to window procedure, timing, settings, startup; the `1010` row to the island (drawing, surf, raft, holiday, clouds, ocean waves); the `1018` row to the story step and sequence builder (`1018:0000`..`1018:0eb5`), the resource layer (unchanged text), and the random generator (`1018:1e60`..`1018:1ef5`); the `1020` row to add the password helpers; the `1040` row to add the timer callbacks (`1040:076a`..`1040:089a`). Under "Tables found", add one line each for `1068:1756` (scene table), `1068:30f2` / `1068:30f0` (queue and position), `1068:1ce4` (random indices and table), `1068:00b6`..`00be` (settings), `1068:2d94`..`2d9b` (day counters), `1068:45ac` (timer slots), `1068:30e2`/`30de`/`30e0`/`30dc` (Johnny's spot and heading, walk target), `1068:30b8` (slot), `1068:30ba` (holiday), `1068:334e` (current ADS id), `1068:30bc` (speed, with Action 5 item 6).
 
-- [ ] **Action 11: Commit**
+- [x] **Action 11: Commit**
 
 ```bash
 git add docs/re/story.md docs/re/segments.md docs/re/open-questions.md scripts/re/names.json docs/re/function-map.md
@@ -251,7 +251,7 @@ If Action 5 or 7 corrected a fact of the overview, list each correction in the c
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

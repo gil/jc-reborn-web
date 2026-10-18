@@ -41,7 +41,7 @@ Functions found by Ghidra: 597. Verified: 201. Named: 122. Unknown: 274.
 | `1008:0221` | `platform_defScreenSaverProc` | named | Default message handling: mouse move over 3 px, clicks, key down, or deactivation request exit; WM_DESTROY posts quit; then DefWindowProc |
 | `1008:033e` | `platform_alwaysTrue` | named | Returns 1; asked by WinMain and the exit request |
 | `1008:034f` | `platform_configureDialog` | named | Exported dialog procedure of the settings dialog (/c): loads and saves the settings |
-| `1008:0517` | `platform_configureDialogItems` | named | Helper of the settings dialog; read it and replace this note with what it does |
+| `1008:0517` | `platform_configureDialogItems` | named | Draws the owner-drawn up and down buttons of the settings dialog: 3D frame in system colors, an arrow polygon, a focus rect |
 | `1008:0a2d` | `platform_changePasswordDialog` | named | Exported dialog procedure that sets a new password |
 | `1008:0c5c` | `platform_loadSettings` | named | Reads all SCRANTIC.INI keys (Background, Clouds, Waves, Sounds, NumDays, CurrentYear, StartTime, ...) into globals |
 | `1008:0dc8` | `platform_saveSettings` | named | Writes the same SCRANTIC.INI keys back with WritePrivateProfileString |
@@ -70,7 +70,7 @@ Functions found by Ghidra: 597. Verified: 201. Named: 122. Unknown: 274.
 | `1040:079e` | `platform_clearTimers` | named | Empties the five timer callback slots and clears the base tick |
 | `1040:07e6` | `platform_addTimerCallback` | named | Registers a far callback in a 5-slot table with an interval in base ticks |
 | `1040:085a` | `platform_removeTimerCallback` | named | Empties one timer callback slot 1..4 |
-| `1040:089a` | `platform_runTimerCallbacks` | named | Fires every due timer callback and advances the base tick; after a pause only resets the slot times |
+| `1040:089a` | `platform_runTimerCallbacks` | named | Fires every due timer callback once per missed interval and advances the base tick; the first call (1068:257c set in the data segment) only resets the slot times |
 | `1060:0a23` | `platform_globalAllocLock` | named | GlobalAlloc with size in DX:AX and default flags plus GMEM_MOVEABLE, then GlobalLock |
 | `1060:0a53` | `platform_globalUnlockFree` | named | GlobalHandle on a far pointer, then GlobalUnlock and GlobalFree |
 
@@ -328,7 +328,7 @@ Functions found by Ghidra: 597. Verified: 201. Named: 122. Unknown: 274.
 
 | Address | Name | Status | Note |
 | --- | --- | --- | --- |
-| `1008:15c8` | `story_idleTick` | named | Idle callback: runs one scene step, then updates elapsed-time counters from GetCurrentTime |
+| `1008:15c8` | `story_idleTick` | named | Idle callback: runs one story step, then a speed figure 1068:30bc from 1068:2e14 (never written, so always 0) and GetCurrentTime |
 | `1010:0059` | `story_presentFromB` | named | Presents the whole screen with B as source and target; check for callers |
 | `1010:00b2` | `story_presentFromA` | named | Presents the whole screen with A as source and target; check for callers |
 | `1010:00fc` | `story_setTtmOffset` | named | Sets the TTM island offset 1068:46e4/46e2 from the island position (1068:30c4 + 1, or + 0x111 when the argument is set; 1068:30c2); both 0 when 1068:30b2 is 2 |
@@ -350,7 +350,7 @@ Functions found by Ghidra: 597. Verified: 201. Named: 122. Unknown: 274.
 | `1010:1e50` | `story_drawHoliday` | named | Draws the holiday sprite; redraws it when a presented rect overlaps |
 | `1018:0540` | `story_newSequence` | named | Wipes, computes the time slot and holiday, resets the island flags, updates the day counters, builds the scene queue, puts Johnny at its first start spot, draws the island |
 | `1018:0673` | `story_endSequence` | named | Wipes the screen, unloads the ADS of every queued entry, empties the queue |
-| `1018:06bf` | `story_step` | named | One scene step: when the scene queue is empty builds a new one and logs New Scene; otherwise loads the entry's ADS by id and runs its tag |
+| `1018:06bf` | `story_step` | named | One story step per WM_TIMER: new sequence when the queue is used up, island step, then walk to the entry start or play it (idle wait or ADS tag), holiday sprite, sound 25 for the day scene, dirty-rect restore |
 | `1018:089b` | `story_buildQueue` | named | Builds the scene queue of a sequence: day scene, closing scene, opening scene, middle scenes within a budget |
 | `1018:0b46` | `story_isAtSpot` | named | Stores the walk target and says whether Johnny already stands at a spot and heading (0 and -1 = any) |
 | `1018:0b87` | `story_advanceDays` | named | Moves NumDays and Introduction on when the date changed and a day scene was picked |

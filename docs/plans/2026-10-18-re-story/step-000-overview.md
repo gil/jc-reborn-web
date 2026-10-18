@@ -205,7 +205,7 @@ Read for the interface, left to chunk 8: `1018:0000`, `1018:004d`, `1018:0074`, 
 
 ## Steps
 
-- [ ] `step-001-story-findings.md`: every in-scope function named, the export rebuilt, and `docs/re/story.md` written (story step, sequences, scene table, calendar, random, settings, timing, startup).
+- [x] `step-001-story-findings.md`: every in-scope function named, the export rebuilt, and `docs/re/story.md` written (story step, sequences, scene table, calendar, random, settings, timing, startup).
 - [ ] `step-002-original-story-trace.md`: Unicorn runs the original random generator and sequence builder and writes `re/fixtures/story/` (traces and table dumps).
 - [ ] `step-003-story-port.md`: `src/story/scene-table.ts`, `random.ts`, `calendar.ts`, `sequence.ts`, pinned by unit tests and equal to the original traces.
 - [ ] `step-004-island-findings.md`: `docs/re/island.md` written from every `1010` function.

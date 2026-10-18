@@ -228,7 +228,7 @@
       "name": "platform_configureDialogItems",
       "subsystem": "platform",
       "status": "named",
-      "note": "Helper of the settings dialog; read it and replace this note with what it does",
+      "note": "Draws the owner-drawn up and down buttons of the settings dialog: 3D frame in system colors, an arrow polygon, a focus rect",
       "signature": null,
       "callingConvention": null
     },
@@ -300,7 +300,7 @@
       "name": "story_idleTick",
       "subsystem": "story",
       "status": "named",
-      "note": "Idle callback: runs one scene step, then updates elapsed-time counters from GetCurrentTime",
+      "note": "Idle callback: runs one story step, then a speed figure 1068:30bc from 1068:2e14 (never written, so always 0) and GetCurrentTime",
       "signature": null,
       "callingConvention": null
     },
@@ -492,7 +492,7 @@
       "name": "story_step",
       "subsystem": "story",
       "status": "named",
-      "note": "One scene step: when the scene queue is empty builds a new one and logs New Scene; otherwise loads the entry's ADS by id and runs its tag",
+      "note": "One story step per WM_TIMER: new sequence when the queue is used up, island step, then walk to the entry start or play it (idle wait or ADS tag), holiday sprite, sound 25 for the day scene, dirty-rect restore",
       "signature": null,
       "callingConvention": null
     },
@@ -1740,7 +1740,7 @@
       "name": "platform_runTimerCallbacks",
       "subsystem": "platform",
       "status": "named",
-      "note": "Fires every due timer callback and advances the base tick; after a pause only resets the slot times",
+      "note": "Fires every due timer callback once per missed interval and advances the base tick; the first call (1068:257c set in the data segment) only resets the slot times",
       "signature": null,
       "callingConvention": null
     },

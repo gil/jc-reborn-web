@@ -226,6 +226,13 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **Why not reviewed:** the original reads unrelated memory there; no port can match it.
 - **Status:** open, by choice
 
+### OQ-35: Windows plumbing, dialogs, password, and sound loading are not modeled
+
+- **Where:** `1008:0000`, `1008:0221`, `1008:033e`, `1008:034f`, `1008:0517`, `1008:0a2d`, `1008:12eb`, `1008:13cd`, `1020:0000`, `1020:0085`, `1020:0106`, `1020:013f`, `1020:019c`, `1020:026e`, `1020:081c`, `1020:082a`
+- **What it does:** command-line handling, the settings and password dialogs, exit on mouse or key input, message pumping during wipes, debug logging (empty in this build), and loading the WAVESFX samples through MMSYSTEM.
+- **Why not reviewed:** none of them changes what the screen saver draws or when; the browser has its own page, controls, and sound playback (`docs/re/story.md`, `Exit and dialogs`).
+- **Status:** open, by choice
+
 ## Resolved
 
 ### OQ-2: ADS pre-tick sweep frees threads with a nil TTM slot
