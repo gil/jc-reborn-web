@@ -89,7 +89,7 @@ Each chunk gets its own implementation plan before work starts.
 - [x] **3. Decoders.** PAL, SCR, BMP, TTM loader, ADS loader, sub-chunk tags such as `BMP:INF:`, `SCR:DIM:`, `ADS:RES:` (`src/decode/`). Validated with Unicorn and corpus tests.
 - [x] **4. Graphics.** Primitives, sprites, flipped sprites, zones, clipping, palette, fade, compositing (`src/gfx/`).
 - [x] **5. TTM interpreter.** Every opcode, timers, slots, tags (`src/ttm/`). Needs 3 and 4.
-- [ ] **6. ADS scheduler.** Threads, timers, conditions, random choices, END handling (`src/ads/`). Needs 5.
+- [x] **6. ADS scheduler.** Threads, timers, conditions, random choices, END handling (`src/ads/`). Needs 5.
 - [ ] **7. Story and main loop.** Scene choice, day/night, holidays, INI-driven behavior, tick timing, island layout (`src/story/`, `src/engine/`, `src/island/`). Watchdog and leak-sweep workarounds are judged here. Needs 6.
 - [ ] **8. Walk.** Walking and pathfinding data and logic (`src/walk/`). Needs 7.
 
