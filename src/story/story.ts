@@ -5,7 +5,7 @@ import { startWalk, type WalkContext } from '../walk/walk.js';
 import {
   clearBackground, islandAnimate, islandInit, islandRedrawHoliday, showBackground, showScreen,
   type IslandRuntime, type IslandState,
-} from '../island/island.js';
+} from '../island/legacy-island.js';
 import type { Display } from '../gfx/gdi/display.js';
 import type { TtmEnv } from '../ttm/page-runner.js';
 import type { ParsedArchive } from '../resource/types.js';

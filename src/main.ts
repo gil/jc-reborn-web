@@ -13,7 +13,7 @@ import { adsActiveNodeCount } from './ads/tick.js';
 import { walkTick } from './walk/walk.js';
 import { startLoop } from './engine/loop.js';
 import { pumpMs, hasEnoughMs, consumeMs, msPerTick, resetClock } from './engine/clock.js';
-import { randomIslandState } from './island/island.js';
+import { randomIslandState } from './island/legacy-island.js';
 import { SCREEN_W, SCREEN_H } from './types.js';
 import { GdiDevice } from './ttm/gdi-device.js';
 import { makeTtmEnv } from './ttm/page-runner.js';
