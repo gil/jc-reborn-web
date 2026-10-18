@@ -83,7 +83,7 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
     t.ip = ins.pos;
     const a = ins.args;
     switch (ins.op) {
-      case OP.DRAW_BACKGROUND:
+      case OP.FREE_IMAGES:
         // jc_reborn only frees image slots here; framebuffer is unchanged
         break;
       case OP.PURGE:
@@ -107,7 +107,7 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
         break;
       case OP.LOCAL_TAG: case OP.TAG:
         break;
-      case OP.TTM_UNKNOWN_1:
+      case OP.SET_ZONE_SLOT:
         break;
       case OP.GOTO_TAG: {
         const tgt = findTagOffset(bc, OP.TAG, a[0]!);
@@ -118,9 +118,9 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
         t.fgColor = a[0]! & 0x0f;
         t.bgColor = a[1]! & 0x0f;
         break;
-      case OP.SET_FRAME1:
+      case OP.MIRROR_NEXT_LOAD:
         break;
-      case OP.TIMER: {
+      case OP.RANDOM_DELAY: {
         const v = ((a[0]! + a[1]!) / 2) | 0;
         t.delay = v;
         t.timer = v;
@@ -132,10 +132,10 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
         setClip(t.layer, { x: x1, y: y1, w: x2 - x1, h: y2 - y1 });
         break;
       }
-      case OP.COPY_ZONE_TO_BG:
+      case OP.COPY_TO_BACKGROUND:
         copyZoneToBg(t.layer, a[0]! + ctx.dx, a[1]! + ctx.dy, a[2]!, a[3]!);
         break;
-      case OP.SAVE_IMAGE1:
+      case OP.NO_OP_4214:
         saveImage1(t.layer, a[0]!, a[1]!, a[2]!, a[3]!);
         break;
       case OP.SAVE_ZONE:
@@ -163,16 +163,16 @@ export function ttmPlay(t: TtmThread, ctx: TtmContext): void {
         if (s) drawSprite(t.layer, s, x, y);
         break;
       }
-      case OP.DRAW_SPRITE_FLIP: {
+      case OP.DRAW_SPRITE_MIRRORED: {
         const x = a[0]! + ctx.dx, y = a[1]! + ctx.dy, sprIdx = a[2]!, imgIdx = a[3]!;
         const s = t.slot.sprites[imgIdx]?.[sprIdx];
         if (s) drawSpriteFlip(t.layer, s, x, y);
         break;
       }
-      case OP.CLEAR_SCREEN:
+      case OP.MARK_ZONE_DIRTY:
         clearLayer(t.layer);
         break;
-      case OP.DRAW_SCREEN:
+      case OP.COPY_SURFACE_RECT:
         break;
       case OP.PLAY_SAMPLE:
         ctx.playSample(a[0]!);
