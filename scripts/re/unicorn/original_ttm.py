@@ -80,7 +80,7 @@ class TtmTracer:
     def __init__(self, image: NeImage, resources: dict[str, bytes], name: str):
         self.name = name.upper()
         self.resources = {key.upper(): value for key, value in resources.items()}
-        self.emu: Emulator = new_loader_emulator(image, {self.name: self.resources[self.name]})
+        self.emu: Emulator = new_loader_emulator(image, self.resources)
         self.events: list[list[object]] = []
         self.random_calls = 0
         self.images: dict[int, tuple[str, int]] = {}

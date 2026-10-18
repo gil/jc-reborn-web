@@ -27,7 +27,7 @@
 
 The trace format, clock, tick limit, and random source are defined in the overview (`Trace format`). Read that section before writing code.
 
-- [ ] **Action 1: Let the TTM tracer's loader see every resource**
+- [x] **Action 1: Let the TTM tracer's loader see every resource**
 
 An ADS load opens each TTM it lists by name, so the loader needs all payloads. In `scripts/re/unicorn/original_ttm.py`, `TtmTracer.__init__`, change
 
@@ -44,7 +44,7 @@ to
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_ttm.py' -v`
 Expected: PASS (it passes a single-entry dict, so nothing changes for it).
 
-- [ ] **Action 2: Write the failing test**
+- [x] **Action 2: Write the failing test**
 
 Create `scripts/re/unicorn/test_original_ads.py`:
 
@@ -139,7 +139,7 @@ The expected rows follow the overview's `Binary facts`. If `docs/re/ads.md` (ste
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_ads.py' -v`
 Expected: ERROR, `ModuleNotFoundError: No module named 'original_ads'`.
 
-- [ ] **Action 3: Write the tracer**
+- [x] **Action 3: Write the tracer**
 
 Create `scripts/re/unicorn/original_ads.py`:
 
@@ -308,7 +308,7 @@ Notes for debugging, not for the file:
 Run: `re/.venv/bin/python -I -m py_compile scripts/re/unicorn/original_ads.py`
 Expected: no output.
 
-- [ ] **Action 4: Run the test to make it pass**
+- [x] **Action 4: Run the test to make it pass**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_ads.py' -v`
 Expected: 4 tests PASS.
@@ -318,7 +318,7 @@ When it fails, read the error first:
 - `UnstubbedImport`: the ADS code reached a Windows import. Find the caller in `re/out/index.tsv` and replace the `1048`/`1050`/`1038` function that calls it with a handler in `AdsTracer._install_hooks` (call `super()._install_hooks()` first). `install_heap` (`original_decompress.py`) already covers `1038:06a8` (near calloc), `1038:063b` (near free), `1030:199a`, `1030:1b63` (far alloc and free).
 - A row differs: compare with `docs/re/ads.md`. If the harness reads a field wrong, fix the harness. If the original does something the overview and `ads.md` did not say, correct `ads.md` (a new or fixed bullet with the address) and the expected rows, and note it in the commit message.
 
-- [ ] **Action 5: Commit**
+- [x] **Action 5: Commit**
 
 ```bash
 git add scripts/re/unicorn/original_ttm.py scripts/re/unicorn/original_ads.py scripts/re/unicorn/test_original_ads.py
