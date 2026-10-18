@@ -469,7 +469,7 @@ git commit -m "test(re): trace the original TTM page runner"
 
 ## Part B: The corpus trace
 
-- [ ] **Action 6: Write the dump script**
+- [x] **Action 6: Write the dump script**
 
 Create `scripts/re/unicorn/dump_ttm.py`:
 
@@ -507,7 +507,7 @@ if __name__ == "__main__":
     sys.exit(main())
 ```
 
-- [ ] **Action 7: Run it**
+- [x] **Action 7: Run it**
 
 Run: `re/.venv/bin/python -I -m py_compile scripts/re/unicorn/dump_ttm.py`
 Expected: no output.
@@ -525,7 +525,7 @@ Expected: a large number (at least 2 × 15,368, the `0xa504` + `0xa524` uses, mi
 Run: `rg "\tsound\t" re/fixtures/ttm/traces.tsv`
 Expected: only `first` rows, never `replay`.
 
-- [ ] **Action 8: Write the findings and docs**
+- [x] **Action 8: Write the findings and docs**
 
 In `docs/re/ttm.md`, replace the `Emulated` placeholder line with bullets:
 
@@ -546,12 +546,12 @@ Loads each TTM script with the original loader, resets one thread node with `104
 
 Also add the row format table from the overview's `Trace format` to `docs/re/ttm.md`, `Emulated`, so the committed docs carry it.
 
-- [ ] **Action 9: Run all Unicorn tests**
+- [x] **Action 9: Run all Unicorn tests**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_*.py' -v`
 Expected: all pass.
 
-- [ ] **Action 10: Commit**
+- [x] **Action 10: Commit**
 
 ```bash
 git add scripts/re/unicorn/dump_ttm.py scripts/re/unicorn/README.md docs/re/ttm.md
@@ -560,7 +560,7 @@ git commit -m "test(re): trace every page of every TTM script in the original"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

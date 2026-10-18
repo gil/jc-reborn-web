@@ -70,6 +70,9 @@ TRACE_ISLAND_Y = 5
 RANDOM_MULTIPLIER = 25173
 RANDOM_INCREMENT = 13849
 PALETTE_BYTES = 48
+# A replayed page can index past a list its first run replaced (SJLEAVES page 112).
+# Zeros past the end make the original draw nothing instead of reading heap garbage.
+BITMAP_TABLE_WORDS = 128
 SURFACES = {DC_A: 0, DC_B: 1, DC_C: 2}
 
 
@@ -151,14 +154,15 @@ class TtmTracer:
         emu, data = self.emu, self.emu.data_segment
         records = emu.near_alloc(RECORD_SIZE * count)
         emu.write(data, records, bytes(RECORD_SIZE * count))
-        table = emu.near_alloc(2 * (count + 1))
+        table_words = max(count + 1, BITMAP_TABLE_WORDS)
+        table = emu.near_alloc(2 * table_words)
+        emu.write(data, table, bytes(2 * table_words))
         for index in range(count):
             record = records + RECORD_SIZE * index
             emu.write(data, record + RECORD_WIDTH, struct.pack("<H", widths[index]))
             emu.write(data, record + RECORD_HEIGHT, struct.pack("<H", heights[index]))
             emu.write(data, table + 2 * index, struct.pack("<H", record))
             self.images[record] = (name.upper(), index)
-        emu.write(data, table + 2 * count, struct.pack("<H", 0))
         return table
 
     def _surface(self, value: int) -> int:

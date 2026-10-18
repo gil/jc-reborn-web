@@ -58,3 +58,9 @@ Runs the original chunk lookup and loaders on every resource and writes fixtures
     re/.venv/bin/python -I scripts/re/unicorn/dump_graphics.py brushes masks
 
 Runs original graphics code that needs no drawing (brush and mask builders, row mirror, and later the dirty-rect lists and wipe geometry) and writes fixtures to `re/fixtures/graphics/` (gitignored). `original_graphics.py` stubs the few GDI and KERNEL imports involved with handlers that capture their arguments. Inside a stub, `pascal_args(emu, n)` returns the import's arguments in declared order.
+
+## Original TTM page runner
+
+    re/.venv/bin/python -I scripts/re/unicorn/dump_ttm.py
+
+Loads each TTM script with the original loader, resets one thread node with `1048:0b3e`, and runs every page twice through `1050:074a` (first run, then replay with the thread's ran flag set). Drawing, copying, dirty-rect, zone, loading, sound, and random calls are replaced by handlers that write one trace row each (`original_ttm.py`); everything else runs as original code. Writes `re/fixtures/ttm/traces.tsv` (gitignored). The row format is documented in `docs/plans/2026-10-17-re-ttm/step-000-overview.md`, `Trace format`, and in `docs/re/ttm.md`, `Emulated`.

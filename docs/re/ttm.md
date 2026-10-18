@@ -266,7 +266,40 @@ Read for the interface; chunk 6 verifies.
 
 ## Emulated
 
-Step 3 of the chunk 5 plan adds the trace comparison here.
+- `scripts/re/unicorn/original_ttm.py` loads each TTM script with the original loader (`1050:0177`, `1050:04d6`), resets one thread node with `1048:0b3e`, and runs pages through `1050:074a`. The page runner, the offset passes, dispatch, every opcode handler, the dirty-rect arithmetic, the zone bookkeeping of `0xa054`/`0xa064`, `1058:13a9`, and `rtl_stricmp` run as original code.
+- Replaced by handlers that write one trace row each: pixel `1040:0d54`, line `1030:02ef`, rect `1038:1bd8`, circle `1040:0688`, sprite `1028:17d8`, stretched sprite `1030:03d7`, copy `1038:06ce`, dirty add `1060:007e`, dirty drop `1060:06ac`, rect save `1030:01c4` and restore `1030:0250`, screen load `1028:1813`, bitmap load `1028:17fa`, palette load `1040:09eb`, sound `1020:00ba`, random `1018:1e60`, and palette select `1040:0b08`.
+- Replaced silently (return 0): bitmap free `1028:1845`, palette free `1040:0bc7`, and the empty debug log `1020:081c`.
+- The fake bitmap loader builds a near table of image records with each image's width and height from `BMP:INF:`, so `1058:025b`'s null and width tests run as original code. `JOHNWALK.BMP` is pre-loaded into the shared walk list `1068:30d2`.
+- The fake palette loader returns a fresh near pointer for a name that exists in the archive, 0 otherwise.
+- The fake random source returns `(call * 25173 + 13849) & 0xffff`, `call` counted from 0 within one TTM.
+- Fixture: `re/fixtures/ttm/traces.tsv` (gitignored), written by `scripts/re/unicorn/dump_ttm.py`. Every page of the 41 TTM scripts, in page order, each run once as a first run (`[7] = 0`) and once as a replay (`[7] = 1`). Island offsets `(7, 5)`, fill on, everything else as at runtime. Before each run the globals are loaded from the node as `1048:1acb` does. 13,262 runs, 154,380 rows.
+- Fixture counts: 535 sound rows, all on first runs (the 535 uses of `0xc051`); 41 palette loads; 40 screen loads; 227 bitmap loads (263 uses of `0xf02f` minus the 36 `JOHNWALK.BMP` loads, which take the shared list); 28,431 sprite draws; every dirty rect is kind 1.
+- `1058:025b`: with pages run in file order, 17 sprite draws index past the end of the bitmap list in their slot (both passes of GJNAT1 pages 21 and 162, GJVIS3 116 and 119, SMDATE 173 to 175; replays only of SJLEAVES 60 and 112). SJLEAVES page 112 shows the replay case: its first run draws image 20 of slot 3 and then loads a smaller `SLEVEJM3.BMP` into slot 3, so the replay reads past it. The original reads whatever word follows the table. The harness pads every table with zeros to 128 entries (the largest index in the data is 101), so such a draw finds a null image and draws nothing. Whether the game ever reaches these pages with those slot contents depends on the ADS order (chunk 6). Our runner keeps the same guard (OQ-23).
+- Step 4 compares our runner with this trace (`src/ttm/page-runner.data.test.ts`).
+
+Trace rows: `ttm	page	pass	event	values`. `pass` is `first` or `replay`; `values` are joined with one space. Surfaces: A = 0, B = 1, C = 2. `clip` is five values: clip on (0/1), x1, y1, x2, y2 (`1068:1ea3`, `1ea4`, `1ea8`, `1ea6`, `1eaa`). Coordinates are signed 16-bit. Foreground, background, and fill are unsigned bytes. `bitmapName` and palette names are upper case; `screen`, `bitmaps`, and `palette` rows carry the name as the bytecode spells it.
+
+| Event | Values | Original callee |
+| --- | --- | --- |
+| `pixel` | target x y color clip | `1040:0d54` (color as passed, signed) |
+| `line` | target x1 y1 x2 y2 foreground clip | `1030:02ef` |
+| `rect` | target x y w h fill foreground background clip | `1038:1bd8` |
+| `circle` | target r cx cy fill foreground background clip | `1040:0688` |
+| `sprite` | target bitmapName imageIndex x y flags clip | `1028:17d8` |
+| `stretch` | target bitmapName imageIndex x y flags w h clip | `1030:03d7` |
+| `copy` | source target x y w h | `1038:06ce` |
+| `dirty` | source target age x y w h clip | `1060:007e` (kind 1 only) |
+| `drop` | source target age | `1060:06ac` |
+| `save` | source x y w h | `1030:01c4` |
+| `restore` | target x y w h | `1030:0250` |
+| `screen` | target name | `1028:1813` |
+| `bitmaps` | name mirroredCopy | `1028:17fa` (`mirroredCopy` = `1068:4106`) |
+| `palette` | name | `1040:09eb` |
+| `sound` | sample | `1020:00ba` |
+| `random` | (none) | `1018:1e60` |
+| `selectPalette` | name | `1040:0b08` (no TTM script reaches it; a row means a difference) |
+| `result` | ran delay goto purge pendingPalette mirrorNextLoad keepDrawings | after each run: return value, `46e6`, `4644` (both signed, `-1` = none), `4642`, name of the palette at `4646` or `-`, `46d6`, `27c0` |
+| `thread` | foreground background clipOn x1 y1 x2 y2 bmpSlot paletteSlot zoneSlot | after each run, from the node |
 
 ## Past fixes reviewed
 
