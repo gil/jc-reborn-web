@@ -261,7 +261,7 @@ Read for the interface, named but not verified here: `1048:0b3e 196e 1acb 1e5a` 
 - [x] `step-001-jump-tables-in-export.md`: the Ghidra export includes every switch case; every chunk 5 function named.
 - [x] `step-002-ttm-findings.md`: `docs/re/ttm.md` with every opcode handler confirmed against the export; OQ-14, OQ-16, OQ-19, OQ-27 settled.
 - [x] `step-003-original-page-trace.md`: Unicorn runs the original page runner on every page of every TTM and writes `re/fixtures/ttm/traces.tsv`.
-- [ ] `step-004-page-runner.md`: `src/ttm/page-runner.ts` and friends, pinned by unit tests and equal to the original trace on the whole corpus.
+- [x] `step-004-page-runner.md`: `src/ttm/page-runner.ts` and friends, pinned by unit tests and equal to the original trace on the whole corpus.
 - [ ] `step-005-display-window-and-gdi-device.md`: the `Display` gets a window surface painted by presents (OQ-17); `GdiDevice` runs the page runner on the model; OQ-8 settled.
 - [ ] `step-006-wire-engine.md`: scheduler adapter, island, walk, story, and main switch to the model; old pipeline deleted (OQ-9, OQ-10, OQ-20).
 - [ ] `step-007-chunk-wrap-up.md`: every in-scope function `verified` or logged, past fixes reviewed, comment audit, full rebuild and test run, browser check, spec checkbox ticked.

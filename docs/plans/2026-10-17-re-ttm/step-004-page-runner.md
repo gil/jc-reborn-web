@@ -34,7 +34,7 @@ The old interpreter (`src/ttm/interpreter.ts`, `thread.ts`, `bmp-slots.ts`) keep
 
 ## Part A: Opcode names
 
-- [ ] **Action 1: Rename the opcodes to what they do**
+- [x] **Action 1: Rename the opcodes to what they do**
 
 Replace the `OP` object in `src/ttm/opcodes.ts` (keep `TTM_OPCODE_NAMES` as it is):
 
@@ -101,7 +101,7 @@ Expected: no errors.
 Run: `pnpm exec vitest run src/decode src/ttm`
 Expected: all pass (the `uses only opcodes our TTM opcode table names` test still finds every used opcode).
 
-- [ ] **Action 2: Commit**
+- [x] **Action 2: Commit**
 
 ```bash
 git add src/ttm/opcodes.ts src/ttm/interpreter.ts
@@ -110,7 +110,7 @@ git commit -m "refactor(ttm): name the opcodes after what the original does"
 
 ## Part B: State, device, runner
 
-- [ ] **Action 3: Write the state module**
+- [x] **Action 3: Write the state module**
 
 Create `src/ttm/state.ts`:
 
@@ -222,7 +222,7 @@ export function resetDrawClip(draw: DrawState): void {
 
 `makeThread` takes its values from `1048:0b3e`; `loadThreadDrawState` from the start of a thread's run in `1048:1acb`; `resetDrawClip` from its end.
 
-- [ ] **Action 4: Write the device interface**
+- [x] **Action 4: Write the device interface**
 
 Create `src/ttm/device.ts`:
 
@@ -254,7 +254,7 @@ export interface TtmDevice {
 
 Each method stands for one callee of the original (overview, `Trace format`); drawing methods read the shared `DrawState` (foreground, background, fill, clip) the runner keeps in `TtmEnv.draw`, as the original's callees read `1068:1ea3`..`1068:1eae`.
 
-- [ ] **Action 5: Write the recorder**
+- [x] **Action 5: Write the recorder**
 
 Create `src/testing/ttm-recorder.ts`:
 
@@ -422,7 +422,7 @@ export function traceTtm(archive: ParsedArchive, name: string): string[] {
 }
 ```
 
-- [ ] **Action 6: Write the failing unit tests**
+- [x] **Action 6: Write the failing unit tests**
 
 Create `src/ttm/page-runner.test.ts`:
 
@@ -672,12 +672,12 @@ describe('randomDelay', () => {
 });
 ```
 
-- [ ] **Action 7: Run them to make sure they fail**
+- [x] **Action 7: Run them to make sure they fail**
 
 Run: `pnpm exec vitest run src/ttm/page-runner.test.ts`
 Expected: FAIL, `Cannot find module './page-runner.js'` (or the recorder's import of it).
 
-- [ ] **Action 8: Write the runner**
+- [x] **Action 8: Write the runner**
 
 Create `src/ttm/page-runner.ts`:
 
@@ -1043,7 +1043,7 @@ function loadImage(env: TtmEnv, thread: TtmThread, name: string): void {
 
 Where step 2's findings differ from this code (an argument order, an offset exception, a skip-on-replay check), follow the findings and adjust the matching unit test; note each change in the commit message.
 
-- [ ] **Action 9: Run the unit tests**
+- [x] **Action 9: Run the unit tests**
 
 Run: `pnpm exec vitest run src/ttm/page-runner.test.ts`
 Expected: all pass.
@@ -1051,7 +1051,7 @@ Expected: all pass.
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 10: Commit**
+- [x] **Action 10: Commit**
 
 ```bash
 git add src/ttm/state.ts src/ttm/device.ts src/ttm/page-runner.ts src/ttm/page-runner.test.ts src/testing/ttm-recorder.ts
@@ -1060,7 +1060,7 @@ git commit -m "feat(ttm): port the original page runner"
 
 ## Part C: Whole corpus against the original
 
-- [ ] **Action 11: Write the data test**
+- [x] **Action 11: Write the data test**
 
 Create `src/ttm/page-runner.data.test.ts`:
 
@@ -1091,14 +1091,14 @@ describe.skipIf(!hasFixture('ttm/traces.tsv'))('TTM page runner matches the orig
 });
 ```
 
-- [ ] **Action 12: Run it and fix every difference**
+- [x] **Action 12: Run it and fix every difference**
 
 Run: `pnpm exec vitest run src/ttm/page-runner.data.test.ts`
 Expected: pass. If it is skipped, `re/fixtures/ttm/traces.tsv` is missing: run `re/.venv/bin/python -I scripts/re/unicorn/dump_ttm.py` (step 3).
 
 For each difference, decide from the assembly which side is wrong. A wrong runner gets fixed (and gets a unit test with its address). A wrong recorder or tracer (a value formatted differently, a row the format does not describe) gets fixed in `src/testing/ttm-recorder.ts` or `scripts/re/unicorn/original_ttm.py`; if the tracer changes, rerun the dump and the Unicorn tests. Never paper over a difference by skipping rows.
 
-- [ ] **Action 13: Commit**
+- [x] **Action 13: Commit**
 
 ```bash
 git add src/ttm/page-runner.data.test.ts src/ttm/page-runner.ts src/ttm/page-runner.test.ts src/testing/ttm-recorder.ts
@@ -1107,7 +1107,7 @@ git commit -m "test(ttm): page runner equals the original on every TTM page"
 
 ## Part D: Findings
 
-- [ ] **Action 14: Checklist rows and OQ-23**
+- [x] **Action 14: Checklist rows and OQ-23**
 
 In `docs/re/ttm.md`, `Side-by-side checklist`, add one row each (use the real line numbers of `src/ttm/page-runner.ts`; status `fixed` where our old interpreter did something else, `match` where it already agreed):
 
@@ -1138,7 +1138,7 @@ Add to `docs/re/open-questions.md`, under `## Not reviewed on purpose`:
 
 Check the "every goto tag exists" claim before writing it: `rg "\tresult\t1 -?[0-9]+ -1 " re/fixtures/ttm/traces.tsv` lists runs with no goto; compare with the pages that contain `0x1201` (or count `goto -1` results on pages whose bytecode has `0x1201`). If a goto does miss, write that instead.
 
-- [ ] **Action 15: Run everything and commit**
+- [x] **Action 15: Run everything and commit**
 
 Run: `pnpm exec tsc --noEmit`, then `pnpm test`
 Expected: all pass.
@@ -1150,7 +1150,7 @@ git commit -m "docs(re): page runner checklist rows"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

@@ -317,13 +317,25 @@ Filled in at the end of chunk 5.
 | `1050:0000` | `ttm_measureSlotImages` | none (no TTM script uses `0xb000`) | match |
 | `1050:0061` | `ttm_scrollSlotImages` | none (no TTM script uses `0xb013`) | match |
 | `1050:0152` | `ttm_initDirtyPool` | none (no node pool; `2641` stays 4) | match |
+| `1050:074a` | `ttm_runPageChecked` | `src/ttm/page-runner.ts:59` `runTtmPage`, `src/ttm/page-runner.ts:84` `runPage` (the page checks) | fixed |
+| `1050:0799` | `ttm_activatePendingPalette` | `src/ttm/page-runner.ts:78` `activatePendingPalette` (the old interpreter applies a palette the moment it loads) | fixed |
 | `1050:07c6` | `ttm_unloadAll` | none (garbage collection frees records) | match |
 | `1050:080c` | `ttm_unload` | none (garbage collection frees records) | match |
 | `1050:0a6e` | `ttm_shutdown` | none (unreferenced; garbage collection frees records) | match |
+| `1050:0a85` | `ttm_markDrawn` | `src/ttm/page-runner.ts:221` `addDrawnRect` (the old pipeline has no dirty rects) | fixed |
+| `1050:0b31` | `ttm_screenToBackground` | `src/ttm/page-runner.ts:336` `screenToBackground` | fixed |
+| `1050:0b74` | `ttm_copyToBackground` | `src/ttm/page-runner.ts:342` `copyToBackground` | fixed |
+| `1058:0000` | `ttm_soundOpcode` | `src/ttm/page-runner.ts:97` the `0xc000` branch of `runPage` (the old interpreter also plays on replays and ignores `0x1301`) | fixed |
+| `1058:0144` | `ttm_drawOpcode` | `src/ttm/page-runner.ts:139` `drawOpcode` | fixed |
+| `1058:040c` | `ttm_runPage` | `src/ttm/page-runner.ts:84` `runPage` (the old interpreter keeps an instruction pointer and has no pages or replays) | fixed |
+| `1058:13a9` | `ttm_pageOfTag` | `src/ttm/page-runner.ts:65` `pageOfTag` (the old search finds `0x1111` anywhere and skips `0x1101`) | fixed |
 | `1058:141f` | `ttm_copyStringArg` | none (strings are decoded by `readTtmInstruction`) | match |
 | `1058:147a` | `ttm_fontSlotPointer` | none (no TTM script uses a font opcode) | match |
 | `1058:14a8` | `ttm_paletteRangeEffect` | none (needs `1068:1ebf`, never set) | match |
+| `1058:14e0` | `ttm_surfaceByNumber` | `src/ttm/page-runner.ts:348` `surfaceByNumber` (the old interpreter ignores `0xb606`) | fixed |
+| `1058:1510` | `ttm_effectOpcode` | `src/ttm/page-runner.ts:177` `zoneEffect` (only `0xa054`/`0xa064`; the other effects are OQ-27) | fixed |
 | `1058:1920` | `ttm_effectPause` | none (only effects no TTM script uses) | match |
+| `1058:1949` | `ttm_effectCopy` | none (only reached by effects in OQ-27) | match |
 | `1058:197c` | `ttm_emptyMirrorHook` | none (empty) | match |
 | `1058:198a` | `ttm_dissolveEffect` | none (no TTM script uses `0xa0b5`) | match |
 | `1058:1ad0` | `ttm_timerExpired` | none (needs `1068:1ebf`, never set) | match |

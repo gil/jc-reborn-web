@@ -206,6 +206,15 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **Chunk 5:** only TTM opcodes 0xa204..0xa294 draw text, through 1030:04ce; no TTM script uses them or the font opcodes (docs/re/ttm.md, Text and fonts). The engine does not draw text.
 - **Status:** open, by choice
 
+### OQ-23: Page-runner guards where the original misbehaves
+
+- **Where:** `src/ttm/page-runner.ts`
+- **What it does:** a page call (`0x3003`) or goto for a tag no page starts with does nothing; a sprite index past the end of its list draws nothing and marks no rect; `0x2022` with equal bounds gives the low bound (`int16` turns the `NaN` remainder into 0); a page without `0x0FF0` throws when the bytecode ends (`readTtmInstruction` reads past it).
+- **Original:** `1058:0f7f` runs `1058:040c(0xFFFF)` and reads a page pointer from past the table; `1058:025b` reads whatever word follows the bitmap list; `1058:0e08` faults on `DIV` by 0; `1058:040c` reads past the bytecode.
+- **Data:** no script uses `0x3003`; every goto tag exists (150 trace runs have a goto: the 75 uses of `0x1201`, each on a first run and a replay); no `0x2022` has equal bounds; every page ends with `0x0FF0` (`src/decode/ttm-loader.data.test.ts`). Sprite indices do go past their lists: with pages run in file order, 17 draws (GJNAT1, GJVIS3, SMDATE, SJLEAVES; `docs/re/ttm.md`, `Emulated`). The harness pads the lists with zeros, so the trace comparison checks our guard against the original drawing a null image. Whether the game reaches those pages with those slot contents depends on the ADS order (chunk 6).
+- **Why not reviewed:** the original's behavior in every case is a read of unrelated memory or a fault, which no port can match.
+- **Status:** open, by choice
+
 ### OQ-27: TTM opcodes the data never uses
 
 - **Where:** `src/ttm/page-runner.ts` (no case for them)
