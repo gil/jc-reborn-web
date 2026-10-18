@@ -195,12 +195,10 @@ function drawMarked(display: Display, image: Surface | undefined, x: number, y: 
   }
 }
 
-// Returns true once the walk has fully completed (hasArrived + delay expired).
 export function walkDone(ws: WalkState): boolean {
   return ws.hasArrived && walkData[ws.dataIdx]![1] === 0;
 }
 
-// Spot index → name for debug
 export const SPOT_NAMES = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
 
 export { UNDEF_NODE };

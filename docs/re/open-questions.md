@@ -7,14 +7,14 @@ Behavior we haven't settled against the original, and workarounds kept without a
 ### OQ-1: Story watchdog force-ends scenes after 8000 ticks
 
 - **Where:** `src/story/story.ts` (`case 'playing'`)
-- **What it does:** ends the current scene through `endScene` once `playingTicks > 8000`, without touching ADS state. It counts engine ticks (20 ms each), which are no longer `mini`-paced.
+- **What it does:** ends the current scene through `endScene` once `playingTicks > 8000`, without touching ADS state. It counts engine ticks (20 ms each, OQ-29).
 - **Old guess behind it:** some scenes cycle forever without reaching an end.
 - **Resolve in:** chunk 7 (story and main loop)
 - **Status:** open
 
 ### OQ-6: Scene picker drops wanted flags when nothing matches
 
-- **Where:** `src/story/story.ts:173-178`
+- **Where:** `src/story/story.ts:177-181` (`pickSceneFrom`)
 - **What it does:** if no scene has all wanted flags, picks a random scene that only avoids the unwanted flags.
 - **Old guess behind it:** some flag and day combinations have no candidate, and an empty pick would crash.
 - **Resolve in:** chunk 7 (story and main loop)
@@ -95,7 +95,7 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 ### OQ-24: Island drawing bridge
 
-- **Where:** `src/island/island.ts`, `src/story/story.ts` (`buildSequence` line 116, `storyInit` line 210, `storyRedrawHoliday` line 366)
+- **Where:** `src/island/island.ts`, `src/story/story.ts` (`buildSequence` line 120, `storyInit` line 220, `storyRedrawHoliday` line 339)
 - **What it does:** draws the ocean, raft, clouds, island, first waves, and holiday sprite into C when a sequence starts, then copies C to B and marks the whole screen `(B → A, age 0)`. Every 8 ticks a wave is drawn on B with rects `(B → A, 0)` and `(B → C, 0)`. The holiday sprite is redrawn on B when its rect overlaps a `(B → A, age 0)` rect. Scenes off the island start from a C cleared to index 0; `INTRO.SCR` is drawn into C. Seen in a headless run: `startScene` gives a scene without `LEFT_ISLAND` the island offset of a left island (`islandX = -272`), so `ACTIVITY.ADS` tag 4 (`MJDIVE.TTM`) dives off the left edge of the screen; the old pipeline computed the same offset.
 - **Original:** `1010:040e` (waves and island bits), `1010:1e50` (holiday), and the island setup; which surfaces and rects they use is not checked.
 - **Resolve in:** chunk 7 (story and island)
@@ -151,36 +151,36 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 | `d670686` | SET_DELAY missing timer | 5 (reviewed, see docs/re/ttm.md) |
 | `5f4e3a0` | DRAW_RECT/DRAW_CIRCLE no longer add ctx.dx/dy to args 3&4 (width/height) | 5 (reviewed, see docs/re/ttm.md) |
 | `0e7cd64` | getUint16/getInt16 mistake | 3 |
-| `eb46290` | force-stop orphan TTM threads after ADS END | 6 |
+| `eb46290` | force-stop orphan TTM threads after ADS END | 6 (reviewed, see docs/re/ads.md) |
 | `6b0be68` | audio playback | out of scope |
 | `b631319` | animation sprites sometimes get cut | 4 (reviewed, see docs/re/graphics.md) |
-| `8adc66a` | various consistency fixes | 6, 7 |
+| `8adc66a` | various consistency fixes | 6 (reviewed, see docs/re/ads.md), 7 |
 | `1204c0d` | hain instant phase transitions so a scene-end → walk-start (or walk-end → new-scene-start) completes in one tick. | 7 |
 | `c037b5f` | swapped order: storyTick → adsTick → storyAnimateBg | 7 |
 | `72fb9d7` | load data relative | out of scope |
-| `f47def5` | replace elapsedTicks with mini-based pacing; eliminate second pass in adsTick | 6 |
-| `7fef3c3` | replace elapsedTicks with mini-based pacing; eliminate second pass in adsTick | 6 |
-| `194d7fb` | add thread leak detection sweeps (pre-tick, begin-scene, start-walk, post-walk) | 6, 7 |
+| `f47def5` | replace elapsedTicks with mini-based pacing; eliminate second pass in adsTick | 6 (reviewed, see docs/re/ads.md) |
+| `7fef3c3` | replace elapsedTicks with mini-based pacing; eliminate second pass in adsTick | 6 (reviewed, see docs/re/ads.md) |
+| `194d7fb` | add thread leak detection sweeps (pre-tick, begin-scene, start-walk, post-walk) | 6 (reviewed, see docs/re/ads.md), 7 |
 | `613b3c2` | add watchdog timeout (8000 ticks) to force-end self-sustaining scene cycles | 7 |
 | `9a40bb2` | LOAD_SCREEN resets dx/dy to zero, sprites render in screen-relative coords after background switch | 5 (reviewed, see docs/re/ttm.md) |
 | `0d4078d` | DRAW_BACKGROUND opcode is a no-op, jc_reborn only frees image slots not the framebuffer | 5 (reviewed, see docs/re/ttm.md) |
 | `7a9d964` | TIMER opcode sets delay and timer directly, continues loop; remove timerYield workaround | 5 (reviewed, see docs/re/ttm.md) |
 | `e1d3bae` | GOTO_TAG defers jump via nextGotoOffset, continues interpret loop instead of returning early | 5 (reviewed, see docs/re/ttm.md) |
 | `cacfdb0` | PURGE opcode schedules nextGotoOffset instead of immediate jump, continues interpret loop | 5 (reviewed, see docs/re/ttm.md) |
-| `a933bf7` | revert UNKNOWN_6 back to no-op | 6 |
+| `a933bf7` | revert UNKNOWN_6 back to no-op | 6 (reviewed, see docs/re/ads.md) |
 | `31988b3` | revert DRAW_SCREEN implementation for now, to avoid duplication issues | 5 (reviewed, see docs/re/ttm.md) |
 | `2ed4424` | GOTO_TAG must yield after jumping, otherwise loops without an UPDATE create infinite tight loops in ttmPlay | 5 (reviewed, see docs/re/ttm.md) |
-| `a9610d3` | clear saved zones when all threads from a slot stop, preventing clock block from MEANWHIL.TTM persisting through SUZY.ADS scene | 6 |
-| `966476f` | UNKNOWN_6 opcode now checks if scene is running before adding, preventing redundant scene starts in EAT scenes | 6 |
+| `a9610d3` | clear saved zones when all threads from a slot stop, preventing clock block from MEANWHIL.TTM persisting through SUZY.ADS scene | 6 (reviewed, see docs/re/ads.md) |
+| `966476f` | UNKNOWN_6 opcode now checks if scene is running before adding, preventing redundant scene starts in EAT scenes | 6 (reviewed, see docs/re/ads.md) |
 | `c7f3c6b` | implement DRAW_SCREEN opcode for scaled sprite rendering used in sandcastle and plane scenes | 5 (reviewed, see docs/re/ttm.md) |
 | `d39b9ac` | clear saved zones between scenes to prevent visual artifacts leaking across transitions | 7 |
 | `037819f` | GOTO_TAG searched LOCAL_TAG instead of TAG, causing loops to fall through into wrong animation frames | 5 (reviewed, see docs/re/ttm.md) |
-| `27684eb` | problem with threads rendering on top of each other | 6 |
-| `c126833` | problem where nothing would start after certain scenes | 6 |
+| `27684eb` | problem with threads rendering on top of each other | 6 (reviewed, see docs/re/ads.md) |
+| `c126833` | problem where nothing would start after certain scenes | 6 (reviewed, see docs/re/ads.md) |
 | `d808ee0` | correct file | out of scope |
 | `43ef25b` | better color and transparency handling | 3, 4 (4 reviewed, see docs/re/graphics.md) |
 | `e6287e1` | correct original repo | out of scope |
-| `db6d598` | flickering animation sprites | 6 |
+| `db6d598` | flickering animation sprites | 6 (reviewed, see docs/re/ads.md) |
 | `d0bc6b6` | transparency | 3 |
 
 ## Not reviewed on purpose

@@ -208,57 +208,57 @@ Handlers were checked against the original in chunk 5 (docs/re/ttm.md).
 
 ## ADS opcode coverage
 
-Every opcode the 10 ADS scripts use, framed with the original size table, plus every table opcode the scheduler does not list. Counts come from the `keeps its opcode counts` snapshot in `src/decode/__snapshots__/ads-loader.data.test.ts.snap`. "Not listed" opcodes are read by `scanBytecode` (`src/ads/scheduler.ts:63`) as a section tag word and by `adsPlayChunk` as its `default` case.
+Every opcode the 10 ADS scripts use, framed with the original size table, plus every other opcode in that table. Counts come from the `keeps its opcode counts` snapshot in `src/decode/__snapshots__/ads-loader.data.test.ts.snap`. Handlers were checked against the original in chunk 6 (docs/re/ads.md).
 
-| Opcode | Our name | Uses in the data | Original args (`1048:0383`) | Scheduler args (`ADS_ARG_COUNTS`) | Scheduler handler |
+| Opcode | Our name | Uses in the data | Original args (`1048:0383`) | Our args | Our handler |
 | --- | --- | --- | --- | --- | --- |
-| `0x1070` | `IF_LASTPLAYED_LOCAL` | 1 | 2 | 2 | `src/ads/scheduler.ts:277` |
-| `0x1330` | `IF_UNKNOWN_1` | 55 | 2 | 2 | `src/ads/scheduler.ts:283` |
-| `0x1350` | `IF_LASTPLAYED` | 500 | 2 | 2 | `src/ads/scheduler.ts:286` |
-| `0x1360` | `IF_NOT_RUNNING` | 76 | 2 | 2 | `src/ads/scheduler.ts:291` |
-| `0x1370` | `IF_IS_RUNNING` | 30 | 2 | 2 | `src/ads/scheduler.ts:296` |
-| `0x1420` | `AND` | 47 | 0 (not in the table) | 0 | `src/ads/scheduler.ts:301` |
-| `0x1430` | `OR` | 30 | 0 (not in the table) | 0 | `src/ads/scheduler.ts:303` |
-| `0x1510` | `PLAY_SCENE` | 584 | 0 (not in the table) | 0 | `src/ads/scheduler.ts:306` |
-| `0x1520` | `ADD_SCENE_LOCAL` | 1 | 0 (not in the table) | 5 | `src/ads/scheduler.ts:310` |
-| `0x2005` | `ADD_SCENE` | 867 | 4 | 4 | `src/ads/scheduler.ts:320` |
-| `0x2010` | `STOP_SCENE` | 111 | 3 | 3 | `src/ads/scheduler.ts:328` |
-| `0x3010` | `RANDOM_START` | 77 | 0 (not in the table) | 0 | `src/ads/scheduler.ts:336` |
-| `0x3020` | `NOP` | 17 | 1 | 1 | `src/ads/scheduler.ts:340` |
-| `0x30ff` | `RANDOM_END` | 77 | 0 (not in the table) | 0 | `src/ads/scheduler.ts:345` |
-| `0x4000` | `UNKNOWN_6` | 4 | 3 | 3 | `src/ads/scheduler.ts:349` |
-| `0xf010` | `FADE_OUT` | 67 | 1 | 0 | `src/ads/scheduler.ts:352` |
-| `0xf200` | `GOSUB_TAG` | 12 | 1 | 1 | `src/ads/scheduler.ts:354` |
-| `0xffff` | `END` | 66 | 0 (not in the table); `1048:04fc` ends the section and skips the next tag word | 0 | `src/ads/scheduler.ts:359` |
-| `0xf000` | none | 0 | 0 | not listed | no case |
-| `0xf210` | none | 0 | 1 | not listed | no case |
-| `0x1010` | none | 0 | 2 | not listed | no case |
-| `0x1020` | none | 0 | 2 | not listed | no case |
-| `0x1030` | none | 0 | 2 | not listed | no case |
-| `0x1040` | none | 0 | 2 | not listed | no case |
-| `0x1050` | none | 0 | 2 | not listed | no case |
-| `0x1060` | none | 0 | 2 | not listed | no case |
-| `0x1080` | none | 0 | 1 | not listed | no case |
-| `0x1310` | none | 0 | 2 | not listed | no case |
-| `0x1320` | none | 0 | 2 | not listed | no case |
-| `0x1340` | none | 0 | 2 | not listed | no case |
-| `0x1380` | none | 0 | 1 | not listed | no case |
-| `0x1390` | none | 0 | 1 | not listed | no case |
-| `0x13a0` | none | 0 | 1 | not listed | no case |
-| `0x13a1` | none | 0 | 1 | not listed | no case |
-| `0x13b0` | none | 0 | 1 | not listed | no case |
-| `0x13b1` | none | 0 | 1 | not listed | no case |
-| `0x13c0` | none | 0 | 1 | not listed | no case |
-| `0x13c1` | none | 0 | 1 | not listed | no case |
-| `0x2000` | none | 0 | 4 | not listed | no case |
-| `0x2015` | none | 0 | 3 | not listed | no case |
-| `0x2020` | none | 0 | 3 | not listed | no case |
-| `0x4010` | none | 0 | 3 | not listed | no case |
+| `0x1070` | while playing (`0x1070`) | 1 | 2 | 2 | `src/ads/script.ts:58` `whileBlock`, `src/ads/script.ts:223` `conditionHolds` |
+| `0x1330` | if never played (`0x1330`) | 55 | 2 | 2 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:219` `conditionHolds` |
+| `0x1350` | if done (`0x1350`) | 500 | 2 | 2 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:221` `conditionHolds` |
+| `0x1360` | if idle or done (`0x1360`) | 76 | 2 | 2 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:222` `conditionHolds` |
+| `0x1370` | if playing (`0x1370`) | 30 | 2 | 2 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:223` `conditionHolds` |
+| `0x1420` | `AND` | 47 | 0 (not in the table) | 0 | `src/ads/script.ts:189` `evalConditions` |
+| `0x1430` | `OR` | 30 | 0 (not in the table) | 0 | `src/ads/script.ts:189` `evalConditions` |
+| `0x1510` | `END_IF` | 584 | 0 (not in the table) | 0 | `src/ads/script.ts:68` `runInstruction` |
+| `0x1520` | `END_WHILE` | 1 | 0 (not in the table) | 0 | `src/ads/script.ts:71` `runInstruction` |
+| `0x2005` | `ADD_SCENE` | 867 | 4 | 4 | `src/ads/script.ts:77` `runInstruction` |
+| `0x2010` | `STOP_SCENE` | 111 | 3 | 3 | `src/ads/script.ts:80` `runInstruction` |
+| `0x3010` | `RANDOM` | 77 | 0 (not in the table) | 0 | `src/ads/script.ts:97` `runInstruction` |
+| `0x3020` | `RANDOM_NOTHING` | 17 | 1 | 1 | `src/ads/script.ts:293` `randomBlock` |
+| `0x30ff` | `RANDOM_END` | 77 | 0 (not in the table) | 0 | `src/ads/script.ts:279` `randomBlock` |
+| `0x4000` | `DRAW_LAST` | 4 | 3 | 3 | `src/ads/script.ts:91` `runInstruction` |
+| `0xf010` | `STOP_SECTION` | 67 | 1 | 1 | `src/ads/script.ts:102` `runInstruction` |
+| `0xf200` | `START_SECTION` | 12 | 1 | 1 | `src/ads/script.ts:107` `runInstruction` |
+| `0xffff` | `END` | 66 | 0 (not in the table); `1048:04fc` ends the section and skips the next tag word | 0 | `src/ads/script.ts:44` `runBlock` |
+| `0xf000` | `STOP_THIS_SECTION` | 0 | 0 | 0 | `src/ads/script.ts:99` `runInstruction` |
+| `0xf210` | `RESTART_SECTION` | 0 | 1 | 1 | `src/ads/script.ts:110` `runInstruction` |
+| `0x1010` | while held (`0x1010`) | 0 | 2 | 2 | `src/ads/script.ts:58` `whileBlock`, `src/ads/script.ts:217` `conditionHolds` |
+| `0x1020` | while not held (`0x1020`) | 0 | 2 | 2 | `src/ads/script.ts:58` `whileBlock`, `src/ads/script.ts:218` `conditionHolds` |
+| `0x1030` | while never played (`0x1030`) | 0 | 2 | 2 | `src/ads/script.ts:58` `whileBlock`, `src/ads/script.ts:219` `conditionHolds` |
+| `0x1040` | while played (`0x1040`) | 0 | 2 | 2 | `src/ads/script.ts:58` `whileBlock`, `src/ads/script.ts:220` `conditionHolds` |
+| `0x1050` | while done (`0x1050`) | 0 | 2 | 2 | `src/ads/script.ts:58` `whileBlock`, `src/ads/script.ts:221` `conditionHolds` |
+| `0x1060` | while idle or done (`0x1060`) | 0 | 2 | 2 | `src/ads/script.ts:58` `whileBlock`, `src/ads/script.ts:222` `conditionHolds` |
+| `0x1080` | while counter <= n (`0x1080`) | 0 | 1 | 1 | `src/ads/script.ts:58` `whileBlock`, `src/ads/script.ts:212` `conditionHolds` |
+| `0x1310` | if held (`0x1310`) | 0 | 2 | 2 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:217` `conditionHolds` |
+| `0x1320` | if not held (`0x1320`) | 0 | 2 | 2 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:218` `conditionHolds` |
+| `0x1340` | if played (`0x1340`) | 0 | 2 | 2 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:220` `conditionHolds` |
+| `0x1380` | if value <= n (`0x1380`) | 0 | 1 | 1 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:230` `storyValueHolds` |
+| `0x1390` | if value >= n (`0x1390`) | 0 | 1 | 1 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:231` `storyValueHolds` |
+| `0x13a0` | if value <= n (`0x13a0`) | 0 | 1 | 1 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:233` `storyValueHolds` |
+| `0x13a1` | if value <= n (`0x13a1`) | 0 | 1 | 1 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:233` `storyValueHolds` |
+| `0x13b0` | if value >= n (`0x13b0`) | 0 | 1 | 1 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:234` `storyValueHolds` |
+| `0x13b1` | if value >= n (`0x13b1`) | 0 | 1 | 1 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:234` `storyValueHolds` |
+| `0x13c0` | if value == n (`0x13c0`) | 0 | 1 | 1 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:234` `storyValueHolds` |
+| `0x13c1` | if value == n (`0x13c1`) | 0 | 1 | 1 | `src/ads/script.ts:57` `ifBlock`, `src/ads/script.ts:234` `storyValueHolds` |
+| `0x2000` | `RESTART_SCENE` | 0 | 4 | 4 | `src/ads/script.ts:74` `runInstruction` |
+| `0x2015` | `HOLD_SCENE` | 0 | 3 | 3 | `src/ads/script.ts:83` `runInstruction` |
+| `0x2020` | `RESET_SCENE` | 0 | 3 | 3 | `src/ads/script.ts:86` `runInstruction` |
+| `0x4010` | `DRAW_FIRST` | 0 | 3 | 3 | `src/ads/script.ts:94` `runInstruction` |
 
-Original and scheduler differ for `0xf010` (1 against 0), `0x1520` (0 against 5), and the 24 table opcodes the scheduler does not list (`0xf000`, `0xf210`, `0x1010`..`0x1060`, `0x1080`, `0x1310`, `0x1320`, `0x1340`, `0x1380`..`0x13c1`, `0x2000`, `0x2015`, `0x2020`, `0x4010`), which its scan takes for tag words with no args; `0xf000` takes 0 args in both but is still taken for a tag.
+Ours (`adsArgCount`, `src/decode/ads-bytecode.ts:12`) and the original agree on every row.
 
-- Data: the only `0x1520` (`ACTIVITY.ADS`, byte 2052) is followed by `0x2005 4 16 0 1`. The original reads that as a no-arg `0x1520`, then a normal `0x2005`. The scheduler reads the same 5 words as `0x1520`'s args. Both land on the same next instruction.
-- Data: every `0xf010` is followed by `0xFFFF`, which the original reads as its arg. The scheduler reads it as an `END`.
+- Data: the only `0x1520` (`ACTIVITY.ADS`, byte 2052) is followed by `0x2005 4 16 0 1`. The original reads that as a no-arg `0x1520`, then a normal `0x2005`.
+- Data: every `0xf010` is followed by `0xFFFF`, which the original reads as its arg, not as a section end.
 
 ## Thunks
 
@@ -299,13 +299,13 @@ Original and scheduler differ for `0xf010` (1 against 0), `0x1520` (0 against 5)
 | `1030:1624` | `decoders_expandAmgBits` | none (AMG layers are never loaded) | match |
 | `1040:0db0` | `decoders_loadBmpMatrix` | none (no `BMP:MTX:` in the data, and no TTM script uses its opcode `0xF08F`) | match |
 | `1050:0177` | `ttm_loadTtm` | `src/decode/ttm-loader.ts:16` (`decodeTtm`: `PAG:` count, 330 when missing; `TT3:` decompressed whole) | fixed |
-| `1048:0044` | `ttm_loadTtmWithId` | `src/decode/ttm-loader.ts:16` (`decodeTtm`; the id is the scheduler's TTM slot index, `src/ads/scheduler.ts:125`) | match |
+| `1048:0044` | `ttm_loadTtmWithId` | `src/decode/ttm-loader.ts:16` (`decodeTtm`; the id is the `ADS:RES:` slot, kept on each node, `src/ads/state.ts:67` `makeAdsState`) | match |
 | `1050:04d6` | `ttm_indexPages` | `src/decode/ttm-loader.ts:25` (`indexPages`), `src/decode/ttm-bytecode.ts:13` (`readTtmInstruction`) | fixed |
 | `1050:042a` | `ttm_addTagRecord` | `src/decode/ttm-loader.ts:36` (`indexPages` `tags`) | fixed |
 | `1050:04a8` | `ttm_skipStringArg` | `src/decode/ttm-bytecode.ts:30` (`readTtmInstruction` string field) | match |
 | `1050:013e` | `ttm_readWord` | `src/decode/ttm-bytecode.ts:19` (`readTtmInstruction` `getUint16`) | match |
-| `1050:03e2` | `ttm_selectTtm` | none (each scheduler slot holds its decoded TTM directly) | match |
-| `1048:0079` | `ads_loadAds` | `src/decode/ads-loader.ts:14` (`decodeAds`: `ADS:RES:` ids and names, `ADS:SCR:` decompressed whole); failing on a missing TTM: OQ-13 | fixed |
-| `1048:0303` | `ads_nextInstruction` | `src/decode/ads-bytecode.ts:12` (`adsArgCount`); the scheduler still uses `ADS_ARG_COUNTS`: OQ-11 | fixed |
-| `1048:04fc` | `ads_indexSections` | `src/decode/ads-bytecode.ts:18` (`indexAdsSections`); the scheduler still scans on its own: OQ-11 | fixed |
-| `1048:040f` | `ads_sectionSceneIds` | none yet (scheduler state): OQ-12 | open |
+| `1050:03e2` | `ttm_selectTtm` | none (each ADS node holds its decoded TTM slot directly) | match |
+| `1048:0079` | `ads_loadAds` | `src/decode/ads-loader.ts:14` (`decodeAds`: `ADS:RES:` ids and names, `ADS:SCR:` decompressed whole); failing on a missing TTM: `src/ads/state.ts:67` (`makeAdsState`) | fixed |
+| `1048:0303` | `ads_nextInstruction` | `src/decode/ads-bytecode.ts:12` (`adsArgCount`), `src/ads/state.ts:150` (`nextInstruction`) | fixed |
+| `1048:04fc` | `ads_indexSections` | `src/decode/ads-bytecode.ts:18` (`indexAdsSections`), `src/ads/state.ts:67` (`makeAdsState`) | fixed |
+| `1048:040f` | `ads_sectionSceneIds` | `src/ads/state.ts:155` (`sectionScenes`) | fixed |

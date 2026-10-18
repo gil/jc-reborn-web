@@ -1475,7 +1475,7 @@
     "1048:0000": {
       "name": "ads_init",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Unloads every ADS slot and every TTM (1048:001b), sets up the dirty-rect pool, returns 1",
       "signature": null,
       "callingConvention": null
@@ -1483,7 +1483,7 @@
     "1048:001b": {
       "name": "ads_unloadAll",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Unloads the 10 ADS slots (1048:067f), then every TTM (1050:07c6)",
       "signature": null,
       "callingConvention": null
@@ -1563,7 +1563,7 @@
     "1048:0894": {
       "name": "ads_resumeSection",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "State 4 (run without reset) through 1048:0805; unreferenced",
       "signature": null,
       "callingConvention": null
@@ -1571,7 +1571,7 @@
     "1048:08b4": {
       "name": "ads_setSectionStateUnlessFresh",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Clears a section's resume pointer and sets its state, unless the state is exactly 8",
       "signature": null,
       "callingConvention": null
@@ -1579,7 +1579,7 @@
     "1048:0920": {
       "name": "ads_hideSection",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "State 6 (its nodes do not run) through 1048:08b4; unreferenced",
       "signature": null,
       "callingConvention": null
@@ -1587,7 +1587,7 @@
     "1048:0940": {
       "name": "ads_freezeSection",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "State 5 (its nodes replay without advancing) through 1048:08b4; unreferenced",
       "signature": null,
       "callingConvention": null
@@ -1595,7 +1595,7 @@
     "1048:0960": {
       "name": "ads_slotIndex",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Slot argument n (0 = current) to an index, or -1 when that slot is empty",
       "signature": null,
       "callingConvention": null
@@ -1603,7 +1603,7 @@
     "1048:0993": {
       "name": "ads_restartAllSections",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "State 3 through 1048:0805 for the sections whose tags are 1 to the slot's section count (numbers passed as tags); unreferenced",
       "signature": null,
       "callingConvention": null
@@ -1611,7 +1611,7 @@
     "1048:09e3": {
       "name": "ads_startAllSections",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "State 4 through 1048:0805 for the sections whose tags are 1 to the slot's section count (numbers passed as tags); unreferenced",
       "signature": null,
       "callingConvention": null
@@ -1619,7 +1619,7 @@
     "1048:0a33": {
       "name": "ads_hideAllSections",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "State 6 through 1048:08b4 (current slot) for the sections whose tags are 1 to slot n's section count; unreferenced",
       "signature": null,
       "callingConvention": null
@@ -1627,7 +1627,7 @@
     "1048:0a86": {
       "name": "ads_freezeAllSections",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "State 5 through 1048:08b4 (current slot) for the sections whose tags are 1 to slot n's section count; unreferenced",
       "signature": null,
       "callingConvention": null
@@ -1635,7 +1635,7 @@
     "1048:0ad9": {
       "name": "ads_resetAllSections",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "State 8 through 1048:08b4 for the sections whose tags are 1 to the slot's section count, then resets every node of that slot; unreferenced",
       "signature": null,
       "callingConvention": null
@@ -1811,7 +1811,7 @@
     "1048:1a4b": {
       "name": "ads_nextSectionTag",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Section tag iterator: stores the next section's tag, returns 1 at the end; unreferenced",
       "signature": null,
       "callingConvention": null
@@ -1819,7 +1819,7 @@
     "1048:1aaf": {
       "name": "ads_firstSectionTag",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Restarts the section tag iterator; unreferenced",
       "signature": null,
       "callingConvention": null
@@ -1835,7 +1835,7 @@
     "1048:1e5a": {
       "name": "ads_redrawThreads",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Re-runs the last page run of every thread of the current ADS that has one, as a replay (ran flag forced to 1, restored after), then resets the clip; no call or relocation references it",
       "signature": null,
       "callingConvention": null

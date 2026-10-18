@@ -33,7 +33,7 @@ The spec's done rule for a chunk:
 
 ## Part A: Status
 
-- [ ] **Action 1: List what is still not verified**
+- [x] **Action 1: List what is still not verified**
 
 Run:
 
@@ -54,7 +54,7 @@ Expected after step 4: the unreferenced functions (`0894`, `0920`, `0940`, `0993
 
 Then run `node scripts/re/function-map.mjs`.
 
-- [ ] **Action 2: Check the checklist**
+- [x] **Action 2: Check the checklist**
 
 Every address of the scope list has exactly one row in `Side-by-side checklist` of `docs/re/ads.md`, and every `open` row has an entry in `docs/re/open-questions.md` that names that address. Check that the `file:line` references still match:
 
@@ -62,7 +62,7 @@ Run: `rg -n "^export function|^function" src/ads/state.ts src/ads/script.ts src/
 
 Fix whatever is missing or stale.
 
-- [ ] **Action 3: Check the carry-over notes**
+- [x] **Action 3: Check the carry-over notes**
 
 Run: `rg -n "Resolve in:\*\* chunk 6" docs/re/open-questions.md`
 Expected: every match belongs to an entry whose status is `resolved (chunk 6)` (OQ-2, OQ-3, OQ-11, OQ-12, OQ-13, OQ-22) or `open, by choice`. Any other open entry with chunk 6 is either finished now or moved to the chunk that owns it, with a sentence saying why.
@@ -75,7 +75,7 @@ Expected: matches only in resolved entries, past-fix notes, or text that says th
 
 ## Part B: Past fixes
 
-- [ ] **Action 4: Review the chunk 6 rows of "Past fixes to re-check"**
+- [x] **Action 4: Review the chunk 6 rows of "Past fixes to re-check"**
 
 The table in `docs/re/open-questions.md` lists these commits for chunk 6: `eb46290` (force-stop orphan TTM threads after ADS END), `8adc66a` (various consistency fixes; chunks 6, 7), `f47def5` and `7fef3c3` (mini-based pacing; no second pass in adsTick), `194d7fb` (thread leak sweeps; chunks 6, 7), `a933bf7` (UNKNOWN_6 back to a no-op), `a9610d3` (clear saved zones when a slot's threads stop), `966476f` (UNKNOWN_6 checks whether the scene runs), `27684eb` (threads rendering on top of each other), `c126833` (nothing would start after certain scenes), `db6d598` (flickering animation sprites). For each:
 
@@ -102,7 +102,7 @@ Then, in the table, change the Chunk cell of each reviewed row from `6` to `6 (r
 
 ## Part C: Comments and docs
 
-- [ ] **Action 5: Audit the comments**
+- [x] **Action 5: Audit the comments**
 
 Run: `rg -n "//|/\*" src/ads src/testing/ads-build.ts src/testing/ads-trace.ts src/walk/walk.ts src/story/story.ts src/main.ts`
 
@@ -116,7 +116,7 @@ For each comment, apply the overview's rule: keep it only if a competent enginee
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 6: Update the ADS opcode coverage**
+- [x] **Action 6: Update the ADS opcode coverage**
 
 In `docs/re/decoders.md`, `ADS opcode coverage`:
 
@@ -127,7 +127,7 @@ In `docs/re/decoders.md`, `ADS opcode coverage`:
 Run: `rg -n "scheduler\.ts|ADS_ARG_COUNTS" docs/re/decoders.md`
 Expected: no output.
 
-- [ ] **Action 7: Commit**
+- [x] **Action 7: Commit**
 
 ```bash
 git add scripts/re/names.json docs/re/function-map.md docs/re/ads.md docs/re/open-questions.md docs/re/decoders.md docs/re/ttm.md src
