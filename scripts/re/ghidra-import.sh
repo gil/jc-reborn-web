@@ -18,6 +18,7 @@ mkdir -p "$project_dir" "$out_dir"
   -import "$binary" -overwrite \
   -scriptPath "$repo/scripts/re/ghidra" \
   -postScript ApplyNames.java "$repo/scripts/re/names.json" \
+  -postScript ApplyJumpTables.java "$repo/scripts/re/jump-tables.json" "$out_dir" \
   -postScript ExportFunctions.java "$out_dir" \
   > "$log" 2>&1
 

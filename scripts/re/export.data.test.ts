@@ -68,4 +68,25 @@ describe.skipIf(!existsSync(OUT))('Ghidra export of SCRANTIC.SCR', () => {
   it('exports one relocation per NE relocation record', () => {
     expect(readTsv('relocations.tsv')).toHaveLength(1346);
   });
+
+  it('puts every jump table case in the function that jumps to it', () => {
+    const filesWith = new Map<string, Set<string>>();
+    for (const file of readdirSync(OUT + 'functions').filter((f) => f.endsWith('.asm'))) {
+      for (const line of readFileSync(OUT + 'functions/' + file, 'utf8').split('\n')) {
+        const address = line.slice(0, 9);
+        if (!/^[0-9a-f]{4}:[0-9a-f]{4}$/.test(address)) continue;
+        if (!filesWith.has(address)) filesWith.set(address, new Set());
+        filesWith.get(address)!.add(file);
+      }
+    }
+    const rows = readTsv('jump-tables.tsv');
+    expect(rows).toHaveLength(240);
+    expect(rows.find((row) => row.jump === '1058:06a5' && row.index === '0')).toMatchObject({ value: '0010', target: '1058:0a78' });
+    expect(rows.find((row) => row.jump === '1058:1088' && row.index === '13')).toMatchObject({ value: 'a601', target: '1058:1158' });
+    const wrong = rows.filter((row) => {
+      const jumpFiles = filesWith.get(row.jump!) ?? new Set<string>();
+      return ![...(filesWith.get(row.target!) ?? [])].some((file) => jumpFiles.has(file));
+    });
+    expect(wrong.map((row) => `${row.jump} -> ${row.target}`)).toEqual([]);
+  });
 });
