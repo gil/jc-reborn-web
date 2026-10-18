@@ -9,8 +9,8 @@ import { loadThreadDrawState, makeThread, makeTtmSlot, type Bitmaps } from '../t
 
 export type TraceEvent = [string, ...(string | number)[]];
 
-const TRACE_ISLAND_X = 7;
-const TRACE_ISLAND_Y = 5;
+export const TRACE_ISLAND_X = 7;
+export const TRACE_ISLAND_Y = 5;
 const TRACE_TTM_ID = 1;
 
 export function traceRandom(call: number): number {
