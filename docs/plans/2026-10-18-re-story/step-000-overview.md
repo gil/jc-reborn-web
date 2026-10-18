@@ -211,7 +211,7 @@ Read for the interface, left to chunk 8: `1018:0000`, `1018:004d`, `1018:0074`, 
 - [x] `step-004-island-findings.md`: `docs/re/island.md` written from every `1010` function.
 - [x] `step-005-original-island-trace.md`: Unicorn runs the original island drawing and animation and writes `re/fixtures/island/traces.tsv`.
 - [x] `step-006-island-port.md`: `src/island/` rewritten as a port through `IslandDevice`, pinned by unit tests and equal to the original trace.
-- [ ] `step-007-story-step-and-loop.md`: the story step, ADS by id, settings, the 50 ms step and 16 ms clock, the walk bridge, `src/main.ts`; old story code and its workarounds deleted; open questions updated; browser check.
+- [x] `step-007-story-step-and-loop.md`: the story step, ADS by id, settings, the 50 ms step and 16 ms clock, the walk bridge, `src/main.ts`; old story code and its workarounds deleted; open questions updated; browser check.
 - [ ] `step-008-chunk-wrap-up.md`: every in-scope function `verified` or logged, past fixes reviewed, comment audit, full rebuild and test run, spec checkbox ticked.
 
 Order: run the steps one at a time, in number order. Step 2 needs step 1's names (addresses only, but its findings say what to trace). Step 3 needs steps 1 and 2. Step 4 needs step 1's export. Step 5 needs step 4. Step 6 needs steps 3 (`StoryRandom`, `IslandFlags`) and 5. Step 7 needs steps 3 and 6. Step 8 needs all of them.

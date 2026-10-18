@@ -30,7 +30,7 @@ This step wires the ports into the engine and deletes what the original does not
 
 ## Part A: Settings
 
-- [ ] **Action 1: Write the failing tests**
+- [x] **Action 1: Write the failing tests**
 
 Create `src/story/settings.test.ts`:
 
@@ -91,7 +91,7 @@ describe('settings', () => {
 Run: `pnpm exec vitest run src/story/settings.test.ts`
 Expected: FAIL, cannot resolve `./settings.js`.
 
-- [ ] **Action 2: Write `src/story/settings.ts`**
+- [x] **Action 2: Write `src/story/settings.ts`**
 
 ```ts
 import type { IslandSettings } from '../island/island.js';
@@ -187,7 +187,7 @@ export function saveSettings(store: SettingsStore, world: StoryWorld, island: Is
 Run: `pnpm exec vitest run src/story/settings.test.ts`
 Expected: PASS.
 
-- [ ] **Action 3: Commit**
+- [x] **Action 3: Commit**
 
 ```bash
 git add src/story/settings.ts src/story/settings.test.ts
@@ -196,7 +196,7 @@ git commit -m "feat(story): SCRANTIC.INI settings in local storage"
 
 ## Part B: Engine clock
 
-- [ ] **Action 4: Write the failing test**
+- [x] **Action 4: Write the failing test**
 
 Create `src/engine/clock.test.ts`:
 
@@ -236,7 +236,7 @@ describe('engine clock', () => {
 Run: `pnpm exec vitest run src/engine/clock.test.ts`
 Expected: FAIL (`EngineClock` is not exported).
 
-- [ ] **Action 5: Rewrite `src/engine/clock.ts`**
+- [x] **Action 5: Rewrite `src/engine/clock.ts`**
 
 ```ts
 export const STEP_MS = 50;
@@ -275,7 +275,7 @@ Expected: PASS. (`src/main.ts` stops compiling until Part E; do not run `tsc` ye
 
 ## Part C: Walk bridge
 
-- [ ] **Action 6: Change `src/walk/walk.ts`**
+- [x] **Action 6: Change `src/walk/walk.ts`**
 
 Replace `walkTick` and add `walkHold`:
 
@@ -303,7 +303,7 @@ The walk timers (6 per frame, 80 at arrival) now count 16 ms clock ticks instead
 
 ## Part D: The story step
 
-- [ ] **Action 7: Write the failing tests**
+- [x] **Action 7: Write the failing tests**
 
 Create `src/story/story.test.ts`:
 
@@ -446,7 +446,7 @@ describe.skipIf(!hasCorpus)('story on the real data', () => {
 Run: `pnpm exec vitest run src/story/story.test.ts`
 Expected: FAIL (`makeStoryState` is not exported).
 
-- [ ] **Action 8: Rewrite `src/story/story.ts`**
+- [x] **Action 8: Rewrite `src/story/story.ts`**
 
 ```ts
 import { decodeAds } from '../decode/ads-loader.js';
@@ -669,7 +669,7 @@ Expected: PASS.
 
 ## Part E: Main loop and clean-up
 
-- [ ] **Action 9: Rewrite `src/main.ts`**
+- [x] **Action 9: Rewrite `src/main.ts`**
 
 ```ts
 import { fetchData } from './io/fetch-resources.js';
@@ -776,7 +776,7 @@ startLoop(
 
 The startup order follows `1008:143c`: intro into B and onto the window, the random seed (`1018:1ed4`), the first `1010:0136` (loads only). The 2 s hold before the first step is OQ-32.
 
-- [ ] **Action 10: Update the ADS data test and delete the old files**
+- [x] **Action 10: Update the ADS data test and delete the old files**
 
 In `src/ads/tick.data.test.ts`, replace the import `import { storyScenes } from '../story/story-data.js';` with `import { ADS_FILES, SCENES } from '../story/scene-table.js';`, and replace the whole second `describe` block with:
 
@@ -811,7 +811,7 @@ Run: `git rm src/story/story-data.ts src/island/legacy-island.ts`
 Run: `rg -n "story-data|legacy-island|storyScenes|islandRt|pumpMs|msPerTick|playingTicks|WATCHDOG|jc_story" src`
 Expected: no output.
 
-- [ ] **Action 11: Type check and run every test**
+- [x] **Action 11: Type check and run every test**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -819,7 +819,7 @@ Expected: no errors.
 Run: `pnpm test`
 Expected: all pass. `src/story/story.data.test.ts` is slow (minutes). If its second test reports a stuck entry, find that section in `docs/re/ads.md` (`Emulated`): a section that the original also never ends with its random picks is a finding for OQ-1, not a bug; one the original ends is a bug in the bridge or the step. Do not add a time limit.
 
-- [ ] **Action 12: Commit**
+- [x] **Action 12: Commit**
 
 ```bash
 git add src docs
@@ -828,7 +828,7 @@ git commit -m "feat(story): port the story step and main loop; delete the phase 
 
 ## Part F: Findings and open questions
 
-- [ ] **Action 13: Update the checklist**
+- [x] **Action 13: Update the checklist**
 
 In `docs/re/story.md`, `Side-by-side checklist` (line numbers from `rg -n "^export function|^function|^export class" src/story/story.ts src/story/settings.ts src/engine/clock.ts src/engine/timers.ts src/main.ts src/island/island.ts`):
 
@@ -853,7 +853,7 @@ In `docs/re/story.md`, `Side-by-side checklist` (line numbers from `rg -n "^expo
 
 Check that every row of the checklist now has a status other than `open`, or an open-questions entry naming its address.
 
-- [ ] **Action 14: Update the open questions**
+- [x] **Action 14: Update the open questions**
 
 In `docs/re/open-questions.md`:
 
@@ -892,7 +892,7 @@ In `docs/re/open-questions.md`:
 - **Status:** open, by choice
 ```
 
-- [ ] **Action 15: Commit**
+- [x] **Action 15: Commit**
 
 ```bash
 git add docs/re/story.md docs/re/open-questions.md
@@ -901,7 +901,7 @@ git commit -m "docs(re): story step and main loop checked against the original"
 
 ## Part G: Browser check
 
-- [ ] **Action 16: Smoke test in the browser**
+- [x] **Action 16: Smoke test in the browser**
 
 Run in the background: `pnpm dev --port 5173 --strictPort`
 
@@ -919,7 +919,7 @@ You cannot see the canvas yourself; do not mark this action done without their a
 
 Stop the dev server: `lsof -ti :5173 -sTCP:LISTEN | xargs kill -9`
 
-- [ ] **Action 17: Commit any fixes**
+- [x] **Action 17: Commit any fixes**
 
 If the browser check led to changes:
 
@@ -930,7 +930,7 @@ git commit -m "fix(story): <what the browser check found>"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
