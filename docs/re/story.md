@@ -161,24 +161,24 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 | `1008:034f` | `platform_configureDialog` | none (out of scope, OQ-35) | match |
 | `1008:0517` | `platform_configureDialogItems` | none (out of scope, OQ-35) | match |
 | `1008:0a2d` | `platform_changePasswordDialog` | none (out of scope, OQ-35) | match |
-| `1008:0c5c` | `platform_loadSettings` | `src/story/story.ts` (`localStorage` day counter) | open |
-| `1008:0dc8` | `platform_saveSettings` | `src/story/story.ts` (`localStorage` day counter) | open |
-| `1008:0fcd` | `platform_screenSaverProc` | `src/main.ts`, `src/engine/loop.ts` | open |
+| `1008:0c5c` | `platform_loadSettings` | `src/story/settings.ts:58` `loadSettings` | fixed |
+| `1008:0dc8` | `platform_saveSettings` | `src/story/settings.ts:73` `saveSettings` (after each new sequence, OQ-33) | fixed |
+| `1008:0fcd` | `platform_screenSaverProc` | `src/main.ts` loop and `src/engine/clock.ts:19` `EngineClock.stepDue` | fixed |
 | `1008:12eb` | `platform_setDialogStartTime` | none (out of scope, OQ-35) | match |
 | `1008:13cd` | `platform_pumpInputMessage` | none (out of scope, OQ-35) | match |
-| `1008:143c` | `platform_initSaver` | `src/main.ts`, `src/story/story.ts` (`storyInit`), `src/island/island.ts:96` `drawIntro` | open |
-| `1008:157b` | `platform_shutdownSaver` | none | open |
-| `1008:15c8` | `story_idleTick` | `src/main.ts` | open |
-| `1008:16c2` | `platform_clockTick` | `src/engine/clock.ts` | open |
-| `1018:0540` | `story_newSequence` | `src/story/story.ts` | open |
-| `1018:0673` | `story_endSequence` | `src/story/story.ts` | open |
-| `1018:06bf` | `story_step` | `src/story/story.ts` (`storyTick`) | open |
+| `1008:143c` | `platform_initSaver` | `src/main.ts` startup, `src/island/island.ts:96` `drawIntro` (intro held 2 s, OQ-32) | fixed |
+| `1008:157b` | `platform_shutdownSaver` | none (nothing to free in JavaScript) | match |
+| `1008:15c8` | `story_idleTick` | `src/main.ts` loop (one `storyStep` per step); `1068:30bc` is never set, `Island.speed` stays 0 | fixed |
+| `1008:16c2` | `platform_clockTick` | `src/engine/timers.ts:12` `clockTick` (`30d4` is chunk 8's, `3f2c` is dead) | fixed |
+| `1018:0540` | `story_newSequence` | `src/story/story.ts:111` `startSequence` + `src/story/sequence.ts` `newSequence` | fixed |
+| `1018:0673` | `story_endSequence` | `src/story/story.ts:100` `wipeDone` + `startSequence` (`state.ads = null`) | fixed |
+| `1018:06bf` | `story_step` | `src/story/story.ts:59` `storyStep` (no pause or forced-sequence test: nothing writes `1068:334a` or `1068:1dbc`) | fixed |
 | `1018:089b` | `story_buildQueue` | `src/story/sequence.ts:161` `buildQueue` | fixed |
-| `1018:0b46` | `story_isAtSpot` | `src/story/story.ts` | open |
+| `1018:0b46` | `story_isAtSpot` | `src/story/story.ts:82` `isAtSpot` | fixed |
 | `1018:0b87` | `story_advanceDays` | `src/story/sequence.ts:116` `advanceDays` | fixed |
 | `1018:0c21` | `story_halfHourSlot` | `src/story/calendar.ts:25` `halfHourSlot` | fixed |
-| `1018:0c62` | `ads_loadAdsById` | `src/story/story.ts` (`storyPlayScene`) | open |
-| `1018:0d11` | `ads_unloadAdsById` | none | open |
+| `1018:0c62` | `ads_loadAdsById` | `src/story/story.ts:146` `loadAdsById` | fixed |
+| `1018:0d11` | `ads_unloadAdsById` | `src/story/story.ts:146` `loadAdsById` / `startSequence` (drop the cached state) | fixed |
 | `1018:0d50` | `story_pickScene` | `src/story/sequence.ts:133` `pickScene` | fixed |
 | `1018:0e7b` | `story_findScene` | none (unreferenced) | match |
 | `1018:0eb5` | `story_fitsIsland` | `src/story/sequence.ts:93` `fitsIsland` | fixed |
@@ -188,15 +188,15 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 | `1018:1ef5` | `story_randomPercent` | `src/story/random.ts:22` `percentPick` | fixed |
 | `1020:0000` | `audio_loadWaveResources` | none (out of scope, OQ-35) | match |
 | `1020:0085` | `audio_closeMciDevice` | none (out of scope, OQ-35) | match |
-| `1020:00ba` | `audio_playSound` | `src/story/story.ts` (plays 17 for a day scene) | open |
+| `1020:00ba` | `audio_playSound` | `src/story/story.ts:59` `storyStep` (`playSound(25)`); playback out of scope | match |
 | `1020:0106` | `platform_encodePassword` | none (out of scope, OQ-35) | match |
 | `1020:013f` | `platform_checkPassword` | none (out of scope, OQ-35) | match |
 | `1020:019c` | `platform_requestExit` | none (out of scope, OQ-35) | match |
 | `1020:026e` | `platform_passwordDialog` | none (out of scope, OQ-35) | match |
 | `1020:081c` | `platform_debugLog` | none (out of scope, OQ-35) | match |
 | `1020:082a` | `platform_adsControlDialog` | none (out of scope, OQ-35) | match |
-| `1040:076a` | `platform_initTimers` | `src/engine/clock.ts` (20 ms tick) | open |
-| `1040:079e` | `platform_clearTimers` | none | open |
-| `1040:07e6` | `platform_addTimerCallback` | `src/engine/clock.ts` | open |
-| `1040:085a` | `platform_removeTimerCallback` | none (unreferenced) | match |
-| `1040:089a` | `platform_runTimerCallbacks` | `src/engine/clock.ts` | open |
+| `1040:076a` | `platform_initTimers` | `src/engine/clock.ts:4` `EngineClock` (16 ms, catch-up, resume; even ticks, OQ-36) | fixed |
+| `1040:079e` | `platform_clearTimers` | none (no timer is ever removed while running) | match |
+| `1040:07e6` | `platform_addTimerCallback` | `src/engine/clock.ts:4` `EngineClock` (16 ms, catch-up, resume; even ticks, OQ-36) | fixed |
+| `1040:085a` | `platform_removeTimerCallback` | none (no timer is ever removed while running) | match |
+| `1040:089a` | `platform_runTimerCallbacks` | `src/engine/clock.ts:13` `EngineClock.ticksDue` (16 ms, catch-up, resume; even ticks, OQ-36) | fixed |

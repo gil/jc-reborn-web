@@ -4,14 +4,6 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 ## Workarounds without a known root cause
 
-### OQ-1: Story watchdog force-ends scenes after 8000 ticks
-
-- **Where:** `src/story/story.ts` (`case 'playing'`)
-- **What it does:** ends the current scene through `endScene` once `playingTicks > 8000`, without touching ADS state. It counts engine ticks (20 ms each, OQ-29).
-- **Old guess behind it:** some scenes cycle forever without reaching an end.
-- **Resolve in:** chunk 7 (story and main loop)
-- **Status:** open
-
 ### OQ-8: Resource lookup is case-sensitive in our code
 
 - **Where:** `src/resource/resource-archive.ts`, `src/ttm/gdi-device.ts` (`find`)
@@ -76,53 +68,13 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Resolution:** the scheduler, island, walk, story, and main loop draw through src/gfx/gdi/ (buffers B and C, dirty rects, restore pass, window). The layer pipeline (src/gfx/layer.ts, primitives.ts, sprite.ts, clip.ts, zone.ts, compositor.ts, src/ttm/interpreter.ts, thread.ts, bmp-slots.ts) and its workarounds (lingeringLayers, clearSavedZones, the zone layer) are deleted. The connections that are not checked yet are OQ-22, OQ-24, OQ-25, OQ-26, and OQ-28.
 - **Status:** resolved (chunk 5)
 
-### OQ-21: Wipe speed
-
-- **Where:** `src/gfx/fade.ts` (`WIPE_TICKS`), `src/story/story.ts` (one `step++` per story tick)
-- **What it does:** spreads every wipe over 16 story ticks, showing a proportional share of its shapes each tick.
-- **Original:** `1020:0512`..`1020:071c` draw every shape in one go, pumping window messages between shapes (`1008:13cd`), with no timer: the speed is whatever the machine manages. The story waits for the call to return.
-- **Old guess behind it:** a visible wipe needs a fixed duration in a browser frame loop.
-- **Resolve in:** chunk 7 (story and main loop): decide a duration from the original's timing model, if any, when the story's call to `1020:0364` (`1018:0673`) is read
-- **Status:** open
-
 ### OQ-25: Walk drawing bridge
 
 - **Where:** `src/walk/walk.ts` (`startWalk`, `walkTick`, `walkDraw`), ticked once per engine tick by `src/main.ts` while the story walks
 - **What it does:** the current walk frame is drawn on B every tick with the TTM sprite rects (`(x, y, w, h + 2)` into `(B → A, 0)`, `(B → A, 1)`, `(C → B, 0)`), and the palm is drawn over Johnny when he is behind it. The last frame is drawn again on the tick the walk ends, so he stays on screen through the 80-tick arrival rest. Browser check (2026-10-18): without that, Johnny vanished for the rest (1.6 s) before the next scene; pinned in `src/walk/walk.data.test.ts`.
 - **Original:** walking is driven from `1048` (chunk 8); its draw calls and rects are not checked.
+- **Story bridge (chunk 7):** the story calls the walk through `src/story/story.ts` (`walkStep`, `holdJohnny`, `newWalk`), all made up: spots 1..6 become 0..5; a target spot or heading of "any" means the current one; with Johnny at spot 0 he is moved without walking; idle entries draw his standing frame each step (`walkHold`); the walk offset is the island offset plus one (`1018:0094` draws at the island offset plus the frame's x, and `walkDraw` subtracts one); the walk timers (6, 80) now count 16 ms clock ticks; the 80-tick arrival rest is jc_reborn's and has no counterpart in `1018:06bf`.
 - **Resolve in:** chunk 8 (walking)
-- **Status:** open
-
-### OQ-26: Random numbers come from Math.random
-
-- **Where:** `src/main.ts` (`random`, shared by `GdiDevice` and `makeAdsState`), `src/island/island.ts`, `src/story/story.ts`
-- **What it does:** draws 16-bit values (and fractions) from `Math.random`. ADS random picks (`1048:0cda`) and the device share one source, `game.random`.
-- **Original:** `1018:1e60` with its own seed; the sequence decides delays of `0x2022`, ADS random picks, and island choices.
-- **Resolve in:** chunk 7 (story and island)
-- **Status:** open
-
-### OQ-28: Engine tick order
-
-- **Where:** `src/main.ts` (the loop)
-- **What it does:** `storyTick`, `storyAnimateBg(1)`, `walkTick` (walks only), `storyPlayScene` (`adsTick`, then `adsSectionBusy`), `storyRedrawHoliday`, `display.restorePass(0)`. Sound 25 has no counterpart.
-- **Original:** `1018:06bf`: `1010:040e(0)`, ..., `1048:1acb`, `1048:0766`, `1010:1e50(0)`, sound 25 when due, `1060:03d3(0)`.
-- **Resolve in:** chunk 7 (story and island)
-- **Status:** open
-
-### OQ-29: One ADS tick per engine tick, with the tick count as the clock
-
-- **Where:** `src/main.ts` (the loop, `now`), `src/engine/clock.ts` (`MS_PER_TICK = 20`)
-- **What it does:** runs one story step (and one ADS tick while a scene plays) every 20 ms and passes the number of steps so far as the clock that due times and end times are compared with.
-- **Original:** `1008:16c2` adds 1 to the clock `1068:2e70`/`2e72` per timer callback; `1018:06bf` runs from the message loop (`1008:15c8`), so several steps can run per clock tick, or none. The timer rate and how often the story step runs are not checked.
-- **Resolve in:** chunk 7 (story and main loop)
-- **Status:** open
-
-### OQ-30: The ADS is loaded fresh for every scene
-
-- **Where:** `src/story/story.ts` (`startScene`)
-- **What it does:** builds a new `AdsState` for each scene, so every node starts idle.
-- **Original:** `1018:0c62` keeps the loaded ADS when the next scene uses the same ADS id, so nodes keep their modes, and a node of the previous scene that loops on itself can go on playing; it unloads the ADS (`1048:067f`) only when the id changes.
-- **Resolve in:** chunk 7 (story and main loop)
 - **Status:** open
 
 ## Past fixes to re-check against the original
@@ -184,6 +136,16 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **Chunk 5:** only TTM opcodes 0xa204..0xa294 draw text, through 1030:04ce; no TTM script uses them or the font opcodes (docs/re/ttm.md, Text and fonts). The engine does not draw text.
 - **Status:** open, by choice
 
+### OQ-21: Wipe speed
+
+- **Where:** `src/gfx/fade.ts` (`WIPE_TICKS`), `src/story/story.ts` (one `step++` per story tick)
+- **What it does:** spreads every wipe over 16 story ticks, showing a proportional share of its shapes each tick.
+- **Original:** `1020:0512`..`1020:071c` draw every shape in one go, pumping window messages between shapes (`1008:13cd`), with no timer: the speed is whatever the machine manages. The story waits for the call to return.
+- **Old guess behind it:** a visible wipe needs a fixed duration in a browser frame loop.
+- **Resolve in:** chunk 7 (story and main loop): decide a duration from the original's timing model, if any, when the story's call to `1020:0364` (`1018:0673`) is read
+- **Resolution:** kept by choice (user, 2026-10-18): a wipe takes `WIPE_TICKS = 16` story steps, 0.8 s at the original's 50 ms step; the story does nothing else meanwhile, as `1020:0364` blocks `1018:0540`.
+- **Status:** resolved (chunk 7), by choice
+
 ### OQ-23: Page-runner guards where the original misbehaves
 
 - **Where:** `src/ttm/page-runner.ts`
@@ -226,7 +188,40 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **Why not reviewed:** none of them changes what the screen saver draws or when; the browser has its own page, controls, and sound playback (`docs/re/story.md`, `Exit and dialogs`).
 - **Status:** open, by choice
 
+### OQ-32: The intro is held 2 s before the first story step
+
+- **Where:** `src/main.ts` (`INTRO_HOLD_MS`)
+- **What it does:** shows `INTRO.SCR` for 2 s before the first step, which starts the first wipe.
+- **Original:** `1008:143c` draws `INTRO.SCR` and the first `WM_TIMER`, 50 ms later, runs `1018:0540`, which wipes at once. On a 1991 PC the loading around it kept the intro on screen for a while.
+- **Why not reviewed:** user's choice (2026-10-18): in a browser the original timing makes the intro a flash.
+- **Status:** open, by choice
+
+### OQ-33: Settings are saved after each new sequence
+
+- **Where:** `src/story/story.ts` (`startSequence`), `src/story/settings.ts`
+- **What it does:** writes the `SCRANTIC.INI` values to local storage every time a sequence starts.
+- **Original:** `1008:0dc8` writes them once, on `WM_DESTROY`.
+- **Why not reviewed:** a browser tab can close without warning; the values only change in `1018:0b87`, which runs at the start of a sequence, so saving there loses nothing.
+- **Status:** open, by choice
+
+### OQ-36: The clock ticks evenly every 16 ms
+
+- **Where:** `src/engine/clock.ts`
+- **What it does:** one clock tick per 16 ms of real time, one story step per 50 ms.
+- **Original:** `1040:089a` compares slot times with `GetCurrentTime`, which on Windows 3.x moves in 55 ms jumps, so the 16 ms callback fired three or four times in a burst; `WM_TIMER` came at the same 55 ms granularity. The average rates match ours.
+- **Why not reviewed:** the bursts depend on the PC's timer chip, not on `SCRANTIC.SCR`.
+- **Status:** open, by choice
+
 ## Resolved
+
+### OQ-1: Story watchdog force-ends scenes after 8000 ticks
+
+- **Where:** `src/story/story.ts` (`case 'playing'`)
+- **What it does:** ends the current scene through `endScene` once `playingTicks > 8000`, without touching ADS state. It counts engine ticks (20 ms each, OQ-29).
+- **Old guess behind it:** some scenes cycle forever without reaching an end.
+- **Resolve in:** chunk 7 (story and main loop)
+- **Resolution:** `1018:06bf` has no time limit; an entry ends when `1048:0766` says its section is idle, or when an idle entry's wait (`1068:334c`) runs out. The watchdog is deleted. `src/story/story.data.test.ts` plays every scene table entry of every ADS file to its end with the ported random generator: all 65 ADS entries end, from 42 to 2490 story steps (2.1 s to 2 min 4 s at 50 ms, walk to the start spot included; median 500); `ACTIVITY.ADS` tag 6 ends after 313 steps, the longest is `STAND.ADS` tag 5.
+- **Status:** resolved (chunk 7)
 
 ### OQ-2: ADS pre-tick sweep frees threads with a nil TTM slot
 
@@ -338,4 +333,40 @@ Settled by chunk 5: 1030:03d7 is reached only from 1058:025b for opcodes 0xa506,
 - **Original:** `1010:040e` (waves and island bits), `1010:1e50` (holiday), and the island setup; which surfaces and rects they use is not checked.
 - **Resolve in:** chunk 7 (story and island)
 - **Resolution:** `src/island/island.ts` ports `1010:0136`, `1010:040e`, `1010:1e50` and their helpers through `IslandDevice` (`src/island/island-device.ts`); every case of the island trace matches the original (`src/island/island.data.test.ts`, `docs/re/island.md`, `Emulated`). The left-island offset comes from `1010:1b00` (place bit 1: island at `(0x11, 0x135)`, so offset `(-272, 30)`) and the TTM offset from `1010:00fc` (`+1`, or `+0x111` for scenes with flag `0x400`). Wired into the story in step 7.
+- **Status:** resolved (chunk 7)
+
+### OQ-26: Random numbers come from Math.random
+
+- **Where:** `src/main.ts` (`random`, shared by `GdiDevice` and `makeAdsState`), `src/island/island.ts`, `src/story/story.ts`
+- **What it does:** draws 16-bit values (and fractions) from `Math.random`. ADS random picks (`1048:0cda`) and the device share one source, `game.random`.
+- **Original:** `1018:1e60` with its own seed; the sequence decides delays of `0x2022`, ADS random picks, and island choices.
+- **Resolve in:** chunk 7 (story and island)
+- **Resolution:** one `StoryRandom` (`1018:1e60`, `src/story/random.ts`) seeded by dropping `time() & 0xffff` numbers (`1018:1ed4`, `src/main.ts`) serves the story, the island, ADS random blocks (`makeAdsState`), and TTM `0x2022` (`GdiDevice`); pinned against the original in `src/story/random.data.test.ts`.
+- **Status:** resolved (chunk 7)
+
+### OQ-28: Engine tick order
+
+- **Where:** `src/main.ts` (the loop)
+- **What it does:** `storyTick`, `storyAnimateBg(1)`, `walkTick` (walks only), `storyPlayScene` (`adsTick`, then `adsSectionBusy`), `storyRedrawHoliday`, `display.restorePass(0)`. Sound 25 has no counterpart.
+- **Original:** `1018:06bf`: `1010:040e(0)`, ..., `1048:1acb`, `1048:0766`, `1010:1e50(0)`, sound 25 when due, `1060:03d3(0)`.
+- **Resolve in:** chunk 7 (story and island)
+- **Resolution:** `storyStep` (`src/story/story.ts`) follows `1018:06bf`: island step, walk or entry, holiday redraw, sound 25, restore pass; clock ticks run between steps.
+- **Status:** resolved (chunk 7)
+
+### OQ-29: One ADS tick per engine tick, with the tick count as the clock
+
+- **Where:** `src/main.ts` (the loop, `now`), `src/engine/clock.ts` (`MS_PER_TICK = 20`)
+- **What it does:** runs one story step (and one ADS tick while a scene plays) every 20 ms and passes the number of steps so far as the clock that due times and end times are compared with.
+- **Original:** `1008:16c2` adds 1 to the clock `1068:2e70`/`2e72` per timer callback; `1018:06bf` runs from the message loop (`1008:15c8`), so several steps can run per clock tick, or none. The timer rate and how often the story step runs are not checked.
+- **Resolve in:** chunk 7 (story and main loop)
+- **Resolution:** a story step every 50 ms (`1008:0fcd` `SetTimer`), at most one per period; the clock and its countdowns every 16 ms (`1040:076a(13)`, `1040:07e6(.., 4)`, `1008:16c2`), caught up after a slow frame (`EngineClock`, `src/engine/clock.ts`). The ADS tick gets the clock `Timers.now`, not a step count.
+- **Status:** resolved (chunk 7)
+
+### OQ-30: The ADS is loaded fresh for every scene
+
+- **Where:** `src/story/story.ts` (`startScene`)
+- **What it does:** builds a new `AdsState` for each scene, so every node starts idle.
+- **Original:** `1018:0c62` keeps the loaded ADS when the next scene uses the same ADS id, so nodes keep their modes, and a node of the previous scene that loops on itself can go on playing; it unloads the ADS (`1048:067f`) only when the id changes.
+- **Resolve in:** chunk 7 (story and main loop)
+- **Resolution:** `loadAdsById` (`src/story/story.ts`) keeps the ADS state while consecutive entries use the same id, and every new sequence drops it (`1018:0c62`, `1018:0673`).
 - **Status:** resolved (chunk 7)
