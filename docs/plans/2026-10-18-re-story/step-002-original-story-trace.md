@@ -28,7 +28,7 @@
 
 The original sequence builder runs as original code with the original random generator. Only drawing, the wipe, the ADS unload, the debug log, and the DOS date and time calls are replaced. If `docs/re/story.md` names a call inside `1018:0540` that this list misses and that touches memory outside the data segment, replace it too and say so in `Emulated`.
 
-- [ ] **Action 1: Write the failing harness test**
+- [x] **Action 1: Write the failing harness test**
 
 Create `scripts/re/unicorn/test_original_story.py`:
 
@@ -148,12 +148,12 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Action 2: Run it to make sure it fails**
+- [x] **Action 2: Run it to make sure it fails**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_story.py' -v`
 Expected: ERROR, `ModuleNotFoundError: No module named 'original_story'`.
 
-- [ ] **Action 3: Write the harness**
+- [x] **Action 3: Write the harness**
 
 Create `scripts/re/unicorn/original_story.py`:
 
@@ -309,12 +309,12 @@ class StoryTracer:
 
 Check `set_byte`/`set_word`'s argument order in `original_graphics.py` (`set_word(emu, address, value)`) before relying on it.
 
-- [ ] **Action 4: Run the test**
+- [x] **Action 4: Run the test**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_story.py' -v`
 Expected: all pass. If `trace_case` raises `UnstubbedImport` or `EmulationLimit`, read which call it stopped in, check `docs/re/story.md`, and replace that call with a quiet handler only if it is drawing, sound, or file work; note it for `Emulated`. If a test fails, the harness or the test is wrong, not the original: compare with `story.md` and fix whichever disagrees with the assembly.
 
-- [ ] **Action 5: Write the dump script**
+- [x] **Action 5: Write the dump script**
 
 Create `scripts/re/unicorn/dump_story.py`:
 
@@ -366,7 +366,7 @@ Expected: 16 `case` lines on stderr, exit 0, and four files in `re/fixtures/stor
 Run: `wc -l re/fixtures/story/sequences.tsv re/fixtures/story/random.tsv`
 Expected: `961` lines (16 × 30 × 2 + header) and `3101` lines (5 × 300 + 8 × 200 + header).
 
-- [ ] **Action 6: Look at the trace**
+- [x] **Action 6: Look at the trace**
 
 Read a few cases by eye and note for `Emulated`:
 
@@ -375,7 +375,7 @@ Read a few cases by eye and note for `Emulated`:
 3. Whether NumDays and Introduction move as `story.md` (`Day counters`) predicts over the cases with date changes.
 4. Whether any queue contains an index outside 1..79 (a null kind-1 pick shows as a queue cut short; see OQ-34). If the harness sees one, note the case and build.
 
-- [ ] **Action 7: Document the harness**
+- [x] **Action 7: Document the harness**
 
 Append to `scripts/re/unicorn/README.md`:
 
@@ -389,7 +389,7 @@ Runs the original random generator (`1018:1e60`, `1018:1eb6`, `1018:1ef5`) and t
 
 In `docs/re/story.md`, add a section `Emulated` before `Side-by-side checklist`: what runs as original code, what is replaced and why, the case grid (point to the overview's `Trace formats` and copy the formulas), the row counts from Action 5, and the observations of Action 6.
 
-- [ ] **Action 8: Commit**
+- [x] **Action 8: Commit**
 
 ```bash
 git add scripts/re/unicorn/original_story.py scripts/re/unicorn/dump_story.py scripts/re/unicorn/test_original_story.py scripts/re/unicorn/README.md docs/re/story.md
@@ -398,7 +398,7 @@ git commit -m "test(re): trace the original story sequence builder and random ge
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

@@ -135,6 +135,19 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 - `1020:00ba`: the story itself plays only sample 25, for the day scene (`1018:06bf`); TTM `0xc051` (`1058:0000`) plays the others.
 - None of these change the picture or the timing of the screen saver (OQ-35).
 
+## Emulated
+
+`scripts/re/unicorn/original_story.py` (`dump_story.py` writes `re/fixtures/story/`, gitignored).
+
+- Runs as original code: the random generator (`1018:1e60`, `1018:1eb6`, `1018:1ef5`), and `1018:0540` with everything it calls: `1018:0673`, `1018:0c21`, `1010:1c41`, `1018:0b87`, `1018:089b`, `1018:0d50`, `1018:0eb5`.
+- Replaced by handlers that return 0 and do nothing: `1010:0136` (draw island), `1020:0364` (wipe), `1018:0d11` (ADS unload), `1020:081c` (debug log). `1000:020f` and `1000:01f4` write the case's wall clock (seconds and hundredths 0; weekday from the date). Nothing else needed a handler: the builder touches only the data segment.
+- `random.tsv` (`kind seed call value`): for each discard `n` in 0, 1, 55, 1000, 65535, a fresh emulator, `1018:1eb6(n)`, then 300 rows of `1018:1e60`. Then one fresh emulator and, for each list `[50]`, `[5, 10, 15]`, `[20, 30, 50]`, `[10, 20, 30, 20, 10, 10]`, `[35, 5, 5, 5]`, `[30, 50]`, `[35]`, `[30]` in this order, 200 calls of `1018:1ef5`, the generator going on across lists. 3100 rows.
+- `sequences.tsv` (`case build event values`): each case `k` (0..15) is a fresh emulator with NumDays `k % 13`, Introduction `5k % 13`, the stored date `(1992, 6, 1)` for odd `k` else `(0, 0, 0)`, StartTime `[900, 0, 1230, 2330][k % 4]`, and `1018:1eb6([0, 1, 55, 56, 1000, 4096, 31337, 65535][k % 8])`. Build `b` (0..29) sets the wall clock to `[(1992, 10, 29), (1992, 12, 24), (1992, 12, 31), (1993, 1, 1), (1993, 3, 16), (1992, 6, 1)][k % 6]` at `(3k % 24):(7k % 60)`, plus `b / 3` days and `97b` minutes, sets `30ee = 1`, calls `1018:0540`, and writes a `queue` row (scene table indices) and a `state` row (the 21 globals of the overview's `Trace formats`). 960 rows.
+- `scene-table.bin` (1362 bytes from `1068:1756`, the 80 entries and the 0 word) and `random-table.bin` (116 bytes from `1068:1ce4`: the two indices, then the 56 words) are the raw tables the TypeScript constants are checked against.
+- `test_original_story.py` pins the harness: the generator against a Python model, discards, the percent pick, one queue and one state row per build, Johnny at the first entry's start, the slot formula, and day 1 for a fresh install.
+- Observed: 48 of the 480 queues hold a day scene, every day 1..11 at least once. Queues are 1 to 27 entries long (mean 13.4); the one-entry queues are all entry 37, the only closing scene with flag 1. No queue holds an index outside 1..79, so the null opening pick (OQ-34) never happened.
+- Observed: NumDays and Introduction move as `Day counters` says. NumDays goes up by 1 only on a date change while it is below Introduction; Introduction goes up by 1 on the sequence after a day scene of its day was queued, and falls back to NumDays when the one-in-ten day draw hits (case 4, builds 1..2: 5/6, then 5/5). Case 7 shows the wrap: NumDays 11 below Introduction 12 becomes 12, then both 1.
+
 ## Side-by-side checklist
 
 | Original | Name | Ours | Status |
