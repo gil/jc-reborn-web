@@ -153,6 +153,7 @@ Read for the interface; chunk 7 owns `1018`.
 - `1048:0766(tag)`: 0 when the tag has no section. 1 when the section's state without bit 8 is 1 or 4. Otherwise 1 when a node of its scene list has a mode other than 0 and 4 and its self-goto flag `[6]` (`+0x0c`) is 0; else 0.
 - `1048:0766`: so a scene ends only after its section stopped (state 2, through `0xF010`/`0xF000`) and every scene of the section is idle, done, or looping on itself through a goto to its own page. A self-looping node keeps playing after the scene ends.
 - `1048:0766`: a state 3 does not count as busy, but the tick turns it into 1 before `1048:0766` runs.
+- `1018:06bf`: ours is `src/story/story.ts`. `startScene` loads the ADS and calls `adsStartSection`; while a scene plays, `storyPlayScene` calls `adsTick` and then `adsSectionBusy`, and ends the scene when it returns false. Walks never call either. The clock is OQ-29; the fresh load per scene is OQ-30.
 
 ## Loading and unloading
 
@@ -193,13 +194,13 @@ No call in `re/out/index.tsv` and no relocation in `re/out/relocations.tsv` reac
 
 | Original | Name | Ours | Status |
 | --- | --- | --- | --- |
-| `1048:0000` | `ads_init` | none (nothing to free in JavaScript) | match |
-| `1048:001b` | `ads_unloadAll` | none (the scheduler state is dropped with the scene) | open |
+| `1048:0000` | `ads_init` | none (nothing to free; a new AdsState per scene, OQ-30) | match |
+| `1048:001b` | `ads_unloadAll` | none (nothing to free; a new AdsState per scene, OQ-30) | match |
 | `1048:0079` | `ads_loadAds` | `src/ads/state.ts:67` `makeAdsState` (all-or-nothing TTM load) | fixed |
 | `1048:0303` | `ads_nextInstruction` | `src/decode/ads-bytecode.ts:12` (`adsArgCount`), `src/ads/state.ts:150` `nextInstruction` | fixed |
 | `1048:040f` | `ads_sectionSceneIds` | `src/ads/state.ts:155` `sectionScenes` | fixed |
-| `1048:04fc` | `ads_indexSections` | `src/decode/ads-bytecode.ts:18` (`indexAdsSections`); the scheduler still scans on its own: OQ-11 | open |
-| `1048:067f` | `ads_unload` | none (the scheduler state is dropped with the scene) | open |
+| `1048:04fc` | `ads_indexSections` | `src/decode/ads-bytecode.ts:18` (`indexAdsSections`), `src/ads/state.ts:67` `makeAdsState` (sections, scene lists, fresh states) | fixed |
+| `1048:067f` | `ads_unload` | none (nothing to free; a new AdsState per scene, OQ-30) | open |
 | `1048:0766` | `ads_sectionBusy` | `src/ads/tick.ts:21` `adsSectionBusy` | fixed |
 | `1048:0805` | `ads_setSectionState` | `src/ads/tick.ts:13` `adsStartSection` | fixed |
 | `1048:0874` | `ads_startSection` | `src/ads/tick.ts:13` `adsStartSection` | fixed |

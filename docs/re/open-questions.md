@@ -6,41 +6,9 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 ### OQ-1: Story watchdog force-ends scenes after 8000 ticks
 
-- **Where:** `src/story/story.ts:327`
-- **What it does:** ends the current scene once `playingTicks > 8000`, whatever the threads are doing.
+- **Where:** `src/story/story.ts` (`case 'playing'`)
+- **What it does:** ends the current scene through `endScene` once `playingTicks > 8000`, without touching ADS state. It counts engine ticks (20 ms each), which are no longer `mini`-paced.
 - **Old guess behind it:** some scenes cycle forever without reaching an end.
-- **Resolve in:** chunk 7 (story and main loop)
-- **Status:** open
-
-### OQ-2: ADS pre-tick sweep frees threads with a nil TTM slot
-
-- **Where:** `src/ads/scheduler.ts:356-361`
-- **What it does:** before each ADS tick, frees threads whose TTM slot is nil or unloaded.
-- **Old guess behind it:** threads leak after walks and block the scene.
-- **Resolve in:** chunk 6 (ADS scheduler)
-- **Status:** open
-
-### OQ-3: Orphan threads force-stopped 100 ticks after ADS END
-
-- **Where:** `src/ads/scheduler.ts:43-47`, `src/ads/scheduler.ts:413-425`
-- **What it does:** after END, waits `STOP_REQUEST_GRACE_TICKS = 100` ticks for threads to finish, then force-stops the rest.
-- **Old guess behind it:** GOTO-loop threads never see the stop request and wedge the scene.
-- **Resolve in:** chunk 6 (ADS scheduler)
-- **Status:** open
-
-### OQ-4: Straggler threads freed before a walk starts
-
-- **Where:** `src/story/story.ts:271-276`
-- **What it does:** when the story moves to a walk, stops every thread still running.
-- **Old guess behind it:** threads from the finished scene leak into the walk.
-- **Resolve in:** chunk 7 (story and main loop)
-- **Status:** open
-
-### OQ-5: Residual threads freed after a walk ends
-
-- **Where:** `src/story/story.ts:301-306`
-- **What it does:** when the walk is done, stops every thread still running before the next scene starts.
-- **Old guess behind it:** threads survive the walk and block the next scene.
 - **Resolve in:** chunk 7 (story and main loop)
 - **Status:** open
 
@@ -81,33 +49,6 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Resolve in:** chunk 5 (TTM interpreter): find how the original interpreter uses the page table and tag records, then switch `src/ttm/` and `findTtmTag` to `readTtmInstruction`, `pageOffsets`, and `tags`.
 - **Resolution:** src/ttm/page-runner.ts reads instructions with readTtmInstruction, runs pages from pageOffsets, and finds goto and page-call targets with pageOfTag (1058:13a9); the scheduler takes a scene's first page from ttm.tags (1050:042a). The old framer and findTtmTag are deleted.
 - **Status:** resolved (chunk 5)
-
-### OQ-11: ADS scheduler frames bytecode with its own size table
-
-- **Where:** `src/ads/opcodes.ts` (`ADS_ARG_COUNTS`), `src/ads/scheduler.ts` (`scanBytecode`, `findAdsTag`, `adsPlayChunk`, and every place that steps over args)
-- **What it does:** steps over ADS instructions with a hand-made table that disagrees with the original's (`1048:0383`, read by `1048:0303`): `0xF010` takes 0 args in ours and 1 in the original (in the data it is always followed by `0xFFFF`, which the original reads as its arg, not as a section end); `0x1520` takes 5 in ours and 0 in the original (not in its table; the one use, in `ACTIVITY.ADS`, is followed by a normal `0x2005` that ours eats as its args); the 24 table opcodes ours does not list (`0xf000`, `0xf210`, `0x1010`..`0x1060`, `0x1080`, `0x1310`, `0x1320`, `0x1340`, `0x1380`..`0x13c1`, `0x2000`, `0x2015`, `0x2020`, `0x4010`) are taken for section tag words with no args. It also finds sections and tags with its own scan (any word not in its table is a tag) instead of the section index.
-- **Old guess behind it:** arg counts worked out by hand from the data and from jc_reborn.
-- **Original:** `adsArgCount` and `indexAdsSections` (`src/decode/ads-bytecode.ts`) follow `1048:0303` and `1048:04fc`, checked on all 65,536 opcode words and every ADS file. `decodeAds(...).sections` holds the section index: every section starts after its tag word, and only sections closed by a `0xFFFF` count. The `ADS opcode coverage` table in `docs/re/decoders.md` lists every opcode where ours and the original differ.
-- **Resolve in:** chunk 6 (ADS scheduler): read how the original interpreter steps over `0xF010` and the other differing opcodes, switch the scheduler to `adsArgCount` and `sections`, then delete `ADS_ARG_COUNTS`.
-- **Status:** open
-
-### OQ-12: Per-section scene lists are not built at load time
-
-- **Where:** `src/ads/scheduler.ts` (`scanBytecode`, `chunks`)
-- **What it does:** builds its list of scenes per tag while scanning at scene start.
-- **Old guess behind it:** jc_reborn's bookmarking scan.
-- **Original:** `1048:040f` builds, per section, the distinct tag nodes named by `0x2000`/`0x2005` instructions through `1048:0bf4`, stored at record words `[0x1e9 + i]`. This happens the first time `1048:04fc` selects the slot, not inside `1048:0079`.
-- **Resolve in:** chunk 6 (ADS scheduler), together with `1048:0bf4`.
-- **Status:** open
-
-### OQ-13: A missing TTM does not fail the ADS load
-
-- **Where:** `src/ads/scheduler.ts` (`makeAdsState`, the `ADS sub-resource not found` warning)
-- **What it does:** warns and leaves the slot empty when an `ADS:RES:` name is not in the archive.
-- **Old guess behind it:** a missing resource should not stop the show.
-- **Original:** `1048:0079` loads every listed TTM at once and fails the whole ADS (unloading every ADS slot and every TTM through `1048:001b`) if one fails. The data never triggers it: every listed name exists (`src/resource/resource-archive.data.test.ts`).
-- **Resolve in:** chunk 6 (ADS scheduler)
-- **Status:** open
 
 ### OQ-15: Line and ellipse pixels are our choice, not GDI's
 
@@ -152,15 +93,6 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Resolve in:** chunk 7 (story and main loop): decide a duration from the original's timing model, if any, when the story's call to `1020:0364` (`1018:0673`) is read
 - **Status:** open
 
-### OQ-22: Thread start and pacing in the scheduler adapter
-
-- **Where:** `src/ads/scheduler.ts` (`adsAddScene` line 155, `restartThread` line 178, `adsTick` line 355, `runThread` line 430, `replayEndingPage` line 450, `advancePage` line 455)
-- **What it does:** a new or restarted thread is reset as `1048:0b3e` does (delay 0, first page = the tag's page from `ttm.tags`) and runs at once. Each tick runs the current page of every running thread (first run, then replays), counts timers down by `mini` (the smallest timer, at least 1 tick), and moves a due thread to its next page with replay off. A purge sends the thread back to its tag page and ends it unless the scene has a time limit; scene time limits count down by `mini` every tick. An ending thread (`isRunning = 2`) keeps replaying its page until its timer is due, as `1048:1acb` keeps replaying a purged node until `1048:196e` finds it due. Browser check (2026-10-18): before that replay, Johnny vanished for the whole delay of a purged page (up to 240 ticks) before the next scene; pinned in `src/ads/scheduler.data.test.ts`.
-- **Original:** `1048:1acb` and `1048:196e` compare due times against a clock instead of counting down; on the due tick the page is replayed once more before the page advances; what a purge does next depends on the node's mode (`+0x2f`); how `1048` picks a scene's first page is not checked.
-- **Old guess behind it:** the old scheduler forced delays of at least 4 ticks and averaged `0x2022`. The 1-tick floor replaces that so pages with delay 0 (93 uses) cannot stall the loop.
-- **Resolve in:** chunk 6 (ADS interpreter)
-- **Status:** open
-
 ### OQ-24: Island drawing bridge
 
 - **Where:** `src/island/island.ts`, `src/story/story.ts` (`buildSequence` line 116, `storyInit` line 210, `storyRedrawHoliday` line 366)
@@ -171,26 +103,42 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 ### OQ-25: Walk drawing bridge
 
-- **Where:** `src/walk/walk.ts` (`walkDraw` line 134), `src/ads/scheduler.ts` (`adsTick` line 355)
-- **What it does:** the current walk frame is drawn on B every tick with the TTM sprite rects (`(x, y, w, h + 2)` into `(B → A, 0)`, `(B → A, 1)`, `(C → B, 0)`), and the palm is drawn over Johnny when he is behind it. The last frame is drawn again on the tick the walk ends, so he stays on screen through the 80-tick arrival rest. Browser check (2026-10-18): without that, Johnny vanished for the rest (1.6 s) before the next scene; pinned in `src/ads/scheduler.data.test.ts`.
+- **Where:** `src/walk/walk.ts` (`startWalk`, `walkTick`, `walkDraw`), ticked once per engine tick by `src/main.ts` while the story walks
+- **What it does:** the current walk frame is drawn on B every tick with the TTM sprite rects (`(x, y, w, h + 2)` into `(B → A, 0)`, `(B → A, 1)`, `(C → B, 0)`), and the palm is drawn over Johnny when he is behind it. The last frame is drawn again on the tick the walk ends, so he stays on screen through the 80-tick arrival rest. Browser check (2026-10-18): without that, Johnny vanished for the rest (1.6 s) before the next scene; pinned in `src/walk/walk.data.test.ts`.
 - **Original:** walking is driven from `1048` (chunk 8); its draw calls and rects are not checked.
 - **Resolve in:** chunk 8 (walking)
 - **Status:** open
 
 ### OQ-26: Random numbers come from Math.random
 
-- **Where:** `src/main.ts:47` (`GdiDevice` hook `random`), `src/ads/scheduler.ts:199` (`adsRandomPickOp`), `src/island/island.ts`, `src/story/story.ts`
-- **What it does:** draws 16-bit values (and fractions) from `Math.random`.
+- **Where:** `src/main.ts` (`random`, shared by `GdiDevice` and `makeAdsState`), `src/island/island.ts`, `src/story/story.ts`
+- **What it does:** draws 16-bit values (and fractions) from `Math.random`. ADS random picks (`1048:0cda`) and the device share one source, `game.random`.
 - **Original:** `1018:1e60` with its own seed; the sequence decides delays of `0x2022`, ADS random picks, and island choices.
 - **Resolve in:** chunk 7 (story and island)
 - **Status:** open
 
 ### OQ-28: Engine tick order
 
-- **Where:** `src/main.ts:78` (the loop)
-- **What it does:** `storyTick`, `storyAnimateBg` (waves, with the previous tick's elapsed time), `adsTick`, `storyRedrawHoliday`, `display.restorePass(0)`. Sound 25 and `1048:0766` have no counterpart.
+- **Where:** `src/main.ts` (the loop)
+- **What it does:** `storyTick`, `storyAnimateBg(1)`, `walkTick` (walks only), `storyPlayScene` (`adsTick`, then `adsSectionBusy`), `storyRedrawHoliday`, `display.restorePass(0)`. Sound 25 has no counterpart.
 - **Original:** `1018:06bf`: `1010:040e(0)`, ..., `1048:1acb`, `1048:0766`, `1010:1e50(0)`, sound 25 when due, `1060:03d3(0)`.
 - **Resolve in:** chunk 7 (story and island)
+- **Status:** open
+
+### OQ-29: One ADS tick per engine tick, with the tick count as the clock
+
+- **Where:** `src/main.ts` (the loop, `now`), `src/engine/clock.ts` (`MS_PER_TICK = 20`)
+- **What it does:** runs one story step (and one ADS tick while a scene plays) every 20 ms and passes the number of steps so far as the clock that due times and end times are compared with.
+- **Original:** `1008:16c2` adds 1 to the clock `1068:2e70`/`2e72` per timer callback; `1018:06bf` runs from the message loop (`1008:15c8`), so several steps can run per clock tick, or none. The timer rate and how often the story step runs are not checked.
+- **Resolve in:** chunk 7 (story and main loop)
+- **Status:** open
+
+### OQ-30: The ADS is loaded fresh for every scene
+
+- **Where:** `src/story/story.ts` (`startScene`)
+- **What it does:** builds a new `AdsState` for each scene, so every node starts idle.
+- **Original:** `1018:0c62` keeps the loaded ADS when the next scene uses the same ADS id, so nodes keep their modes, and a node of the previous scene that loops on itself can go on playing; it unloads the ADS (`1048:067f`) only when the id changes.
+- **Resolve in:** chunk 7 (story and main loop)
 - **Status:** open
 
 ## Past fixes to re-check against the original
@@ -280,6 +228,72 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 
 ## Resolved
 
+### OQ-2: ADS pre-tick sweep frees threads with a nil TTM slot
+
+- **Where:** `src/ads/scheduler.ts:356-361`
+- **What it does:** before each ADS tick, frees threads whose TTM slot is nil or unloaded.
+- **Old guess behind it:** threads leak after walks and block the scene.
+- **Resolve in:** chunk 6 (ADS scheduler)
+- **Resolution:** nodes exist only for the tags of TTMs that loaded (`1050:042a`; `1048:0079` fails the whole ADS when one TTM is missing), and an instruction naming an unknown node does nothing (`1048:0bf4` returns 0). The sweep went with `src/ads/scheduler.ts`.
+- **Status:** resolved (chunk 6)
+
+### OQ-3: Orphan threads force-stopped 100 ticks after ADS END
+
+- **Where:** `src/ads/scheduler.ts:43-47`, `src/ads/scheduler.ts:413-425`
+- **What it does:** after END, waits `STOP_REQUEST_GRACE_TICKS = 100` ticks for threads to finish, then force-stops the rest.
+- **Old guess behind it:** GOTO-loop threads never see the stop request and wedge the scene.
+- **Resolve in:** chunk 6 (ADS scheduler)
+- **Resolution:** the root cause is the busy check: `1048:0766` does not count a node whose page jumped to itself (self-goto flag, node `[6]`), so a scene with endless goto loops ends anyway. `0xFFFF` ends a section's script; it is not a stop request. The grace period went with `src/ads/scheduler.ts`. `src/ads/tick.ts` `adsSectionBusy`, pinned in `src/ads/tick.test.ts`.
+- **Status:** resolved (chunk 6)
+
+### OQ-4: Straggler threads freed before a walk starts
+
+- **Where:** `src/story/story.ts:271-276`
+- **What it does:** when the story moves to a walk, stops every thread still running.
+- **Old guess behind it:** threads from the finished scene leak into the walk.
+- **Resolve in:** chunk 7 (story and main loop)
+- **Resolution:** `1018:06bf` never runs the ADS tick for a walk entry, so no scene can run during a walk. The engine now ticks the ADS only while a scene plays (`storyPlayScene`), and each scene gets its own ADS state (OQ-30). The sweeps are deleted.
+- **Status:** resolved (chunk 6)
+
+### OQ-5: Residual threads freed after a walk ends
+
+- **Where:** `src/story/story.ts:301-306`
+- **What it does:** when the walk is done, stops every thread still running before the next scene starts.
+- **Old guess behind it:** threads survive the walk and block the next scene.
+- **Resolve in:** chunk 7 (story and main loop)
+- **Resolution:** `1018:06bf` never runs the ADS tick for a walk entry, so no scene can run during a walk. The engine now ticks the ADS only while a scene plays (`storyPlayScene`), and each scene gets its own ADS state (OQ-30). The sweeps are deleted.
+- **Status:** resolved (chunk 6)
+
+### OQ-11: ADS scheduler frames bytecode with its own size table
+
+- **Where:** `src/ads/opcodes.ts` (`ADS_ARG_COUNTS`), `src/ads/scheduler.ts` (`scanBytecode`, `findAdsTag`, `adsPlayChunk`, and every place that steps over args)
+- **What it does:** steps over ADS instructions with a hand-made table that disagrees with the original's (`1048:0383`, read by `1048:0303`): `0xF010` takes 0 args in ours and 1 in the original (in the data it is always followed by `0xFFFF`, which the original reads as its arg, not as a section end); `0x1520` takes 5 in ours and 0 in the original (not in its table; the one use, in `ACTIVITY.ADS`, is followed by a normal `0x2005` that ours eats as its args); the 24 table opcodes ours does not list (`0xf000`, `0xf210`, `0x1010`..`0x1060`, `0x1080`, `0x1310`, `0x1320`, `0x1340`, `0x1380`..`0x13c1`, `0x2000`, `0x2015`, `0x2020`, `0x4010`) are taken for section tag words with no args. It also finds sections and tags with its own scan (any word not in its table is a tag) instead of the section index.
+- **Old guess behind it:** arg counts worked out by hand from the data and from jc_reborn.
+- **Original:** `adsArgCount` and `indexAdsSections` (`src/decode/ads-bytecode.ts`) follow `1048:0303` and `1048:04fc`, checked on all 65,536 opcode words and every ADS file. `decodeAds(...).sections` holds the section index: every section starts after its tag word, and only sections closed by a `0xFFFF` count. The `ADS opcode coverage` table in `docs/re/decoders.md` lists every opcode where ours and the original differ.
+- **Resolve in:** chunk 6 (ADS scheduler): read how the original interpreter steps over `0xF010` and the other differing opcodes, switch the scheduler to `adsArgCount` and `sections`, then delete `ADS_ARG_COUNTS`.
+- **Resolution:** the scheduler and `ADS_ARG_COUNTS` are deleted; the port frames instructions with `adsArgCount` (`src/ads/state.ts`, `nextInstruction`, `1048:0303`) and runs sections from `decodeAds(...).sections`.
+- **Status:** resolved (chunk 6)
+
+### OQ-12: Per-section scene lists are not built at load time
+
+- **Where:** `src/ads/scheduler.ts` (`scanBytecode`, `chunks`)
+- **What it does:** builds its list of scenes per tag while scanning at scene start.
+- **Old guess behind it:** jc_reborn's bookmarking scan.
+- **Original:** `1048:040f` builds, per section, the distinct tag nodes named by `0x2000`/`0x2005` instructions through `1048:0bf4`, stored at record words `[0x1e9 + i]`. This happens the first time `1048:04fc` selects the slot, not inside `1048:0079`.
+- **Resolve in:** chunk 6 (ADS scheduler), together with `1048:0bf4`.
+- **Resolution:** `makeAdsState` builds each section's scene list (`sectionScenes`) as `1048:040f` does; the original builds them on the first `1048:04fc(slot)`, which the story calls right after the load, so the result is the same.
+- **Status:** resolved (chunk 6)
+
+### OQ-13: A missing TTM does not fail the ADS load
+
+- **Where:** `src/ads/scheduler.ts` (`makeAdsState`, the `ADS sub-resource not found` warning)
+- **What it does:** warns and leaves the slot empty when an `ADS:RES:` name is not in the archive.
+- **Old guess behind it:** a missing resource should not stop the show.
+- **Original:** `1048:0079` loads every listed TTM at once and fails the whole ADS (unloading every ADS slot and every TTM through `1048:001b`) if one fails. The data never triggers it: every listed name exists (`src/resource/resource-archive.data.test.ts`).
+- **Resolve in:** chunk 6 (ADS scheduler)
+- **Resolution:** `makeAdsState` throws when a listed TTM is missing, as `1048:0079` fails the load. The data never triggers it.
+- **Status:** resolved (chunk 6)
+
 ### OQ-14: `1028` stub group that does not reach a decoder
 
 - **Where:** the stub group `1028:17c8`, `1028:185e`..`1028:1b0d` (the forwarders `1028:17d8`, `1028:182c`, `1028:1845` were settled in chunk 4)
@@ -297,3 +311,13 @@ Settled by chunk 5: every stub that 1058 code reaches returns 0 and is reached o
 - **Found in chunk 4:** only the TTM case `1058:025b` reaches `1030:03d7`, for opcodes `0xa506`, `0xa516`, `0xa526`, `0xa536`; the TTM scripts use none of them (`docs/re/decoders.md`, TTM opcode coverage).
 
 Settled by chunk 5: 1030:03d7 is reached only from 1058:025b for opcodes 0xa506, 0xa516, 0xa526, 0xa536, which no TTM script uses (docs/re/ttm.md, Opcodes). The pixel rule stays GDI behavior, irrelevant to the data.
+
+### OQ-22: Thread start and pacing in the scheduler adapter
+
+- **Where:** `src/ads/scheduler.ts` (`adsAddScene` line 155, `restartThread` line 178, `adsTick` line 355, `runThread` line 430, `replayEndingPage` line 450, `advancePage` line 455)
+- **What it does:** a new or restarted thread is reset as `1048:0b3e` does (delay 0, first page = the tag's page from `ttm.tags`) and runs at once. Each tick runs the current page of every running thread (first run, then replays), counts timers down by `mini` (the smallest timer, at least 1 tick), and moves a due thread to its next page with replay off. A purge sends the thread back to its tag page and ends it unless the scene has a time limit; scene time limits count down by `mini` every tick. An ending thread (`isRunning = 2`) keeps replaying its page until its timer is due, as `1048:1acb` keeps replaying a purged node until `1048:196e` finds it due. Browser check (2026-10-18): before that replay, Johnny vanished for the whole delay of a purged page (up to 240 ticks) before the next scene; pinned in `src/ads/scheduler.data.test.ts`.
+- **Original:** `1048:1acb` and `1048:196e` compare due times against a clock instead of counting down; on the due tick the page is replayed once more before the page advances; what a purge does next depends on the node's mode (`+0x2f`); how `1048` picks a scene's first page is not checked.
+- **Old guess behind it:** the old scheduler forced delays of at least 4 ticks and averaged `0x2022`. The 1-tick floor replaces that so pages with delay 0 (93 uses) cannot stall the loop.
+- **Resolve in:** chunk 6 (ADS interpreter)
+- **Resolution:** nodes advance on due times against a clock (`1048:196e`), scenes start through the section scripts, and every section of every ADS matches the original trace (`src/ads/tick.data.test.ts`). The clock itself is OQ-29.
+- **Status:** resolved (chunk 6)
