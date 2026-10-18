@@ -2394,6 +2394,8 @@ git commit -m "feat: ADS scheduler with conditionals, RANDOM blocks, multi-threa
 
 ## Task 7: Island composer
 
+Replaced in chunk 7 by a port of SCRANTIC.SCR; see docs/re/story.md and docs/re/island.md.
+
 **Files:**
 
 - Create: `src/island/island.ts`, `src/island/island-data.ts`
@@ -2444,6 +2446,8 @@ The walking thread runs alongside ADS scene threads; treat as a special-cased TT
 ---
 
 ## Task 9: Story scheduler
+
+Replaced in chunk 7 by a port of SCRANTIC.SCR; see docs/re/story.md and docs/re/island.md.
 
 **Files:**
 

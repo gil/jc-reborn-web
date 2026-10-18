@@ -70,7 +70,7 @@ Behavior we haven't settled against the original, and workarounds kept without a
 
 ### OQ-25: Walk drawing bridge
 
-- **Where:** `src/walk/walk.ts` (`startWalk`, `walkTick`, `walkDraw`), ticked once per engine tick by `src/main.ts` while the story walks
+- **Where:** `src/walk/walk.ts` (`startWalk`, `walkTick`, `walkHold`, `walkDraw`), called by the story bridge in `src/story/story.ts` (`walkStep`, `holdJohnny`) once per story step
 - **What it does:** the current walk frame is drawn on B every tick with the TTM sprite rects (`(x, y, w, h + 2)` into `(B → A, 0)`, `(B → A, 1)`, `(C → B, 0)`), and the palm is drawn over Johnny when he is behind it. The last frame is drawn again on the tick the walk ends, so he stays on screen through the 80-tick arrival rest. Browser check (2026-10-18): without that, Johnny vanished for the rest (1.6 s) before the next scene; pinned in `src/walk/walk.data.test.ts`.
 - **Original:** walking is driven from `1048` (chunk 8); its draw calls and rects are not checked.
 - **Story bridge (chunk 7):** the story calls the walk through `src/story/story.ts` (`walkStep`, `holdJohnny`, `newWalk`), all made up: spots 1..6 become 0..5; a target spot or heading of "any" means the current one; with Johnny at spot 0 he is moved without walking; idle entries draw his standing frame each step (`walkHold`); the walk offset is the island offset plus one (`1018:0094` draws at the island offset plus the frame's x, and `walkDraw` subtracts one); the walk timers (6, 80) now count 16 ms clock ticks; the 80-tick arrival rest is jc_reborn's and has no counterpart in `1018:06bf`.
@@ -90,14 +90,14 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 | `eb46290` | force-stop orphan TTM threads after ADS END | 6 (reviewed, see docs/re/ads.md) |
 | `6b0be68` | audio playback | out of scope |
 | `b631319` | animation sprites sometimes get cut | 4 (reviewed, see docs/re/graphics.md) |
-| `8adc66a` | various consistency fixes | 6 (reviewed, see docs/re/ads.md), 7 |
-| `1204c0d` | hain instant phase transitions so a scene-end → walk-start (or walk-end → new-scene-start) completes in one tick. | 7 |
-| `c037b5f` | swapped order: storyTick → adsTick → storyAnimateBg | 7 |
+| `8adc66a` | various consistency fixes | 6 (reviewed, see docs/re/ads.md), 7 (reviewed, see docs/re/story.md) |
+| `1204c0d` | hain instant phase transitions so a scene-end → walk-start (or walk-end → new-scene-start) completes in one tick. | 7 (reviewed, see docs/re/story.md) |
+| `c037b5f` | swapped order: storyTick → adsTick → storyAnimateBg | 7 (reviewed, see docs/re/story.md) |
 | `72fb9d7` | load data relative | out of scope |
 | `f47def5` | replace elapsedTicks with mini-based pacing; eliminate second pass in adsTick | 6 (reviewed, see docs/re/ads.md) |
 | `7fef3c3` | replace elapsedTicks with mini-based pacing; eliminate second pass in adsTick | 6 (reviewed, see docs/re/ads.md) |
-| `194d7fb` | add thread leak detection sweeps (pre-tick, begin-scene, start-walk, post-walk) | 6 (reviewed, see docs/re/ads.md), 7 |
-| `613b3c2` | add watchdog timeout (8000 ticks) to force-end self-sustaining scene cycles | 7 |
+| `194d7fb` | add thread leak detection sweeps (pre-tick, begin-scene, start-walk, post-walk) | 6 (reviewed, see docs/re/ads.md), 7 (reviewed, see docs/re/story.md) |
+| `613b3c2` | add watchdog timeout (8000 ticks) to force-end self-sustaining scene cycles | 7 (reviewed, see docs/re/story.md) |
 | `9a40bb2` | LOAD_SCREEN resets dx/dy to zero, sprites render in screen-relative coords after background switch | 5 (reviewed, see docs/re/ttm.md) |
 | `0d4078d` | DRAW_BACKGROUND opcode is a no-op, jc_reborn only frees image slots not the framebuffer | 5 (reviewed, see docs/re/ttm.md) |
 | `7a9d964` | TIMER opcode sets delay and timer directly, continues loop; remove timerYield workaround | 5 (reviewed, see docs/re/ttm.md) |
@@ -109,7 +109,7 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 | `a9610d3` | clear saved zones when all threads from a slot stop, preventing clock block from MEANWHIL.TTM persisting through SUZY.ADS scene | 6 (reviewed, see docs/re/ads.md) |
 | `966476f` | UNKNOWN_6 opcode now checks if scene is running before adding, preventing redundant scene starts in EAT scenes | 6 (reviewed, see docs/re/ads.md) |
 | `c7f3c6b` | implement DRAW_SCREEN opcode for scaled sprite rendering used in sandcastle and plane scenes | 5 (reviewed, see docs/re/ttm.md) |
-| `d39b9ac` | clear saved zones between scenes to prevent visual artifacts leaking across transitions | 7 |
+| `d39b9ac` | clear saved zones between scenes to prevent visual artifacts leaking across transitions | 7 (reviewed, see docs/re/story.md) |
 | `037819f` | GOTO_TAG searched LOCAL_TAG instead of TAG, causing loops to fall through into wrong animation frames | 5 (reviewed, see docs/re/ttm.md) |
 | `27684eb` | problem with threads rendering on top of each other | 6 (reviewed, see docs/re/ads.md) |
 | `c126833` | problem where nothing would start after certain scenes | 6 (reviewed, see docs/re/ads.md) |

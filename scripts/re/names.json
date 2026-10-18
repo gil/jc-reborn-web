@@ -3,7 +3,7 @@
     "1000:01f4": {
       "name": "rtl_getdate",
       "subsystem": "rtl",
-      "status": "named",
+      "status": "verified",
       "note": "getdate: DOS 0x2A into 5 bytes at a near pointer: day, month, year word, weekday",
       "signature": null,
       "callingConvention": null
@@ -11,7 +11,7 @@
     "1000:020f": {
       "name": "rtl_gettime",
       "subsystem": "rtl",
-      "status": "named",
+      "status": "verified",
       "note": "gettime: DOS 0x2C into 4 bytes at a near pointer: hour, minute, second, hundredths",
       "signature": null,
       "callingConvention": null
@@ -67,7 +67,7 @@
     "1000:082c": {
       "name": "rtl_time",
       "subsystem": "rtl",
-      "status": "named",
+      "status": "verified",
       "note": "time(): seconds since 1970 in DX:AX from the DOS date and time; stores them too when the pointer is not null",
       "signature": null,
       "callingConvention": null
@@ -243,7 +243,7 @@
     "1008:0c5c": {
       "name": "platform_loadSettings",
       "subsystem": "platform",
-      "status": "named",
+      "status": "verified",
       "note": "Reads all SCRANTIC.INI keys (Background, Clouds, Waves, Sounds, NumDays, CurrentYear, StartTime, ...) into globals",
       "signature": null,
       "callingConvention": null
@@ -251,7 +251,7 @@
     "1008:0dc8": {
       "name": "platform_saveSettings",
       "subsystem": "platform",
-      "status": "named",
+      "status": "verified",
       "note": "Writes the same SCRANTIC.INI keys back with WritePrivateProfileString",
       "signature": null,
       "callingConvention": null
@@ -259,7 +259,7 @@
     "1008:0fcd": {
       "name": "platform_screenSaverProc",
       "subsystem": "platform",
-      "status": "named",
+      "status": "verified",
       "note": "Exported window procedure: create loads settings and starts a 50 ms timer, destroy saves settings, paint blits the offscreen image, timer runs timer callbacks and the idle callback, WM_USER checks free memory then runs init",
       "signature": null,
       "callingConvention": null
@@ -283,7 +283,7 @@
     "1008:143c": {
       "name": "platform_initSaver",
       "subsystem": "platform",
-      "status": "named",
+      "status": "verified",
       "note": "Startup: reads RESOURCE.MAP, sets 640x480, loads JOHNCAST.PAL, shows INTRO.SCR, registers a timer callback, draws the island, loads JOHNWALK, sets the cleanup and idle callbacks",
       "signature": null,
       "callingConvention": null
@@ -291,7 +291,7 @@
     "1008:157b": {
       "name": "platform_shutdownSaver",
       "subsystem": "platform",
-      "status": "named",
+      "status": "verified",
       "note": "Cleanup callback: closes MCI, ends the sequence, frees the island, walk, ADS, cursors, display",
       "signature": null,
       "callingConvention": null
@@ -299,7 +299,7 @@
     "1008:15c8": {
       "name": "story_idleTick",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Idle callback: runs one story step, then a speed figure 1068:30bc from 1068:2e14 (never written, so always 0) and GetCurrentTime",
       "signature": null,
       "callingConvention": null
@@ -307,7 +307,7 @@
     "1008:16c2": {
       "name": "platform_clockTick",
       "subsystem": "platform",
-      "status": "named",
+      "status": "verified",
       "note": "Timer callback every 16 ms: adds 1 to the clock 1068:2e70 and counts down five timers",
       "signature": null,
       "callingConvention": null
@@ -315,7 +315,7 @@
     "1010:0059": {
       "name": "story_presentFromB",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Presents the whole screen with B as source, target, and A; unreferenced",
       "signature": null,
       "callingConvention": null
@@ -323,7 +323,7 @@
     "1010:00b2": {
       "name": "story_presentFromA",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Presents the whole screen with A as source and target; unreferenced",
       "signature": null,
       "callingConvention": null
@@ -331,7 +331,7 @@
     "1010:00fc": {
       "name": "story_setTtmOffset",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Sets the TTM island offset 1068:46e4/46e2 from the island position (1068:30c4 + 1, or + 0x111 when the argument is set; 1068:30c2); both 0 when 1068:30b2 is 2",
       "signature": null,
       "callingConvention": null
@@ -339,7 +339,7 @@
     "1010:0136": {
       "name": "story_drawIsland",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "First call loads BACKGRND.BMP and MRAFT.BMP; later calls draw the background into C (ocean, night, or a color-5 fill), place the island, draw raft, island, surf, palm, copy C to B, and set up waves and clouds",
       "signature": null,
       "callingConvention": null
@@ -347,7 +347,7 @@
     "1010:03ce": {
       "name": "story_freeIslandBitmaps",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Frees BACKGRND.BMP and MRAFT.BMP",
       "signature": null,
       "callingConvention": null
@@ -355,7 +355,7 @@
     "1010:040e": {
       "name": "story_animateIsland",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Island step: ocean waves, clouds on the first call only, surf and raft unless still",
       "signature": null,
       "callingConvention": null
@@ -363,7 +363,7 @@
     "1010:0463": {
       "name": "story_resetOceanWaves",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Empties the 30 ocean wave records and refills the per-kind counts",
       "signature": null,
       "callingConvention": null
@@ -371,7 +371,7 @@
     "1010:04a2": {
       "name": "story_animateOceanWaves",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Spawns, moves, and draws glints and wave sprites on the ocean; spawns only when the speed 1068:30bc is above 100, which it never is",
       "signature": null,
       "callingConvention": null
@@ -379,7 +379,7 @@
     "1010:0a38": {
       "name": "story_initClouds",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Picks the wind direction and places up to 15 clouds",
       "signature": null,
       "callingConvention": null
@@ -387,7 +387,7 @@
     "1010:0b67": {
       "name": "story_animateClouds",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Spawns, moves, and draws the clouds; runs once per sequence, so clouds never move",
       "signature": null,
       "callingConvention": null
@@ -395,7 +395,7 @@
     "1010:0e74": {
       "name": "story_drawSurf",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Advances the surf frames every 4 clock ticks and redraws surf spots; with an argument draws one spot",
       "signature": null,
       "callingConvention": null
@@ -403,7 +403,7 @@
     "1010:14bf": {
       "name": "story_randomPlace",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Random x and y in a range minus a BACKGRND sprite's size, or 0, 0 when it does not fit",
       "signature": null,
       "callingConvention": null
@@ -411,7 +411,7 @@
     "1010:1551": {
       "name": "story_redrawIslandOver",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Redraws the island parts in front of a sprite, clipped to it",
       "signature": null,
       "callingConvention": null
@@ -419,7 +419,7 @@
     "1010:1a0d": {
       "name": "story_markIslandDrawn",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Adds the three dirty rects of a sprite drawn on B",
       "signature": null,
       "callingConvention": null
@@ -427,7 +427,7 @@
     "1010:1a88": {
       "name": "story_rectOverlap",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "2 when a rect lies inside another, 1 when they touch, else 0",
       "signature": null,
       "callingConvention": null
@@ -435,7 +435,7 @@
     "1010:1b00": {
       "name": "story_placeIsland",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Island position from the place bits and low tide",
       "signature": null,
       "callingConvention": null
@@ -443,7 +443,7 @@
     "1010:1c41": {
       "name": "story_setIslandFlags",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Turns an entry's flags and place bits into island globals; (-1, -1) resets them",
       "signature": null,
       "callingConvention": null
@@ -451,7 +451,7 @@
     "1010:1d69": {
       "name": "story_drawRaft",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Draws the raft frame for the day count; redraws it when a presented rect overlaps",
       "signature": null,
       "callingConvention": null
@@ -459,7 +459,7 @@
     "1010:1e50": {
       "name": "story_drawHoliday",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Draws the holiday sprite; redraws it when a presented rect overlaps",
       "signature": null,
       "callingConvention": null
@@ -475,7 +475,7 @@
     "1018:0540": {
       "name": "story_newSequence",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Wipes, computes the time slot and holiday, resets the island flags, updates the day counters, builds the scene queue, puts Johnny at its first start spot, draws the island",
       "signature": null,
       "callingConvention": null
@@ -483,7 +483,7 @@
     "1018:0673": {
       "name": "story_endSequence",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Wipes the screen, unloads the ADS of every queued entry, empties the queue",
       "signature": null,
       "callingConvention": null
@@ -491,7 +491,7 @@
     "1018:06bf": {
       "name": "story_step",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "One story step per WM_TIMER: new sequence when the queue is used up, island step, then walk to the entry start or play it (idle wait or ADS tag), holiday sprite, sound 25 for the day scene, dirty-rect restore",
       "signature": null,
       "callingConvention": null
@@ -499,7 +499,7 @@
     "1018:089b": {
       "name": "story_buildQueue",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Builds the scene queue of a sequence: day scene, closing scene, opening scene, middle scenes within a budget",
       "signature": null,
       "callingConvention": null
@@ -507,7 +507,7 @@
     "1018:0b46": {
       "name": "story_isAtSpot",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Stores the walk target and says whether Johnny already stands at a spot and heading (0 and -1 = any)",
       "signature": null,
       "callingConvention": null
@@ -515,7 +515,7 @@
     "1018:0b87": {
       "name": "story_advanceDays",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Moves NumDays and Introduction on when the date changed and a day scene was picked",
       "signature": null,
       "callingConvention": null
@@ -523,7 +523,7 @@
     "1018:0c21": {
       "name": "story_halfHourSlot",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Maps an HHMM time to one of 16 half-hour slots of an 8-hour cycle",
       "signature": null,
       "callingConvention": null
@@ -531,7 +531,7 @@
     "1018:0c62": {
       "name": "ads_loadAdsById",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Looks up an ADS id in the table at 1068:166e, unloads the previous ADS when the id changes, loads and caches the file; id -2 loads from a buffer at 1068:361c",
       "signature": null,
       "callingConvention": null
@@ -539,7 +539,7 @@
     "1018:0d11": {
       "name": "ads_unloadAdsById",
       "subsystem": "ads",
-      "status": "named",
+      "status": "verified",
       "note": "Unloads the cached ADS of an ADS id (1048:067f) and forgets its slot",
       "signature": null,
       "callingConvention": null
@@ -547,7 +547,7 @@
     "1018:0d50": {
       "name": "story_pickScene",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Weighted random pick from the scene table of an entry of a kind, slot, and budget",
       "signature": null,
       "callingConvention": null
@@ -555,7 +555,7 @@
     "1018:0e7b": {
       "name": "story_findScene",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Finds the n-th scene table entry with an id; unreferenced",
       "signature": null,
       "callingConvention": null
@@ -563,7 +563,7 @@
     "1018:0eb5": {
       "name": "story_fitsIsland",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Whether an entry's island place bits fit the place chosen so far",
       "signature": null,
       "callingConvention": null
@@ -739,7 +739,7 @@
     "1018:1e60": {
       "name": "story_random",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Additive lagged-Fibonacci generator over the 56-word table at 1068:1ce8 (indices 1068:1ce4 and 1068:1ce6); returns the new word",
       "signature": null,
       "callingConvention": null
@@ -747,7 +747,7 @@
     "1018:1eb6": {
       "name": "story_discardRandom",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Draws and drops n random numbers",
       "signature": null,
       "callingConvention": null
@@ -755,7 +755,7 @@
     "1018:1ed4": {
       "name": "story_seedRandom",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Seeds the random generator by dropping time() & 0xffff numbers",
       "signature": null,
       "callingConvention": null
@@ -763,7 +763,7 @@
     "1018:1ef5": {
       "name": "story_randomPercent",
       "subsystem": "story",
-      "status": "named",
+      "status": "verified",
       "note": "Picks 1..n from a zero-terminated list of percentages, or 0 when none hits",
       "signature": null,
       "callingConvention": null
@@ -787,7 +787,7 @@
     "1020:00ba": {
       "name": "audio_playSound",
       "subsystem": "audio",
-      "status": "named",
+      "status": "verified",
       "note": "Plays WAVESFX sample 1..25 from memory with sndPlaySound when Sounds is on",
       "signature": null,
       "callingConvention": null
@@ -1707,7 +1707,7 @@
     "1040:076a": {
       "name": "platform_initTimers",
       "subsystem": "platform",
-      "status": "named",
+      "status": "verified",
       "note": "Sets the base tick 1068:45de to 1000 / (n * 18) ms, once",
       "signature": null,
       "callingConvention": null
@@ -1715,7 +1715,7 @@
     "1040:079e": {
       "name": "platform_clearTimers",
       "subsystem": "platform",
-      "status": "named",
+      "status": "verified",
       "note": "Empties the five timer callback slots and clears the base tick",
       "signature": null,
       "callingConvention": null
@@ -1723,7 +1723,7 @@
     "1040:07e6": {
       "name": "platform_addTimerCallback",
       "subsystem": "platform",
-      "status": "named",
+      "status": "verified",
       "note": "Registers a far callback in a 5-slot table with an interval in base ticks",
       "signature": null,
       "callingConvention": null
@@ -1731,7 +1731,7 @@
     "1040:085a": {
       "name": "platform_removeTimerCallback",
       "subsystem": "platform",
-      "status": "named",
+      "status": "verified",
       "note": "Empties one timer callback slot 1..4",
       "signature": null,
       "callingConvention": null
@@ -1739,7 +1739,7 @@
     "1040:089a": {
       "name": "platform_runTimerCallbacks",
       "subsystem": "platform",
-      "status": "named",
+      "status": "verified",
       "note": "Fires every due timer callback once per missed interval and advances the base tick; the first call (1068:257c set in the data segment) only resets the slot times",
       "signature": null,
       "callingConvention": null

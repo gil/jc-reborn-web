@@ -146,14 +146,14 @@ Findings for chunk 6. One claim per address. Our own words; no decompiled code. 
 
 Read for the interface; chunk 7 owns `1018`.
 
-- `1018:06bf`: when the queue entry's ADS id (byte `+0x0f`) is `-1` (a walk entry), it never calls `1048:1acb` or `1048:0766`.
+- `1018:06bf`: when the queue entry's ADS id (byte `+0x0f`) is `-1` (an idle entry), it never calls `1048:1acb` or `1048:0766`.
 - `1018:06bf`: on the first step of an ADS entry (flag `0x8000` of word `+0x0d` set) it calls `1018:0c62(id)`, `1048:04fc(slot + 1)`, and `1048:0874(tag)` (byte `+0x10`), then clears the flag.
 - `1018:06bf`: on every step of an ADS entry, the first one included: `1048:04fc(slot + 1)`, `1048:1acb`, `1048:0766(tag)`. When `1048:0766` returns 0 the entry ends and the queue moves on.
 - `1018:0c62(id)`: keeps one loaded ADS per file in the table `1068:166e` and unloads the previous file (`1018:0d11`) only when the id differs from the last one asked for. A scene from the same ADS as the one before reuses the loaded record, with its section states and nodes as the last scene left them; only the started section's state is set to 3 (its scene list's nodes reset in pass 1).
 - `1048:0766(tag)`: 0 when the tag has no section. 1 when the section's state without bit 8 is 1 or 4. Otherwise 1 when a node of its scene list has a mode other than 0 and 4 and its self-goto flag `[6]` (`+0x0c`) is 0; else 0.
 - `1048:0766`: so a scene ends only after its section stopped (state 2, through `0xF010`/`0xF000`) and every scene of the section is idle, done, or looping on itself through a goto to its own page. A self-looping node keeps playing after the scene ends.
 - `1048:0766`: a state 3 does not count as busy, but the tick turns it into 1 before `1048:0766` runs.
-- `1018:06bf`: ours is `src/story/story.ts`. `startScene` loads the ADS and calls `adsStartSection`; while a scene plays, `storyPlayScene` calls `adsTick` and then `adsSectionBusy`, and ends the scene when it returns false. Walks never call either. The clock is OQ-29; the fresh load per scene is OQ-30.
+- `1018:06bf`: ours is `src/story/story.ts` (`playStep`): the first step of an ADS entry gets the ADS through `loadAdsById` and calls `adsStartSection`; every step calls `adsTick` with the clock `Timers.now`, then `adsSectionBusy`, and ends the entry when it returns false. Idle entries and walks call neither. The story side is in `docs/re/story.md` (`Story step`, `ADS by id`).
 
 ## Loading and unloading
 

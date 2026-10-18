@@ -148,6 +148,15 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 - Observed: 48 of the 480 queues hold a day scene, every day 1..11 at least once. Queues are 1 to 27 entries long (mean 13.4); the one-entry queues are all entry 37, the only closing scene with flag 1. No queue holds an index outside 1..79, so the null opening pick (OQ-34) never happened.
 - Observed: NumDays and Introduction move as `Day counters` says. NumDays goes up by 1 only on a date change while it is below Introduction; Introduction goes up by 1 on the sequence after a day scene of its day was queued, and falls back to NumDays when the one-in-ten day draw hits (case 4, builds 1..2: 5/6, then 5/5). Case 7 shows the wrap: NumDays 11 below Introduction 12 becomes 12, then both 1.
 
+## Past fixes reviewed
+
+- `8adc66a` (various consistency fixes), story and island part: random cloud count and placement band, a 2-frame surf counter, sound 17 for a day scene, and a scene end test without the stop request. Original: clouds come from `1010:0a38` (15 records, 30% each, `1018:1ef5(5, 10, 15)` kinds, y from 1 within `0x8b`), the surf counters cycle 0..2 (`1010:0e74`), the day scene plays sound 25 (`1018:06bf`), and an entry ends when `1048:0766` says its section is idle. Verdict: differs in every part; replaced by `src/island/island.ts` and `src/story/story.ts`.
+- `1204c0d` (chain instant phase transitions in one tick): ran up to five phase changes per tick so a scene end and the next walk start happened together. Original: there are no phases; one `1018:06bf` per `WM_TIMER` does whatever the current entry needs, and a new sequence is built and its first entry run in the same step. Verdict: only mattered in the old story; replaced by `src/story/story.ts` (`storyStep`).
+- `c037b5f` (order storyTick → adsTick → storyAnimateBg): ran the phase step before the ADS tick and the island animation. Original: `1018:06bf` runs the island step first (`1010:040e(0)`), then the walk or the entry's ADS tick, then the holiday redraw (`1010:1e50(0)`), sound 25, and the restore pass (`1060:03d3(0)`). Verdict: differs; `storyStep` follows the original order.
+- `194d7fb` (thread leak sweeps), story part: freed running threads before a scene, before a walk, and after a walk. Original: no ADS tick runs during a walk or an idle entry (`1018:06bf`), and every new sequence drops the cached ADS (`1018:0673`). Verdict: only mattered in the old story; the sweeps are gone with it.
+- `613b3c2` (8000-tick watchdog): force-ended a scene after 8000 ticks. Original: no time limit in `1018:06bf` (OQ-1); every scene table entry ends on its own with the ported code (`src/story/story.data.test.ts`). Verdict: deleted.
+- `d39b9ac` (clear saved zones between scenes): cleared the zone layer at each scene start. Original: the layer pipeline it patched was deleted in chunk 5; saved rects are kept by id on the display (`docs/re/graphics.md`). Verdict: only mattered in the old pipeline; gone with it.
+
 ## Side-by-side checklist
 
 | Original | Name | Ours | Status |

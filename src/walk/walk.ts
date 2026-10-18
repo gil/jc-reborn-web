@@ -67,37 +67,30 @@ export function walkInit(fromSpot: number, fromHdg: number, toSpot: number, toHd
 }
 
 // Returns delay ticks: 6 while walking/turning, 80 when just arrived, 0 when done.
-// Modifies ws in place.
 export function walkAnimate(ws: WalkState): number {
   if (ws.hasArrived) return 0;
 
   if (ws.nextHdg !== -1) {
-    // Turning phase
     if (((ws.nextHdg - ws.currentHdg) & 0x07) % 7 > 1) {
-      // Still turning
       ws.currentHdg = (ws.currentHdg + ws.increment) & 7;
       ws.dataIdx = walkDataBookmarksTurns[ws.currentSpot]! + ws.currentHdg;
       if (ws.lastTurn) ws.dataIdx += 9;
     } else {
-      // Turn complete
       if (ws.currentSpot !== ws.finalSpot) {
         ws.nextHdg = -1;
         ws.isBehindTree = (ws.currentSpot === 3 && ws.nextSpot === 4)
           || (ws.currentSpot === 4 && ws.nextSpot === 3);
         ws.dataIdx = walkDataBookmarks[ws.currentSpot]![ws.nextSpot]!;
       } else {
-        // Arrived at destination
         ws.dataIdx = walkDataBookmarksTurns[ws.finalSpot]! + ws.finalHdg + 9;
         ws.hasArrived = true;
       }
     }
   } else {
-    // Walking forward
     ws.dataIdx++;
 
     const row = walkData[ws.dataIdx]!;
     if (row[1] === 0) {
-      // Reached end of walk segment: transition to turn at new spot
       ws.currentHdg = walkDataEndHeadings[ws.currentSpot]![ws.nextSpot]!;
       ws.currentSpot = ws.nextSpot;
 
@@ -136,7 +129,6 @@ const unclipped = makeDrawState();
 export function walkDraw(ws: WalkState, display: Display, sprites: Surface[], bgSprites: Surface[], dx: number, dy: number): void {
   const [mirrored = 0, x = 0, y = 0, sprNo = 0] = walkData[ws.dataIdx]!;
   drawMarked(display, sprites[sprNo], x - 1 + dx, y + dy, mirrored ? MIRROR : 0);
-  // Redraw palm tree on top when Johnny is behind it
   if (ws.isBehindTree) {
     drawMarked(display, bgSprites[13], 442 + dx, 148 + dy, 0);
     drawMarked(display, bgSprites[12], 365 + dx, 122 + dy, 0);
