@@ -362,6 +362,7 @@ export function adsTick(state: AdsState, env: TtmEnv, palette: Palette, display:
 
   for (const t of state.threads) {
     if (t.isRunning === 1) runThread(env, t);
+    else if (t.isRunning === 2 && t.replay) replayEndingPage(env, t);
   }
   activatePendingPalette(env, palette);
   resetDrawClip(env.draw);
@@ -380,7 +381,8 @@ export function adsTick(state: AdsState, env: TtmEnv, palette: Palette, display:
       wc.timer = walkAnimate(wc.ws);
       wc.done = wc.timer === 0;
     }
-    if (!wc.done) walkDraw(wc.ws, display, wc.sprites, wc.bgSprites, wc.dx, wc.dy);
+    // On the tick the walk ends, the last frame must stay drawn: the main loop then waits out the arrival rest.
+    walkDraw(wc.ws, display, wc.sprites, wc.bgSprites, wc.dx, wc.dy);
   }
 
   for (const t of state.threads) {
@@ -443,6 +445,11 @@ function runThread(env: TtmEnv, t: TtmThread): void {
   } else if (result.gotoPage !== null) {
     t.nextPage = result.gotoPage;
   }
+}
+
+function replayEndingPage(env: TtmEnv, t: TtmThread): void {
+  loadThreadDrawState(t, env.draw);
+  runTtmPage(env, t, t.page);
 }
 
 function advancePage(t: TtmThread): void {
