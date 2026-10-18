@@ -1,5 +1,7 @@
 import { decodeAds } from '../decode/ads-loader.js';
-import { makeAdsState, adsPlayWalk, adsActiveThreadCount, type AdsState } from '../ads/scheduler.js';
+import { makeAdsState, type AdsState } from '../ads/state.js';
+import { adsSectionBusy, adsStartSection, adsTick } from '../ads/tick.js';
+import { startWalk, type WalkContext } from '../walk/walk.js';
 import {
   clearBackground, islandAnimate, islandInit, islandRedrawHoliday, showBackground, showScreen,
   type IslandRuntime, type IslandState,
@@ -16,6 +18,8 @@ import { type FadeState, nextFadeState, fadeDone } from '../gfx/fade.js';
 
 export interface GameState {
   adsState: AdsState;
+  walk: WalkContext | null;
+  random: () => number;
   islandRt: IslandRuntime | null;
   islandState: IslandState;
   bgAnimTimer: number;
@@ -182,16 +186,10 @@ function pickSceneFrom(list: StoryScene[], wantedFlags: number, unwantedFlags: n
 function startScene(scene: StoryScene, game: GameState): void {
   console.log(`[STORY] scene ${scene.adsName}[${scene.adsTagNo}] spot${scene.spotStart}→${scene.spotEnd}`);
 
-  const livePrev = game.adsState.threads.filter(t => t.isRunning);
-  if (livePrev.length) {
-    const desc = livePrev.map(t => `slot=${t.sceneSlot} tag=${t.sceneTag} isRunning=${t.isRunning}`).join(', ');
-    console.warn(`[STORY] startScene: ${livePrev.length} thread(s) still running from previous scene — will be replaced: ${desc}`);
-  }
-
   const raw = game.archive.byName.get(scene.adsName);
   if (!raw) { console.warn(`ADS not found: ${scene.adsName}`); return; }
-  const ads = decodeAds(raw.payload);
-  game.adsState = makeAdsState(ads, game.archive, scene.adsTagNo);
+  game.adsState = makeAdsState(decodeAds(raw.payload), game.archive, game.random);
+  adsStartSection(game.adsState, scene.adsTagNo);
 
   game.ttm.islandX = (scene.flags & ISLAND)
     ? game.islandState.xPos + (scene.flags & LEFT_ISLAND ? 272 : 0)
@@ -203,8 +201,20 @@ function startScene(scene: StoryScene, game: GameState): void {
   if (scene.dayNo !== 0) game.ttm.device.playSound(17);
 }
 
-function sceneIsDone(game: GameState): boolean {
-  return adsActiveThreadCount(game.adsState) === 0;
+function endScene(state: StoryState): void {
+  const scene = state.currentScene!;
+  console.log(`[STORY] → advance (scene done: ${scene.adsName}[${scene.adsTagNo}])`);
+  if (!(scene.flags & FINAL)) {
+    state.prevSpot = scene.spotEnd;
+    state.prevHdg = scene.hdgEnd;
+  }
+  state.phase = { kind: 'advance' };
+}
+
+export function storyPlayScene(state: StoryState, game: GameState, now: number): void {
+  if (state.phase.kind !== 'playing' || !state.currentScene) return;
+  adsTick(game.adsState, game.ttm, game.palette, now);
+  if (!adsSectionBusy(game.adsState, state.currentScene.adsTagNo)) endScene(state);
 }
 
 export function storyInit(_archive: ParsedArchive, game: GameState, debugAds: string | null = null, skipIntro: boolean = false): StoryState {
@@ -221,7 +231,6 @@ export function storyInit(_archive: ParsedArchive, game: GameState, debugAds: st
   };
   if (!skipIntro && showScreen(game.display, game.archive, 'INTRO.SCR')) {
     game.islandRt = null;
-    for (const t of game.adsState.threads) t.isRunning = 0;
     state.phase = { kind: 'splash', startMs: performance.now(), fading: false };
   } else {
     buildSequence(state, game);
@@ -267,16 +276,7 @@ function storyTickStep(state: StoryState, game: GameState): void {
 
       if (state.prevSpot !== -1) {
         console.log(`[STORY] → walking spot${state.prevSpot}→${scene.spotStart}`);
-
-        const stragglers = game.adsState.threads.filter(t => t.isRunning);
-        if (stragglers.length) {
-          const desc = stragglers.map(t => `slot=${t.sceneSlot} tag=${t.sceneTag} isRunning=${t.isRunning}`).join(', ');
-          console.warn(`[STORY] startWalk: ${stragglers.length} straggler thread(s) before walk — freeing them: ${desc}`);
-          for (const t of stragglers) t.isRunning = 0;
-        }
-
-        adsPlayWalk(
-          game.adsState,
+        game.walk = startWalk(
           game.archive,
           game.islandRt?.sprites ?? [],
           state.prevSpot, state.prevHdg,
@@ -293,21 +293,9 @@ function storyTickStep(state: StoryState, game: GameState): void {
     }
 
     case 'walking': {
-      const wc = game.adsState.walkCtx;
-      if (wc === null || wc.done) {
-        // Walk done — clear the walk context, then start the queued scene.
-        game.adsState.walkCtx = null;
-
-        const residual = game.adsState.threads.filter(t => t.isRunning);
-        if (residual.length) {
-          const desc = residual.map(t => `slot=${t.sceneSlot} tag=${t.sceneTag} isRunning=${t.isRunning}`).join(', ');
-          console.warn(`[STORY] walk done: ${residual.length} residual thread(s) after walk — freeing: ${desc}`);
-          for (const t of residual) t.isRunning = 0;
-        }
-
-        if (state.currentScene) {
-          startScene(state.currentScene, game);
-        }
+      if (game.walk === null || game.walk.done) {
+        game.walk = null;
+        if (state.currentScene) startScene(state.currentScene, game);
         state.playingTicks = 0;
         state.phase = { kind: 'playing' };
       }
@@ -316,24 +304,9 @@ function storyTickStep(state: StoryState, game: GameState): void {
 
     case 'playing': {
       state.playingTicks++;
-      if (sceneIsDone(game)) {
-        const scene = state.currentScene!;
-        console.log(`[STORY] → advance (scene done: ${scene.adsName}[${scene.adsTagNo}])`);
-        if (!(scene.flags & FINAL)) {
-          state.prevSpot = scene.spotEnd;
-          state.prevHdg = scene.hdgEnd;
-        }
-        state.phase = { kind: 'advance' };
-      } else if (state.playingTicks > 8000) {
-        const live = game.adsState.threads
-          .filter(t => t.isRunning)
-          .map(t => `slot=${t.sceneSlot} tag=${t.sceneTag} run=${t.isRunning} page=${t.page} timer=${t.timer} delay=${t.delay} sceneTimer=${t.sceneTimer} iters=${t.sceneIterations}`)
-          .join(' | ');
-        console.warn(`[STORY] WATCHDOG: force-ending ${state.currentScene?.adsName}[${state.currentScene?.adsTagNo}] after ${state.playingTicks} ticks — live threads: ${live || 'none'}`);
-        for (const t of game.adsState.threads) {
-          if (t.isRunning) t.isRunning = 0;
-        }
-        game.adsState.stopRequested = true;
+      if (state.playingTicks > 8000) {
+        console.warn(`[STORY] WATCHDOG: force-ending ${state.currentScene?.adsName}[${state.currentScene?.adsTagNo}] after ${state.playingTicks} ticks`);
+        endScene(state);
       }
       break;
     }

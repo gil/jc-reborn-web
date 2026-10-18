@@ -1,13 +1,13 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { ADS } from '../ads/opcodes.js';
+import { ADS_OP, IF_OPCODES, WHILE_OPCODES } from '../ads/script.js';
 import { hasCorpus, hasFixture, loadArchive, readFixtureRows } from '../testing/corpus.js';
 import { adsArgCount } from './ads-bytecode.js';
 import { decodeAds } from './ads-loader.js';
 
 const SECTION_END = 0xffff;
 const ORIGINAL_SECTION_SLOTS = 80;
-const NAMED_OPCODES = new Set<number>(Object.values(ADS));
+const NAMED_OPCODES = new Set<number>([...Object.values(ADS_OP), ...IF_OPCODES, ...WHILE_OPCODES]);
 
 const scripts = () => loadArchive().list.filter((resource) => resource.type === '.ADS');
 const hex = (opcode: number) => `0x${opcode.toString(16).padStart(4, '0')}`;
@@ -56,7 +56,7 @@ describe.skipIf(!hasCorpus)('every ADS resource', () => {
     expect(Math.max(...counts)).toBeLessThanOrEqual(ORIGINAL_SECTION_SLOTS);
   });
 
-  it('uses only opcodes our ADS opcode table names', () => {
+  it('uses only opcodes the ADS interpreter knows', () => {
     const unnamed = new Set(scripts().flatMap(({ payload }) => frame(decodeAds(payload).bytecode).opcodes).filter((opcode) => !NAMED_OPCODES.has(opcode)));
     expect([...unnamed].map(hex)).toEqual([]);
   });

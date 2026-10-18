@@ -8,14 +8,16 @@ import { Display } from './gfx/gdi/display.js';
 import { makeDrawState } from './gfx/gdi/surface.js';
 import { applyFade } from './gfx/fade.js';
 import { presentSurface } from './gfx/present.js';
-import { makeAdsState, adsTick, adsActiveThreadCount } from './ads/scheduler.js';
+import { makeAdsState } from './ads/state.js';
+import { adsActiveNodeCount } from './ads/tick.js';
+import { walkTick } from './walk/walk.js';
 import { startLoop } from './engine/loop.js';
 import { pumpMs, hasEnoughMs, consumeMs, msPerTick, resetClock } from './engine/clock.js';
 import { randomIslandState } from './island/island.js';
 import { SCREEN_W, SCREEN_H } from './types.js';
 import { GdiDevice } from './ttm/gdi-device.js';
 import { makeTtmEnv } from './ttm/page-runner.js';
-import { storyInit, storyTick, storyAnimateBg, storyRedrawHoliday, type GameState } from './story/story.js';
+import { storyInit, storyTick, storyAnimateBg, storyPlayScene, storyRedrawHoliday, type GameState } from './story/story.js';
 import { initSound, playSample } from './audio/sound.js';
 import { initSoundIcon } from './ui/sound-icon.js';
 import { initFullscreen } from './ui/fullscreen.js';
@@ -42,15 +44,15 @@ setPaletteColors(pal, decodePal(palResRaw.payload).colors);
 const display = new Display();
 display.screenIsB = true;
 const draw = makeDrawState();
-const device = new GdiDevice(display, draw, archive, {
-  playSound: playSample,
-  random: () => Math.floor(Math.random() * 0x10000),
-});
+const random = () => Math.floor(Math.random() * 0x10000);
+const device = new GdiDevice(display, draw, archive, { playSound: playSample, random });
 
 const adsRaw = archive.list.find(r => r.type === '.ADS')!;
 
 const game: GameState = {
-  adsState: makeAdsState(decodeAds(adsRaw.payload), archive, 1),
+  adsState: makeAdsState(decodeAds(adsRaw.payload), archive, random),
+  walk: null,
+  random,
   islandRt: null,
   islandState: randomIslandState(),
   bgAnimTimer: 8,
@@ -73,20 +75,18 @@ document.addEventListener('visibilitychange', () => {
   if (!document.hidden) resetClock();
 });
 
-let pacedMini = 4; // initial guess before first tick
+let now = 0;
 
 startLoop(
   () => {
     pumpMs();
-
-    // Advance the engine one mini-step for every mini ticks of accumulated
-    // wall-clock time (pacing: OQ-22). rAF may call us more often than the engine
-    // needs; the accumulation gates the actual tick rate.
-    while (hasEnoughMs(pacedMini * msPerTick())) {
-      consumeMs(pacedMini * msPerTick());
+    while (hasEnoughMs(msPerTick())) {
+      consumeMs(msPerTick());
+      now++;
       storyTick(storyState, game);
-      storyAnimateBg(storyState, game, pacedMini);
-      pacedMini = adsTick(game.adsState, game.ttm, pal, display);
+      storyAnimateBg(storyState, game, 1);
+      if (game.walk) walkTick(game.walk, display);
+      storyPlayScene(storyState, game, now);
       storyRedrawHoliday(game);
       display.restorePass(0);
     }
@@ -95,6 +95,6 @@ startLoop(
     presentSurface(img.data, display.window, pal);
     if (game.fadeState) applyFade(img.data, game.fadeState);
     ctx.putImageData(img, 0, 0);
-    hudUpdate(adsActiveThreadCount(game.adsState), storyState.currentScene?.adsName ?? '-');
+    hudUpdate(adsActiveNodeCount(game.adsState), storyState.currentScene?.adsName ?? '-');
   },
 );

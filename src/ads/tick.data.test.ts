@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { decodeAds } from '../decode/ads-loader.js';
+import { Display } from '../gfx/gdi/display.js';
+import { makeDrawState } from '../gfx/gdi/surface.js';
+import { makePalette } from '../gfx/palette.js';
+import { storyScenes } from '../story/story-data.js';
 import { traceAdsSection } from '../testing/ads-trace.js';
-import { hasFixture, loadArchive, readFixtureRows } from '../testing/corpus.js';
+import { hasCorpus, hasFixture, loadArchive, readFixtureRows } from '../testing/corpus.js';
+import { GdiDevice } from '../ttm/gdi-device.js';
+import { makeTtmEnv } from '../ttm/page-runner.js';
+import { makeAdsState } from './state.js';
+import { adsStartSection, adsTick } from './tick.js';
 
 describe.skipIf(!hasFixture('ads/traces.tsv'))('ADS tick matches the original SCRANTIC.SCR', () => {
   it('makes the same scene, section, and page decisions on every section of every ADS script', { timeout: 600_000 }, () => {
@@ -26,5 +34,27 @@ describe.skipIf(!hasFixture('ads/traces.tsv'))('ADS tick matches the original SC
       else if (ours.length !== rows.length) wrong.push(`${key}: ours ${ours.length} rows, original ${rows.length}`);
     }
     expect(wrong).toEqual([]);
+  });
+});
+
+describe.skipIf(!hasCorpus)('ADS tick on the display', () => {
+  it('plays some page in the first 100 ticks of every story scene', { timeout: 120_000 }, () => {
+    // SCRANTIC 1048:0874 1048:1acb 1060:03d3
+    const archive = loadArchive();
+    for (const scene of storyScenes) {
+      const display = new Display();
+      display.screenIsB = true;
+      const draw = makeDrawState();
+      const random = () => 0x1234;
+      const env = makeTtmEnv(new GdiDevice(display, draw, archive, { playSound: () => {}, random }), draw);
+      const state = makeAdsState(decodeAds(archive.byName.get(scene.adsName)!.payload), archive, random);
+      adsStartSection(state, scene.adsTagNo);
+      let ran = false;
+      for (let now = 1; now <= 100; now++) {
+        if (adsTick(state, env, makePalette(), now)) ran = true;
+        display.restorePass(0);
+      }
+      expect(ran, `${scene.adsName} ${scene.adsTagNo}`).toBe(true);
+    }
   });
 });

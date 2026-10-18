@@ -1,7 +1,9 @@
+import { decodeBmp } from '../decode/bmp.js';
 import { COPY_RECT } from '../gfx/gdi/dirty.js';
 import { SURFACE_A, SURFACE_B, SURFACE_C, type Display } from '../gfx/gdi/display.js';
-import { drawSprite, MIRROR } from '../gfx/gdi/sprite.js';
+import { drawSprite, MIRROR, spriteSurface } from '../gfx/gdi/sprite.js';
 import { makeDrawState, type Surface } from '../gfx/gdi/surface.js';
+import type { ParsedArchive } from '../resource/types.js';
 import { calcPath } from './calcpath.js';
 import { UNDEF_NODE } from './calcpath-data.js';
 import {
@@ -139,6 +141,50 @@ export function walkDraw(ws: WalkState, display: Display, sprites: Surface[], bg
     drawMarked(display, bgSprites[13], 442 + dx, 148 + dy, 0);
     drawMarked(display, bgSprites[12], 365 + dx, 122 + dy, 0);
   }
+}
+
+export interface WalkContext {
+  ws: WalkState;
+  sprites: Surface[];
+  bgSprites: Surface[];
+  dx: number;
+  dy: number;
+  timer: number;
+  done: boolean;
+}
+
+export function startWalk(
+  archive: ParsedArchive,
+  bgSprites: Surface[],
+  fromSpot: number, fromHdg: number,
+  toSpot: number, toHdg: number,
+  dx: number, dy: number,
+): WalkContext | null {
+  const raw = archive.byName.get('JOHNWALK.BMP');
+  if (!raw) {
+    console.warn('JOHNWALK.BMP not found');
+    return null;
+  }
+  return {
+    ws: walkInit(fromSpot, fromHdg, toSpot, toHdg),
+    sprites: decodeBmp(raw.payload).sprites.map(spriteSurface),
+    bgSprites,
+    dx,
+    dy,
+    timer: 0,
+    done: false,
+  };
+}
+
+export function walkTick(walk: WalkContext, display: Display): void {
+  if (walk.done) return;
+  walk.timer--;
+  if (walk.timer <= 0) {
+    walk.timer = walkAnimate(walk.ws);
+    walk.done = walk.timer === 0;
+  }
+  // Drawn on the tick the walk ends too: the story waits out the arrival rest with Johnny on screen.
+  walkDraw(walk.ws, display, walk.sprites, walk.bgSprites, walk.dx, walk.dy);
 }
 
 function drawMarked(display: Display, image: Surface | undefined, x: number, y: number, flags: number): void {

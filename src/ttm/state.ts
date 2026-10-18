@@ -28,18 +28,7 @@ export interface TtmSlot {
 
 export interface TtmThread {
   slot: TtmSlot;
-  isRunning: 0 | 1 | 2;
-  sceneSlot: number;
-  sceneTag: number;
-  sceneTimer: number;
-  sceneIterations: number;
-  delay: number;
-  timer: number;
-  tagPage: number;
-  page: number;
-  nextPage: number;
   replay: boolean;
-  purged: boolean;
   paletteSlot: number;
   bmpSlot: number;
   zoneSlot: number;
@@ -64,18 +53,7 @@ export function makeTtmSlot(id: number, ttm: TtmResource | null): TtmSlot {
 export function makeThread(slot: TtmSlot = makeTtmSlot(0, null)): TtmThread {
   return {
     slot,
-    isRunning: 0,
-    sceneSlot: 0,
-    sceneTag: 0,
-    sceneTimer: 0,
-    sceneIterations: 0,
-    delay: 0,
-    timer: 0,
-    tagPage: 0,
-    page: 0,
-    nextPage: -1,
     replay: false,
-    purged: false,
     paletteSlot: 0,
     bmpSlot: 0,
     zoneSlot: 0,
