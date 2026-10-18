@@ -155,7 +155,7 @@ Every function below must end `verified` in `docs/re/function-map.md` or be list
 
 - [x] `step-001-ads-findings.md`: every `1048` function named (including `1048:118a`), the export rebuilt, and `docs/re/ads.md` written from it.
 - [x] `step-002-original-ads-trace.md`: Unicorn runs the original ADS loader and tick on every section of every ADS and writes `re/fixtures/ads/traces.tsv`.
-- [ ] `step-003-ads-state-and-script.md`: `src/ads/state.ts` and `src/ads/script.ts`, pinned by unit tests.
+- [x] `step-003-ads-state-and-script.md`: `src/ads/state.ts` and `src/ads/script.ts`, pinned by unit tests.
 - [ ] `step-004-ads-tick.md`: `src/ads/tick.ts`, pinned by unit tests and equal to the original trace on the whole corpus.
 - [ ] `step-005-wire-engine.md`: story, walk, and main loop switch to the port; old scheduler and its workarounds deleted; open questions updated; browser check.
 - [ ] `step-006-chunk-wrap-up.md`: every in-scope function `verified` or logged, past fixes reviewed, comment audit, full rebuild and test run, spec checkbox ticked.

@@ -269,6 +269,15 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **Why not reviewed:** no TTM script uses any of them (`docs/re/decoders.md`, TTM opcode coverage), so nothing can check a port against the original's output.
 - **Status:** open, by choice
 
+### OQ-31: ADS interpreter guards where the original reads through a null pointer
+
+- **Where:** `src/ads/script.ts` (`ifBlock`, `whileBlock`, `randomBlock`, `skipBlock`)
+- **What it does:** when a condition chain, a block, or a random block runs off the end of the bytecode, ours stops the pass (returns `null`). After a false while block whose `0x1520` is missing, ours also stops.
+- **Original:** `1048:1758` and `1048:11db` pass a null pointer on to `1048:1925`, which reads the word at it; `1048:17a0` adds 2 to a null result of `1048:118a` and goes on at offset 2 of segment 0; `1048:0cda` reads the word at a null pick.
+- **Data:** every if and while block in the 10 ADS scripts is closed and every random block ends with `0x30FF` (the corpus trace of step 2 runs every section without reaching these paths).
+- **Why not reviewed:** the original reads unrelated memory there; no port can match it.
+- **Status:** open, by choice
+
 ## Resolved
 
 ### OQ-14: `1028` stub group that does not reach a decoder

@@ -33,7 +33,7 @@ If `docs/re/ads.md` says something different from a code block below, `ads.md` w
 
 ## Part A: State
 
-- [ ] **Action 1: Write the test-data builders**
+- [x] **Action 1: Write the test-data builders**
 
 Create `src/testing/ads-build.ts`:
 
@@ -60,7 +60,7 @@ export function archiveOf(files: Record<string, Uint8Array>): ParsedArchive {
 }
 ```
 
-- [ ] **Action 2: Write the failing state tests**
+- [x] **Action 2: Write the failing state tests**
 
 Create `src/ads/state.test.ts`:
 
@@ -133,7 +133,7 @@ describe('resetNode', () => {
 Run: `fnm use`, then `pnpm exec vitest run src/ads/state.test.ts`
 Expected: FAIL, cannot resolve `./state.js`.
 
-- [ ] **Action 3: Write the state module**
+- [x] **Action 3: Write the state module**
 
 Create `src/ads/state.ts`:
 
@@ -303,7 +303,7 @@ function sectionScenes(state: AdsState, start: number): AdsNode[] {
 }
 ```
 
-- [ ] **Action 4: Run the state tests**
+- [x] **Action 4: Run the state tests**
 
 Run: `pnpm exec vitest run src/ads/state.test.ts`
 Expected: 4 tests PASS.
@@ -311,7 +311,7 @@ Expected: 4 tests PASS.
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 5: Commit**
+- [x] **Action 5: Commit**
 
 ```bash
 git add src/testing/ads-build.ts src/ads/state.ts src/ads/state.test.ts
@@ -320,7 +320,7 @@ git commit -m "feat(ads): ADS record, nodes, and sections as the original builds
 
 ## Part B: Script interpreter
 
-- [ ] **Action 6: Write the failing script tests**
+- [x] **Action 6: Write the failing script tests**
 
 Create `src/ads/script.test.ts`:
 
@@ -558,7 +558,7 @@ Notes on the expected values, so a failure can be read quickly:
 Run: `pnpm exec vitest run src/ads/script.test.ts`
 Expected: FAIL, cannot resolve `./script.js`.
 
-- [ ] **Action 7: Write the script interpreter**
+- [x] **Action 7: Write the script interpreter**
 
 Create `src/ads/script.ts`:
 
@@ -876,7 +876,7 @@ function startSection(state: AdsState, tag: number, how: number): void {
 
 The `// 1068:463a ...` comment stays: without it the constant answers look like a bug.
 
-- [ ] **Action 8: Run the script tests**
+- [x] **Action 8: Run the script tests**
 
 Run: `pnpm exec vitest run src/ads/script.test.ts src/ads/state.test.ts`
 Expected: all PASS. When one fails, check the test's expectation against `docs/re/ads.md` first, then the code.
@@ -884,7 +884,7 @@ Expected: all PASS. When one fails, check the test's expectation against `docs/r
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 9: Commit**
+- [x] **Action 9: Commit**
 
 ```bash
 git add src/ads/script.ts src/ads/script.test.ts
@@ -893,7 +893,7 @@ git commit -m "feat(ads): port the original ADS script interpreter"
 
 ## Part C: Docs
 
-- [ ] **Action 10: Log the null guards**
+- [x] **Action 10: Log the null guards**
 
 Append to `docs/re/open-questions.md`, in the `Not reviewed on purpose` section (after OQ-27):
 
@@ -910,7 +910,7 @@ Append to `docs/re/open-questions.md`, in the `Not reviewed on purpose` section 
 
 If step 2's `Emulated` notes show a section that does reach one of these paths, say so in the entry instead of the `Data` line above.
 
-- [ ] **Action 11: Update the checklist rows**
+- [x] **Action 11: Update the checklist rows**
 
 In `docs/re/ads.md`, `Side-by-side checklist`, replace the rows of the functions this step ported with `src/ads/<file>.ts:<line>` and the function name, status `fixed`:
 
@@ -939,7 +939,7 @@ In `docs/re/ads.md`, `Side-by-side checklist`, replace the rows of the functions
 
 Get each line number with `rg -n "function <name>" src/ads/state.ts src/ads/script.ts`. `1048:0303` stays at `src/decode/ads-bytecode.ts` and gains `src/ads/state.ts` `nextInstruction` (status `fixed`).
 
-- [ ] **Action 12: Commit**
+- [x] **Action 12: Commit**
 
 ```bash
 git add docs/re/ads.md docs/re/open-questions.md
@@ -948,7 +948,7 @@ git commit -m "docs(re): ADS script functions mapped to the port"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

@@ -194,9 +194,9 @@ No call in `re/out/index.tsv` and no relocation in `re/out/relocations.tsv` reac
 | --- | --- | --- | --- |
 | `1048:0000` | `ads_init` | none (nothing to free in JavaScript) | match |
 | `1048:001b` | `ads_unloadAll` | none (the scheduler state is dropped with the scene) | open |
-| `1048:0079` | `ads_loadAds` | `src/ads/scheduler.ts:114` `makeAdsState` (TTMs per sub-resource, a missing one is skipped: OQ-13) | open |
-| `1048:0303` | `ads_nextInstruction` | `src/decode/ads-bytecode.ts:12` (`adsArgCount`); the scheduler still uses `ADS_ARG_COUNTS`: OQ-11 | open |
-| `1048:040f` | `ads_sectionSceneIds` | none (scheduler bookmarks, `scanBytecode`): OQ-12 | open |
+| `1048:0079` | `ads_loadAds` | `src/ads/state.ts:67` `makeAdsState` (all-or-nothing TTM load) | fixed |
+| `1048:0303` | `ads_nextInstruction` | `src/decode/ads-bytecode.ts:12` (`adsArgCount`), `src/ads/state.ts:150` `nextInstruction` | fixed |
+| `1048:040f` | `ads_sectionSceneIds` | `src/ads/state.ts:155` `sectionScenes` | fixed |
 | `1048:04fc` | `ads_indexSections` | `src/decode/ads-bytecode.ts:18` (`indexAdsSections`); the scheduler still scans on its own: OQ-11 | open |
 | `1048:067f` | `ads_unload` | none (the scheduler state is dropped with the scene) | open |
 | `1048:0766` | `ads_sectionBusy` | `src/ads/scheduler.ts:462` `adsActiveThreadCount` (any running thread): OQ-22 | open |
@@ -212,27 +212,27 @@ No call in `re/out/index.tsv` and no relocation in `re/out/relocations.tsv` reac
 | `1048:0a33` | `ads_hideAllSections` | none (unreferenced) | match |
 | `1048:0a86` | `ads_freezeAllSections` | none (unreferenced) | match |
 | `1048:0ad9` | `ads_resetAllSections` | none (unreferenced) | match |
-| `1048:0b3e` | `ads_resetThread` | `src/ads/scheduler.ts:165` (`makeThread` on start), `src/ads/scheduler.ts:178` `restartThread`: OQ-22 | open |
-| `1048:0bc5` | `ads_resetAllNodes` | none (threads are made on start): OQ-22 | open |
-| `1048:0bf4` | `ads_findNode` | `src/ads/scheduler.ts:151` `isSceneRunning` (threads, not nodes): OQ-12 | open |
-| `1048:0c30` | `ads_sectionResumePoint` | none (always the section start in the data): OQ-22 | open |
-| `1048:0c8d` | `ads_randomWeight` | `src/ads/scheduler.ts:279`, `287`, `299` (weights read per opcode): OQ-11 | open |
-| `1048:0cda` | `ads_randomBlock` | `src/ads/scheduler.ts:199` `adsRandomPickOp`, `src/ads/scheduler.ts:210` `adsRandomEnd` (`Math.random`): OQ-26 | open |
-| `1048:0db6` | `ads_addScene` | `src/ads/scheduler.ts:155` `adsAddScene` (free thread slot, skips a running scene): OQ-22 | open |
-| `1048:0e2e` | `ads_restartScene` | none (unused opcode, taken for a tag word): OQ-11 | open |
-| `1048:0e6e` | `ads_holdScene` | none (unused opcode, taken for a tag word): OQ-11 | open |
-| `1048:0e9b` | `ads_stopScene` | `src/ads/scheduler.ts:189` `adsStopSceneByTag`: OQ-22 | open |
-| `1048:0ec8` | `ads_resetScene` | none (unused opcode, taken for a tag word): OQ-11 | open |
-| `1048:0ef2` | `ads_drawFirst` | none (unused opcode, taken for a tag word): OQ-11 | open |
-| `1048:0f8c` | `ads_drawLast` | `src/ads/scheduler.ts:308` (`UNKNOWN_6`, args skipped): OQ-11 | open |
-| `1048:106b` | `ads_skipBlock` | `src/ads/scheduler.ts:223` `adsPlayChunk` (`inSkipBlock` flag): OQ-22 | open |
-| `1048:118a` | `ads_whileEnd` | none (`0x1520` takes 5 args in ours): OQ-11 | open |
-| `1048:11db` | `ads_skipFalseBlock` | `src/ads/scheduler.ts:223` `adsPlayChunk` (`inSkipBlock` flag): OQ-22 | open |
-| `1048:1223` | `ads_evalConditions` | `src/ads/scheduler.ts:236`..`263` (`IF_*`, `AND`, `OR` cases): OQ-22 | open |
-| `1048:1519` | `ads_runInstruction` | `src/ads/scheduler.ts:223` `adsPlayChunk`: OQ-11, OQ-22 | open |
-| `1048:1925` | `ads_runBlock` | `src/ads/scheduler.ts:223` `adsPlayChunk`, `src/ads/scheduler.ts:333` `adsPlayTriggeredChunks`: OQ-22 | open |
+| `1048:0b3e` | `ads_resetThread` | `src/ads/state.ts:118` `resetNode` | fixed |
+| `1048:0bc5` | `ads_resetAllNodes` | `src/ads/state.ts:67` `makeAdsState` (`nodes.forEach(resetNode)`) | fixed |
+| `1048:0bf4` | `ads_findNode` | `src/ads/state.ts:138` `findNode` | fixed |
+| `1048:0c30` | `ads_sectionResumePoint` | `src/ads/script.ts:118` `sectionResumePoint` | fixed |
+| `1048:0c8d` | `ads_randomWeight` | `src/ads/script.ts:297` `randomWeight` | fixed |
+| `1048:0cda` | `ads_randomBlock` | `src/ads/script.ts:276` `randomBlock` | fixed |
+| `1048:0db6` | `ads_addScene` | `src/ads/script.ts:238` `addScene` | fixed |
+| `1048:0e2e` | `ads_restartScene` | `src/ads/script.ts:254` `restartScene` | fixed |
+| `1048:0e6e` | `ads_holdScene` | `src/ads/script.ts:261` `setMode` | fixed |
+| `1048:0e9b` | `ads_stopScene` | `src/ads/script.ts:261` `setMode` | fixed |
+| `1048:0ec8` | `ads_resetScene` | `src/ads/script.ts:54` `runInstruction` (`RESET_SCENE`) | fixed |
+| `1048:0ef2` | `ads_drawFirst` | `src/ads/script.ts:266` `moveNode` | fixed |
+| `1048:0f8c` | `ads_drawLast` | `src/ads/script.ts:266` `moveNode` | fixed |
+| `1048:106b` | `ads_skipBlock` | `src/ads/script.ts:158` `skipBlock` | fixed |
+| `1048:118a` | `ads_whileEnd` | `src/ads/script.ts:147` `whileEnd` | fixed |
+| `1048:11db` | `ads_skipFalseBlock` | `src/ads/script.ts:173` `skipFalseBlock` | fixed |
+| `1048:1223` | `ads_evalConditions` | `src/ads/script.ts:179` `evalConditions`, `src/ads/script.ts:208` `conditionHolds`, `src/ads/script.ts:228` `storyValueHolds` | fixed |
+| `1048:1519` | `ads_runInstruction` | `src/ads/script.ts:54` `runInstruction`, `src/ads/script.ts:125` `ifBlock`, `src/ads/script.ts:132` `whileBlock`, `src/ads/script.ts:304` `startSection` | fixed |
+| `1048:1925` | `ads_runBlock` | `src/ads/script.ts:41` `runBlock` | fixed |
 | `1048:196e` | `ads_advancePage` | `src/ads/scheduler.ts:455` `advancePage` (countdown timers): OQ-22 | open |
-| `1048:19e7` | `ads_sectionIndex` | `src/ads/scheduler.ts:147` `findAdsTag`: OQ-11 | open |
+| `1048:19e7` | `ads_sectionIndex` | `src/ads/state.ts:142` `sectionIndex` | fixed |
 | `1048:1a4b` | `ads_nextSectionTag` | none (unreferenced) | match |
 | `1048:1aaf` | `ads_firstSectionTag` | none (unreferenced) | match |
 | `1048:1acb` | `ads_tick` | `src/ads/scheduler.ts:355` `adsTick`, `src/ads/scheduler.ts:430` `runThread`: OQ-2, OQ-3, OQ-22 | open |
