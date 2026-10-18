@@ -128,6 +128,14 @@
       "signature": null,
       "callingConvention": null
     },
+    "1000:195a": {
+      "name": "rtl_strcpy",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Near strcpy(dst, src); returns dst",
+      "signature": null,
+      "callingConvention": null
+    },
     "1000:197e": {
       "name": "rtl_stricmp",
       "subsystem": "rtl",
@@ -229,6 +237,14 @@
       "subsystem": "story",
       "status": "named",
       "note": "Idle callback: runs one scene step, then updates elapsed-time counters from GetCurrentTime",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:00fc": {
+      "name": "story_setTtmOffset",
+      "subsystem": "story",
+      "status": "named",
+      "note": "Sets the TTM island offset 1068:46e4/46e2 from the island position (1068:30c4 + 1, or + 0x111 when the argument is set; 1068:30c2); both 0 when 1068:30b2 is 2",
       "signature": null,
       "callingConvention": null
     },
@@ -429,6 +445,14 @@
       "subsystem": "platform",
       "status": "named",
       "note": "Loads a string resource, formats it with the varargs, beeps, and shows a MessageBox",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1e60": {
+      "name": "story_random",
+      "subsystem": "story",
+      "status": "named",
+      "note": "Additive lagged-Fibonacci generator over the 56-word table at 1068:1ce8 (indices 1068:1ce4 and 1068:1ce6); returns the new word",
       "signature": null,
       "callingConvention": null
     },
@@ -952,6 +976,22 @@
       "signature": null,
       "callingConvention": null
     },
+    "1030:07c3": {
+      "name": "gfx_selectFontStub",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Empty: returns 1; the TTM font and text opcodes call it with a font handle",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:07d4": {
+      "name": "gfx_deleteFontStub",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Empty: returns DS; TTM opcodes 0x0090 and 0xf04f and 1050:080c call it with a font handle",
+      "signature": null,
+      "callingConvention": null
+    },
     "1030:082c": {
       "name": "platform_registerCursor",
       "subsystem": "platform",
@@ -1368,6 +1408,30 @@
       "signature": null,
       "callingConvention": null
     },
+    "1040:0c13": {
+      "name": "gfx_paletteLevelStub",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Empty: returns DS; the TTM palette fade opcodes call it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0c21": {
+      "name": "gfx_paletteCycleStub",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Empty: returns 0; TTM opcodes 0x0400 and 0x2402 reach it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0c31": {
+      "name": "gfx_paletteEmptyStub",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Empty: returns DS; nothing calls it",
+      "signature": null,
+      "callingConvention": null
+    },
     "1040:0d54": {
       "name": "gfx_drawPixel",
       "subsystem": "gfx",
@@ -1448,11 +1512,67 @@
       "signature": null,
       "callingConvention": null
     },
+    "1048:0b3e": {
+      "name": "ads_resetThread",
+      "subsystem": "ads",
+      "status": "named",
+      "note": "Resets a thread node: palette, BMP and zone slots 0, page = tag page, no next page, colors 15, delay 0, clip on over the whole screen",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:196e": {
+      "name": "ads_advancePage",
+      "subsystem": "ads",
+      "status": "named",
+      "note": "When the thread's delay is due (or 0): next due time = now + delay, clears the ran flag, moves to the next page or the goto page; returns 1, else 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:1acb": {
+      "name": "ads_tick",
+      "subsystem": "ads",
+      "status": "named",
+      "note": "One ADS tick: runs every active thread's current page, applies delay, goto and purge, then activates the pending palette and resets the clip",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:1e5a": {
+      "name": "ads_redrawThreads",
+      "subsystem": "ads",
+      "status": "named",
+      "note": "Re-runs the last page run of every thread of the current ADS that has one, as a replay (ran flag forced to 1, restored after), then resets the clip; no direct caller found",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0000": {
+      "name": "ttm_measureSlotImages",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Stores the widest image of the thread's BMP slot in 1068:463c and clears 1068:463e; TTM opcode 0xb000",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0061": {
+      "name": "ttm_scrollSlotImages",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Draws the BMP slot's images in a column at x = arg2, starting 1068:463e above the screen bottom and spaced by arg0, marks them dirty, adds arg1 to 463e, and raises the purge flag when none was drawn; TTM opcode 0xb013",
+      "signature": null,
+      "callingConvention": null
+    },
     "1050:013e": {
       "name": "ttm_readWord",
       "subsystem": "ttm",
       "status": "verified",
       "note": "Returns the word at a far pointer",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0152": {
+      "name": "ttm_initDirtyPool",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Grows the dirty-rect pool by 100 nodes; sets 1068:2641 to 2 in color mode 12",
       "signature": null,
       "callingConvention": null
     },
@@ -1493,6 +1613,206 @@
       "subsystem": "ttm",
       "status": "verified",
       "note": "Builds the page table of a TTM: pages end at 0x0FF0, 0x1111 tags are recorded with their page; returns 1 when all pages are found, 0 at the end of the bytecode, 0xFFFF on arg codes 8..14",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:074a": {
+      "name": "ttm_runPageChecked",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Runs page n of the current TTM with 1058:040c when the page exists; returns 0 otherwise",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0799": {
+      "name": "ttm_activatePendingPalette",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Makes the pending palette 1068:4646 active and clears it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:07c6": {
+      "name": "ttm_unloadAll",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Unloads every TTM (1050:080c) and frees every thread node",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:080c": {
+      "name": "ttm_unload",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Frees one TTM record: matrix, fonts, bitmaps (not the shared walk list), palettes, zone buffers, page table, bytecode",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0a6e": {
+      "name": "ttm_shutdown",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Frees the dirty-rect pool and unloads every TTM",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0a85": {
+      "name": "ttm_markDrawn",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Marks a drawn rect dirty: B to A at ages 0 and 1, and C to B at age 0 unless 1068:27c0 is set",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0b31": {
+      "name": "ttm_screenToBackground",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Sets 1068:4640, copies all of B into C, drops the C-to-B dirty list",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0b74": {
+      "name": "ttm_copyToBackground",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Copies a rect of B into C, keeping the copy source and draw target",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:0000": {
+      "name": "ttm_soundOpcode",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Dispatches 0xCxxx opcodes: 0xc051 plays a sample, the rest reach return-0 stubs or copy strings",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:0144": {
+      "name": "ttm_drawOpcode",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Dispatches 0xAxxx opcodes to the primitives, sprites, effects (1058:1510) and text",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:040c": {
+      "name": "ttm_runPage",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Runs one TTM page until 0x0FF0: frames each instruction, applies offsets, dispatches, marks drawings dirty",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:13a9": {
+      "name": "ttm_pageOfTag",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Returns the first page whose first instruction is 0x1101 or 0x1111 with the tag, or 0xFFFF; stops at the first unset page table entry",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:141f": {
+      "name": "ttm_copyStringArg",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Copies a string argument (or n bytes when n is not 0) into 1068:464a, terminates it, and returns it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:147a": {
+      "name": "ttm_fontSlotPointer",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Returns a pointer to the thread's font handle in the TTM record (+0x18)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:14a8": {
+      "name": "ttm_paletteRangeEffect",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Calls the empty 1040:0c21 for a color range stored by opcodes 0x2302..0x2322",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:14e0": {
+      "name": "ttm_surfaceByNumber",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Maps 0 to A, 1 to B, 2 to C, anything else to B",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:1510": {
+      "name": "ttm_effectOpcode",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Runs the 0xa014..0xa094 and 0xa0b5 effects with target A: zone 0 save and restore, slides, strips, wipes",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:1920": {
+      "name": "ttm_effectPause",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Calls 1058:1949 with an empty rect 100 times (a busy wait)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:1949": {
+      "name": "ttm_effectCopy",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "gfx_copyRect when width and height are both above 2",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:197c": {
+      "name": "ttm_emptyMirrorHook",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Empty function; TTM opcode 0x2012 calls it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:198a": {
+      "name": "ttm_dissolveEffect",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Opcode 0xa0b5: copies a rect of B to A; with 1068:1ebf set (never) dissolves it pixel by pixel in LFSR order",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:1ad0": {
+      "name": "ttm_timerExpired",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Returns 1 when a timer record (start, duration) has run out, or when 1068:45e2 is 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:1b1f": {
+      "name": "ttm_timerLerp",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Interpolates between two values by the elapsed share of a timer record",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:1be1": {
+      "name": "ttm_startTimer",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Fills a timer record with the clock 1068:2e70/2e72 and a duration",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:1c06": {
+      "name": "ttm_expireTimer",
+      "subsystem": "ttm",
+      "status": "named",
+      "note": "Fills a timer record that has already run out",
       "signature": null,
       "callingConvention": null
     },

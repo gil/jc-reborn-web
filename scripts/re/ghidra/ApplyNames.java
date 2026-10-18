@@ -27,7 +27,10 @@ public class ApplyNames extends GhidraScript {
   private void apply(String key, JsonObject entry) throws Exception {
     Address address = toAddr(key);
     Function function = getFunctionAt(address);
-    if (function == null) function = createFunction(address, null);
+    if (function == null) {
+      disassemble(address);
+      function = createFunction(address, null);
+    }
     if (function == null) {
       println("JCR_FAIL no function at " + key);
       return;

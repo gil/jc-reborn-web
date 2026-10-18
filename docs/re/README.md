@@ -25,6 +25,9 @@ Output goes to `re/` (gitignored). Never commit anything under `re/`. It is deri
 | `re/out/strings.tsv` | Printable runs in the data segment, with instructions whose operand equals the string offset |
 | `re/out/imports.tsv` | Windows imports and the functions that call them |
 | `re/out/relocations.tsv` | NE relocation records |
+| `re/out/jump-tables.tsv` | Every entry of the switch tables listed in `scripts/re/jump-tables.json`: jump address, index, opcode value, case address. The cases are disassembled into the function that jumps to them |
+
+Borland compiles a `switch` on many values as a linear search over a value table followed by an indirect jump, which Ghidra cannot follow. `scripts/re/ghidra/ApplyJumpTables.java` disassembles the cases listed in `scripts/re/jump-tables.json` and grows the function over them. Add a table there when a new `JMP word ptr CS:[BX + n]` shows up after a `LOOP` over `CS:[BX]`. All eight functions with such tables decompile with a `switch`, but its case labels are the case addresses, not the opcode values; look those up in `jump-tables.tsv`.
 
 Ghidra makes almost no string references in this binary. Use `strings.tsv` `scalarHits` to find who uses a string.
 
