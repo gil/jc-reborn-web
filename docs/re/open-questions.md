@@ -12,14 +12,6 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Resolve in:** chunk 7 (story and main loop)
 - **Status:** open
 
-### OQ-6: Scene picker drops wanted flags when nothing matches
-
-- **Where:** `src/story/story.ts:177-181` (`pickSceneFrom`)
-- **What it does:** if no scene has all wanted flags, picks a random scene that only avoids the unwanted flags.
-- **Old guess behind it:** some flag and day combinations have no candidate, and an empty pick would crash.
-- **Resolve in:** chunk 7 (story and main loop)
-- **Status:** open
-
 ### OQ-8: Resource lookup is case-sensitive in our code
 
 - **Where:** `src/resource/resource-archive.ts`, `src/ttm/gdi-device.ts` (`find`)
@@ -226,6 +218,15 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **Why not reviewed:** the original reads unrelated memory there; no port can match it.
 - **Status:** open, by choice
 
+### OQ-34: Story guards where the original reads through a null entry
+
+- **Where:** `src/story/sequence.ts` (`buildQueue`, `newSequence`)
+- **What it does:** when the opening pick finds no entry, ours returns an empty queue (the next story step builds a new sequence); when the queue is empty, Johnny keeps his spot and heading.
+- **Original:** `1018:089b` queues the null pointer at the head and reads its length and flags from data-segment offsets 7, 0x0b, 0x0d; `1018:0540` reads Johnny's spot and heading from offsets 3 and 4. The null head makes `1018:06bf` start a new sequence on the next step, as ours does.
+- **Data:** no slot lacks an opening candidate (at least 44 per slot, many with no place bits, and the budget left is at least 135; `docs/re/story.md`, `Sequence building`), and none of the 480 traced builds hit it (`docs/re/story.md`, `Emulated`).
+- **Why not reviewed:** the original reads unrelated memory there; no port can match it.
+- **Status:** open, by choice
+
 ### OQ-35: Windows plumbing, dialogs, password, and sound loading are not modeled
 
 - **Where:** `1008:0000`, `1008:0221`, `1008:033e`, `1008:034f`, `1008:0517`, `1008:0a2d`, `1008:12eb`, `1008:13cd`, `1020:0000`, `1020:0085`, `1020:0106`, `1020:013f`, `1020:019c`, `1020:026e`, `1020:081c`, `1020:082a`
@@ -270,6 +271,15 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **Resolve in:** chunk 7 (story and main loop)
 - **Resolution:** `1018:06bf` never runs the ADS tick for a walk entry, so no scene can run during a walk. The engine now ticks the ADS only while a scene plays (`storyPlayScene`), and each scene gets its own ADS state (OQ-30). The sweeps are deleted.
 - **Status:** resolved (chunk 6)
+
+### OQ-6: Scene picker drops wanted flags when nothing matches
+
+- **Where:** `src/story/story.ts:177-181` (`pickSceneFrom`)
+- **What it does:** if no scene has all wanted flags, picks a random scene that only avoids the unwanted flags.
+- **Old guess behind it:** some flag and day combinations have no candidate, and an empty pick would crash.
+- **Resolve in:** chunk 7 (story and main loop)
+- **Resolution:** the original has no fallback. `1018:0d50` returns no entry when nothing matches; `1018:089b` re-picks the closing scene until one is found (every slot has candidates, `docs/re/story.md`, `Sequence building`) and stops the middle when a middle pick finds nothing. `src/story/sequence.ts` follows it; the old picker is deleted in step 7.
+- **Status:** resolved (chunk 7)
 
 ### OQ-11: ADS scheduler frames bytecode with its own size table
 

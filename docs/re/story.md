@@ -152,9 +152,9 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 
 | Original | Name | Ours | Status |
 | --- | --- | --- | --- |
-| `1000:01f4` | `rtl_getdate` | `src/story/story.ts` (`Date`) | open |
-| `1000:020f` | `rtl_gettime` | `src/story/story.ts` (`Date`) | open |
-| `1000:082c` | `rtl_time` | `src/main.ts` (`Math.random`) | open |
+| `1000:01f4` | `rtl_getdate` | `src/story/calendar.ts:43` `wallClockOf` (`Date`) | match |
+| `1000:020f` | `rtl_gettime` | `src/story/calendar.ts:43` `wallClockOf` (`Date`) | match |
+| `1000:082c` | `rtl_time` | `src/story/random.ts:57` `seedRandom` (caller passes `Date.now() / 1000`) | match |
 | `1008:0000` | `platform_winMain` | none (out of scope, OQ-35) | match |
 | `1008:0221` | `platform_defScreenSaverProc` | none (out of scope, OQ-35) | match |
 | `1008:033e` | `platform_alwaysTrue` | none (out of scope, OQ-35) | match |
@@ -173,19 +173,19 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 | `1018:0540` | `story_newSequence` | `src/story/story.ts` | open |
 | `1018:0673` | `story_endSequence` | `src/story/story.ts` | open |
 | `1018:06bf` | `story_step` | `src/story/story.ts` (`storyTick`) | open |
-| `1018:089b` | `story_buildQueue` | `src/story/story.ts` | open |
+| `1018:089b` | `story_buildQueue` | `src/story/sequence.ts:161` `buildQueue` | fixed |
 | `1018:0b46` | `story_isAtSpot` | `src/story/story.ts` | open |
-| `1018:0b87` | `story_advanceDays` | `src/story/story.ts` | open |
-| `1018:0c21` | `story_halfHourSlot` | `src/story/story.ts` | open |
+| `1018:0b87` | `story_advanceDays` | `src/story/sequence.ts:116` `advanceDays` | fixed |
+| `1018:0c21` | `story_halfHourSlot` | `src/story/calendar.ts:25` `halfHourSlot` | fixed |
 | `1018:0c62` | `ads_loadAdsById` | `src/story/story.ts` (`storyPlayScene`) | open |
 | `1018:0d11` | `ads_unloadAdsById` | none | open |
-| `1018:0d50` | `story_pickScene` | `src/story/story.ts` | open |
+| `1018:0d50` | `story_pickScene` | `src/story/sequence.ts:133` `pickScene` | fixed |
 | `1018:0e7b` | `story_findScene` | none (unreferenced) | match |
-| `1018:0eb5` | `story_fitsIsland` | `src/story/story.ts` | open |
-| `1018:1e60` | `story_random` | `src/main.ts` (`Math.random`) | open |
-| `1018:1eb6` | `story_discardRandom` | none | open |
-| `1018:1ed4` | `story_seedRandom` | none | open |
-| `1018:1ef5` | `story_randomPercent` | `src/story/story.ts` (`Math.random`) | open |
+| `1018:0eb5` | `story_fitsIsland` | `src/story/sequence.ts:93` `fitsIsland` | fixed |
+| `1018:1e60` | `story_random` | `src/story/random.ts:40` `StoryRandom.next` | fixed |
+| `1018:1eb6` | `story_discardRandom` | `src/story/random.ts:48` `StoryRandom.discard` | fixed |
+| `1018:1ed4` | `story_seedRandom` | `src/story/random.ts:57` `seedRandom` | fixed |
+| `1018:1ef5` | `story_randomPercent` | `src/story/random.ts:22` `percentPick` | fixed |
 | `1020:0000` | `audio_loadWaveResources` | none (out of scope, OQ-35) | match |
 | `1020:0085` | `audio_closeMciDevice` | none (out of scope, OQ-35) | match |
 | `1020:00ba` | `audio_playSound` | `src/story/story.ts` (plays 17 for a day scene) | open |

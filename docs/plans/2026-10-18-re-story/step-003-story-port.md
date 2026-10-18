@@ -32,7 +32,7 @@ The code blocks below follow the overview's first reading. Where `docs/re/story.
 
 ## Part A: Scene table
 
-- [ ] **Action 1: Write the table data test**
+- [x] **Action 1: Write the table data test**
 
 Create `src/story/scene-table.data.test.ts`:
 
@@ -53,12 +53,12 @@ describe.skipIf(!hasFixture('story/scene-table.bin'))('scene table', () => {
 });
 ```
 
-- [ ] **Action 2: Run it to make sure it fails**
+- [x] **Action 2: Run it to make sure it fails**
 
 Run: `pnpm exec vitest run src/story/scene-table.data.test.ts`
 Expected: FAIL, cannot resolve `./scene-table.js`.
 
-- [ ] **Action 3: Write `src/story/scene-table.ts`**
+- [x] **Action 3: Write `src/story/scene-table.ts`**
 
 ```ts
 export interface SceneEntry {
@@ -217,12 +217,12 @@ export function encodeScenes(): Uint8Array {
 
 These rows were generated from `SCRANTIC.SCR` during planning. If the data test disagrees, regenerate them from `re/fixtures/story/scene-table.bin` with a scratch script, never by hand.
 
-- [ ] **Action 4: Run the test**
+- [x] **Action 4: Run the test**
 
 Run: `pnpm exec vitest run src/story/scene-table.data.test.ts`
 Expected: PASS (2 tests).
 
-- [ ] **Action 5: Commit**
+- [x] **Action 5: Commit**
 
 ```bash
 git add src/story/scene-table.ts src/story/scene-table.data.test.ts
@@ -231,7 +231,7 @@ git commit -m "feat(story): the original scene table"
 
 ## Part B: Random generator
 
-- [ ] **Action 6: Write the failing tests**
+- [x] **Action 6: Write the failing tests**
 
 Create `src/story/random.test.ts`:
 
@@ -314,12 +314,12 @@ describe.skipIf(!hasFixture('story/random.tsv'))('random generator matches the o
 });
 ```
 
-- [ ] **Action 7: Run them to make sure they fail**
+- [x] **Action 7: Run them to make sure they fail**
 
 Run: `pnpm exec vitest run src/story/random.test.ts src/story/random.data.test.ts`
 Expected: FAIL, cannot resolve `./random.js`.
 
-- [ ] **Action 8: Write `src/story/random.ts`**
+- [x] **Action 8: Write `src/story/random.ts`**
 
 ```ts
 const PERCENT_SCALE = 0x28f;
@@ -383,12 +383,12 @@ export function seedRandom(random: StoryRandom, seconds: number): void {
 }
 ```
 
-- [ ] **Action 9: Run the tests**
+- [x] **Action 9: Run the tests**
 
 Run: `pnpm exec vitest run src/story/random.test.ts src/story/random.data.test.ts`
 Expected: PASS.
 
-- [ ] **Action 10: Commit**
+- [x] **Action 10: Commit**
 
 ```bash
 git add src/story/random.ts src/story/random.test.ts src/story/random.data.test.ts
@@ -397,7 +397,7 @@ git commit -m "feat(story): port the original random generator"
 
 ## Part C: Calendar
 
-- [ ] **Action 11: Write the failing tests**
+- [x] **Action 11: Write the failing tests**
 
 Create `src/story/calendar.test.ts`:
 
@@ -454,12 +454,12 @@ describe('holidays', () => {
 });
 ```
 
-- [ ] **Action 12: Run them to make sure they fail**
+- [x] **Action 12: Run them to make sure they fail**
 
 Run: `pnpm exec vitest run src/story/calendar.test.ts`
 Expected: FAIL, cannot resolve `./calendar.js`.
 
-- [ ] **Action 13: Write `src/story/calendar.ts`**
+- [x] **Action 13: Write `src/story/calendar.ts`**
 
 ```ts
 export interface WallClock {
@@ -511,12 +511,12 @@ export function wallClockOf(date: Date): WallClock {
 
 `halfHourSlot` of a negative or odd StartTime from a hand-edited setting follows C's truncating division and remainder, which `Math.trunc` and `%` reproduce.
 
-- [ ] **Action 14: Run the tests**
+- [x] **Action 14: Run the tests**
 
 Run: `pnpm exec vitest run src/story/calendar.test.ts`
 Expected: PASS.
 
-- [ ] **Action 15: Commit**
+- [x] **Action 15: Commit**
 
 ```bash
 git add src/story/calendar.ts src/story/calendar.test.ts
@@ -525,7 +525,7 @@ git commit -m "feat(story): time slots and holidays from the original"
 
 ## Part D: Sequences
 
-- [ ] **Action 16: Write the failing unit tests**
+- [x] **Action 16: Write the failing unit tests**
 
 Create `src/story/sequence.test.ts`:
 
@@ -634,7 +634,7 @@ describe('scene picks and queues', () => {
 });
 ```
 
-- [ ] **Action 17: Write the failing data test**
+- [x] **Action 17: Write the failing data test**
 
 Create `src/story/sequence.data.test.ts`:
 
@@ -710,12 +710,12 @@ describe.skipIf(!hasFixture('story/sequences.tsv'))('sequence builder matches th
 });
 ```
 
-- [ ] **Action 18: Run them to make sure they fail**
+- [x] **Action 18: Run them to make sure they fail**
 
 Run: `pnpm exec vitest run src/story/sequence.test.ts src/story/sequence.data.test.ts`
 Expected: FAIL, cannot resolve `./sequence.js`.
 
-- [ ] **Action 19: Write `src/story/sequence.ts`**
+- [x] **Action 19: Write `src/story/sequence.ts`**
 
 ```ts
 import { holidayOf, timeSlot, type DayCounters, type WallClock } from './calendar.js';
@@ -960,12 +960,12 @@ Two places guard where the original reads through a null entry: `buildQueue` ret
 
 The unit test `turns entry flags and place bits into island settings` expects `place: 0x04 | 0x08` for entry 13 (place `0x0003`, flags `0x4605`). Check that against `1010:1c41` in `story.md`; fix the test if the finding says otherwise.
 
-- [ ] **Action 20: Run the tests**
+- [x] **Action 20: Run the tests**
 
 Run: `pnpm exec vitest run src/story/sequence.test.ts src/story/sequence.data.test.ts`
 Expected: PASS. When the data test fails, its message names the first differing row of each case. Find which value differs (the `state` columns are listed in the overview), reread the matching function in `re/out/functions/`, and fix the port, not the fixture. Typical culprits: the order of random draws in `buildQueue`, a signed versus unsigned compare in `pickScene`, the `advanceDays` order.
 
-- [ ] **Action 21: Type check and commit**
+- [x] **Action 21: Type check and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -977,7 +977,7 @@ git commit -m "feat(story): port the original sequence builder"
 
 ## Part E: Findings and open questions
 
-- [ ] **Action 22: Update the checklist and open questions**
+- [x] **Action 22: Update the checklist and open questions**
 
 In `docs/re/story.md`, `Side-by-side checklist`, set these rows (line numbers from `rg -n "^export function|^function|^export class" src/story/random.ts src/story/calendar.ts src/story/sequence.ts`):
 
@@ -1014,7 +1014,7 @@ In `docs/re/open-questions.md`:
 - **Status:** open, by choice
 ```
 
-- [ ] **Action 23: Commit**
+- [x] **Action 23: Commit**
 
 ```bash
 git add docs/re/story.md docs/re/open-questions.md
@@ -1023,7 +1023,7 @@ git commit -m "docs(re): story sequence port checked against the original"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
