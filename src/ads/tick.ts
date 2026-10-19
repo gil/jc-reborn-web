@@ -27,10 +27,6 @@ export function adsSectionBusy(state: AdsState, tag: number): boolean {
   return section.scenes.some((node) => node.mode !== MODE_IDLE && node.mode !== MODE_DONE && !node.selfGoto);
 }
 
-export function adsActiveNodeCount(state: AdsState): number {
-  return state.nodes.filter((node) => PLAYING_MODES.has(node.mode)).length;
-}
-
 export function advancePage(node: AdsNode, now: number): boolean {
   if (node.delay !== 0) {
     if (now < node.dueTime) return false;

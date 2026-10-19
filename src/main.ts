@@ -7,7 +7,6 @@ import { Display } from './gfx/gdi/display.js';
 import { makeDrawState } from './gfx/gdi/surface.js';
 import { applyFade } from './gfx/fade.js';
 import { presentSurface } from './gfx/present.js';
-import { adsActiveNodeCount } from './ads/tick.js';
 import { startLoop } from './engine/loop.js';
 import { EngineClock } from './engine/clock.js';
 import { clockTick, makeTimers } from './engine/timers.js';
@@ -93,6 +92,6 @@ startLoop(
     if (game.fadeState) applyFade(img.data, game.fadeState);
     ctx.putImageData(img, 0, 0);
     const entry = currentEntry(game);
-    hudUpdate(story.ads ? adsActiveNodeCount(story.ads) : 0, entry ? (ADS_FILES.get(entry.ads) ?? 'idle') : '-');
+    hudUpdate(entry ?(ADS_FILES.get(entry.ads) ?? 'idle') : '-');
   },
 );
