@@ -1,58 +1,41 @@
-import { BinaryReader } from '../io/binary-reader.js';
-import { uncompress } from '../resource/uncompress.js';
+import { unpackChunk } from '../resource/uncompress.js';
+import { indexAdsSections, type AdsSection } from './ads-bytecode.js';
+import { chunkBody } from './chunks.js';
 
 export interface AdsSubResource { slot: number; name: string; }
 export interface AdsTag { id: number; description: string; }
 export interface AdsResource {
-  version: string;
   subResources: AdsSubResource[];
   bytecode: Uint8Array;
+  sections: AdsSection[];
   tags: AdsTag[];
 }
 
 export function decodeAds(payload: Uint8Array): AdsResource {
-  const r = new BinaryReader(payload.buffer, payload.byteOffset);
-  r.expect('VER:');
-  r.u32();
-  const version = new TextDecoder('latin1').decode(r.bytes(5));
-  // ADS: chunk present in C source between VER: and RES: — 4 unknown bytes
-  r.expect('ADS:');
-  r.u8(); r.u8(); r.u8(); r.u8();
-  r.expect('RES:');
-  r.u32();                            // resSize
-  const numRes = r.u16();
-  const subResources: AdsSubResource[] = [];
-  for (let i = 0; i < numRes; i++) {
-    const slot = r.u16();
-    const name = readUntilNul(r);     // getString(f,40): variable-length null-terminated
-    subResources.push({ slot, name });
-  }
-  r.expect('SCR:');
-  const compSize = r.u32() - 5;
-  const method = r.u8();
-  const uncompSize = r.u32();
-  const compInput = payload.subarray(r.pos, r.pos + compSize);
-  const bytecode = uncompress(method, compInput, uncompSize);
-  r.pos += compSize;
-
-  r.expect('TAG:');
-  r.u32();
-  const numTags = r.u16();
-  const tags: AdsTag[] = [];
-  for (let i = 0; i < numTags; i++) {
-    const id = r.u16();
-    const description = readUntilNul(r);
-    tags.push({ id, description });
-  }
-  return { version, subResources, bytecode, tags };
+  const res = chunkBody(payload, 'ADS:RES:');
+  const scr = chunkBody(payload, 'ADS:SCR:');
+  if (!res || !scr) throw new Error('ADS:RES: or ADS:SCR: missing');
+  const bytecode = unpackChunk(scr);
+  const tagList = chunkBody(payload, 'ADS:TAG:');
+  return {
+    subResources: readIdNameList(res).map(({ id, name }) => ({ slot: id, name })),
+    bytecode,
+    sections: indexAdsSections(bytecode),
+    tags: tagList ? readIdNameList(tagList).map(({ id, name }) => ({ id, description: name })) : [],
+  };
 }
 
-function readUntilNul(r: BinaryReader): string {
-  const bytes: number[] = [];
-  while (true) {
-    const b = r.u8();
-    if (b === 0) break;
-    bytes.push(b);
+function readIdNameList(body: Uint8Array): { id: number; name: string }[] {
+  const view = new DataView(body.buffer, body.byteOffset, body.byteLength);
+  const count = view.getUint16(0, true);
+  const list: { id: number; name: string }[] = [];
+  let offset = 2;
+  for (let i = 0; i < count; i++) {
+    const id = view.getUint16(offset, true);
+    const end = body.indexOf(0, offset + 2);
+    if (end < 0) throw new Error(`id/name list entry ${i} has no end`);
+    list.push({ id, name: String.fromCharCode(...body.subarray(offset + 2, end)) });
+    offset = end + 1;
   }
-  return new TextDecoder('latin1').decode(new Uint8Array(bytes));
+  return list;
 }

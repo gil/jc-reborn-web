@@ -1,19 +1,18 @@
-import { BinaryReader } from '../io/binary-reader.js';
+import { chunkBody } from './chunks.js';
 
-export interface PalResource { vga: Uint8Array; /* 256 × RGB, channels 0-63 */ }
+const COLORS_READ_IN_16_COLOR_MODE = 16;
+const CHANNEL_LEVELS = Array.from({ length: 64 }, (_, level) => (level === 63 ? 0xff : level * 4));
+
+export interface PalResource { colors: Uint8Array; }
 
 export function decodePal(payload: Uint8Array): PalResource {
-  const r = new BinaryReader(payload.buffer, payload.byteOffset);
-  r.expect('PAL:');
-  r.u16();                      // size
-  r.u8(); r.u8();               // unknown
-  r.expect('VGA:');
-  r.u8(); r.u8(); r.u8(); r.u8(); // size header
-  const vga = new Uint8Array(256 * 3);
-  for (let i = 0; i < 256; i++) {
-    vga[i * 3 + 0] = r.u8();
-    vga[i * 3 + 1] = r.u8();
-    vga[i * 3 + 2] = r.u8();
-  }
-  return { vga };
+  const body = chunkBody(payload, 'PAL:VGA:');
+  const size = COLORS_READ_IN_16_COLOR_MODE * 3;
+  if (!body || body.length < size) throw new Error('PAL:VGA: missing or short');
+  const colors = body.slice(0, size).map((level) => {
+    const value = CHANNEL_LEVELS[level];
+    if (value === undefined) throw new Error(`PAL:VGA: channel level ${level} above 63`);
+    return value;
+  });
+  return { colors };
 }

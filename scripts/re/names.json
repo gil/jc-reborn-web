@@ -1,0 +1,2628 @@
+{
+  "functions": {
+    "1000:01f4": {
+      "name": "rtl_getdate",
+      "subsystem": "rtl",
+      "status": "verified",
+      "note": "getdate: DOS 0x2A into 5 bytes at a near pointer: day, month, year word, weekday",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:020f": {
+      "name": "rtl_gettime",
+      "subsystem": "rtl",
+      "status": "verified",
+      "note": "gettime: DOS 0x2C into 4 bytes at a near pointer: hour, minute, second, hundredths",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:0302": {
+      "name": "rtl_lxmul",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Borland RTL 32-bit multiply: DX:AX * CX:BX -> DX:AX (low 32 bits)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:033a": {
+      "name": "rtl_scopy",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Borland RTL far struct copy: CX bytes from far [BP+6] to far [BP+0xa], callee pops 8",
+      "signature": "void rtl_scopy(void * src, void * dst)",
+      "callingConvention": "__stdcall16far"
+    },
+    "1000:0488": {
+      "name": "rtl_lxlsh",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Borland RTL 32-bit shift left of DX:AX by CL",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:04a9": {
+      "name": "rtl_lxrsh",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Borland RTL 32-bit arithmetic shift right of DX:AX by CL",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:04c9": {
+      "name": "rtl_lxursh",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Borland RTL 32-bit logical shift right of DX:AX by CL",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:06fc": {
+      "name": "rtl_setbuf",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "setbuf: full buffering of 512 bytes with the given buffer, unbuffered when it is null",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:082c": {
+      "name": "rtl_time",
+      "subsystem": "rtl",
+      "status": "verified",
+      "note": "time(): seconds since 1970 in DX:AX from the DOS date and time; stores them too when the pointer is not null",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:0a3e": {
+      "name": "rtl_fclose",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "fclose: flushes, closes the DOS handle, resets the FILE; -1 for an unused FILE",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:0cff": {
+      "name": "rtl_fopen",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "fopen(name, mode): takes a free FILE and opens it; returns the FILE pointer or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:0df7": {
+      "name": "rtl_fread",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "fread(buf, size, count, file): returns whole items read",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:0ea1": {
+      "name": "rtl_fseek",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "fseek(file, offsetLo, offsetHi, whence): drops buffered data, returns 0 or -1",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:0f0b": {
+      "name": "rtl_ftell",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "ftell(file): DOS position corrected by buffered bytes, in DX:AX",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:0f5a": {
+      "name": "rtl_fwrite",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "fwrite(buf, size, count, file): returns whole items written",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:1041": {
+      "name": "rtl_fgetc",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "fgetc(file): next byte, or 0xFFFF at end or on error",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:11d0": {
+      "name": "rtl_memcpy",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Borland RTL near memcpy(dst, src, count): copies words, then the odd byte; returns dst",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:121a": {
+      "name": "rtl_memset",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Borland RTL near memset(dst, byte, count) through 1000:11f2; returns dst",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:144d": {
+      "name": "rtl_fputc",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "fputc(byte, file): returns the byte, or 0xFFFF on error",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:195a": {
+      "name": "rtl_strcpy",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "Near strcpy(dst, src); returns dst",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:197e": {
+      "name": "rtl_stricmp",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "stricmp(a, b): string compare that folds a..z to upper case",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:19dc": {
+      "name": "rtl_strncpy",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "strncpy(dst, src, n): copies up to n bytes and pads the rest with zeros",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:229c": {
+      "name": "rtl_malloc",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "malloc(size): LocalAlloc with LMEM_FIXED, no zeroing",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1000:22e1": {
+      "name": "rtl_calloc",
+      "subsystem": "rtl",
+      "status": "named",
+      "note": "calloc(count, size): LocalAlloc with LMEM_ZEROINIT",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:0000": {
+      "name": "platform_winMain",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "WinMain: /c opens the config dialog, /s runs the saver, any other arg shows dialog 0x6d and then runs; registers the window class, creates a full-screen window, posts WM_USER, runs the message loop",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:0221": {
+      "name": "platform_defScreenSaverProc",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Default message handling: mouse move over 3 px, clicks, key down, or deactivation request exit; WM_DESTROY posts quit; then DefWindowProc",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:033e": {
+      "name": "platform_alwaysTrue",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Returns 1; asked by WinMain and the exit request",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:034f": {
+      "name": "platform_configureDialog",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Exported dialog procedure of the settings dialog (/c): loads and saves the settings",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:0517": {
+      "name": "platform_configureDialogItems",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Draws the owner-drawn up and down buttons of the settings dialog: 3D frame in system colors, an arrow polygon, a focus rect",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:0a2d": {
+      "name": "platform_changePasswordDialog",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Exported dialog procedure that sets a new password",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:0c5c": {
+      "name": "platform_loadSettings",
+      "subsystem": "platform",
+      "status": "verified",
+      "note": "Reads all SCRANTIC.INI keys (Background, Clouds, Waves, Sounds, NumDays, CurrentYear, StartTime, ...) into globals",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:0dc8": {
+      "name": "platform_saveSettings",
+      "subsystem": "platform",
+      "status": "verified",
+      "note": "Writes the same SCRANTIC.INI keys back with WritePrivateProfileString",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:0fcd": {
+      "name": "platform_screenSaverProc",
+      "subsystem": "platform",
+      "status": "verified",
+      "note": "Exported window procedure: create loads settings and starts a 50 ms timer, destroy saves settings, paint blits the offscreen image, timer runs timer callbacks and the idle callback, WM_USER checks free memory then runs init",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:12eb": {
+      "name": "platform_setDialogStartTime",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Normalizes an HHMM start time (wraps at 24:00 with a beep, snaps to :00 or :30), stores it, and shows it in dialog item 0x6e",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:13cd": {
+      "name": "platform_pumpInputMessage",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Peeks one pending keyboard or mouse message and dispatches it, with a busy flag set meanwhile",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:143c": {
+      "name": "platform_initSaver",
+      "subsystem": "platform",
+      "status": "verified",
+      "note": "Startup: reads RESOURCE.MAP, sets 640x480, loads JOHNCAST.PAL, shows INTRO.SCR, registers a timer callback, draws the island, loads JOHNWALK, sets the cleanup and idle callbacks",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:157b": {
+      "name": "platform_shutdownSaver",
+      "subsystem": "platform",
+      "status": "verified",
+      "note": "Cleanup callback: closes MCI, ends the sequence, frees the island, walk, ADS, cursors, display",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:15c8": {
+      "name": "story_idleTick",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Idle callback: runs one story step, then a speed figure 1068:30bc from 1068:2e14 (never written, so always 0) and GetCurrentTime",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1008:16c2": {
+      "name": "platform_clockTick",
+      "subsystem": "platform",
+      "status": "verified",
+      "note": "Timer callback every 16 ms: adds 1 to the clock 1068:2e70 and counts down five timers",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:0059": {
+      "name": "story_presentFromB",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Presents the whole screen with B as source, target, and A; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:00b2": {
+      "name": "story_presentFromA",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Presents the whole screen with A as source and target; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:00fc": {
+      "name": "story_setTtmOffset",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Sets the TTM island offset 1068:46e4/46e2 from the island position (1068:30c4 + 1, or + 0x111 when the argument is set; 1068:30c2); both 0 when 1068:30b2 is 2",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:0136": {
+      "name": "story_drawIsland",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "First call loads BACKGRND.BMP and MRAFT.BMP; later calls draw the background into C (ocean, night, or a color-5 fill), place the island, draw raft, island, surf, palm, copy C to B, and set up waves and clouds",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:03ce": {
+      "name": "story_freeIslandBitmaps",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Frees BACKGRND.BMP and MRAFT.BMP",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:040e": {
+      "name": "story_animateIsland",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Island step: ocean waves, clouds on the first call only, surf and raft unless still",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:0463": {
+      "name": "story_resetOceanWaves",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Empties the 30 ocean wave records and refills the per-kind counts",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:04a2": {
+      "name": "story_animateOceanWaves",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Spawns, moves, and draws glints and wave sprites on the ocean; spawns only when the speed 1068:30bc is above 100, which it never is",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:0a38": {
+      "name": "story_initClouds",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Picks the wind direction and places up to 15 clouds",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:0b67": {
+      "name": "story_animateClouds",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Spawns, moves, and draws the clouds; runs once per sequence, so clouds never move",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:0e74": {
+      "name": "story_drawSurf",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Advances the surf frames every 4 clock ticks and redraws surf spots; with an argument draws one spot",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:14bf": {
+      "name": "story_randomPlace",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Random x and y in a range minus a BACKGRND sprite's size, or 0, 0 when it does not fit",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:1551": {
+      "name": "story_redrawIslandOver",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Redraws the island parts in front of a sprite, clipped to it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:1a0d": {
+      "name": "story_markIslandDrawn",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Adds the three dirty rects of a sprite drawn on B",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:1a88": {
+      "name": "story_rectOverlap",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "2 when a rect lies inside another, 1 when they touch, else 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:1b00": {
+      "name": "story_placeIsland",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Island position from the place bits and low tide",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:1c41": {
+      "name": "story_setIslandFlags",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Turns an entry's flags and place bits into island globals; (-1, -1) resets them",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:1d69": {
+      "name": "story_drawRaft",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Draws the raft frame for the day count; redraws it when a presented rect overlaps",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1010:1e50": {
+      "name": "story_drawHoliday",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Draws the holiday sprite; redraws it when a presented rect overlaps",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:0000": {
+      "name": "walk_loadJohnWalkBmp",
+      "subsystem": "walk",
+      "status": "verified",
+      "note": "Loads JOHNWALK.BMP once with mirrored copies; on that load puts Johnny and the walk target on spot 1, heading 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:004d": {
+      "name": "walk_freeJohnWalkBmp",
+      "subsystem": "walk",
+      "status": "verified",
+      "note": "Frees the JOHNWALK.BMP bitmap list and clears its pointer",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:0074": {
+      "name": "walk_resetPath",
+      "subsystem": "walk",
+      "status": "verified",
+      "note": "Drops the route and segment being walked and wants Johnny's current heading",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:0094": {
+      "name": "walk_step",
+      "subsystem": "walk",
+      "status": "verified",
+      "note": "One walk call: when the frame delay ran out, picks a segment, turns, or moves one frame; then draws Johnny, redraws the palm trunk over him, and adds his dirty rects",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:03ac": {
+      "name": "walk_routeOf",
+      "subsystem": "walk",
+      "status": "verified",
+      "note": "Route list of a (from, to) spot pair from the table at 1068:0a94, or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:03ea": {
+      "name": "walk_segmentFrames",
+      "subsystem": "walk",
+      "status": "verified",
+      "note": "Frame list address of walk segment 1..34, or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:0540": {
+      "name": "story_newSequence",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Wipes, computes the time slot and holiday, resets the island flags, updates the day counters, builds the scene queue, puts Johnny at its first start spot, draws the island",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:0673": {
+      "name": "story_endSequence",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Wipes the screen, unloads the ADS of every queued entry, empties the queue",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:06bf": {
+      "name": "story_step",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "One story step per WM_TIMER: new sequence when the queue is used up, island step, then walk to the entry start or play it (idle wait or ADS tag), holiday sprite, sound 25 for the day scene, dirty-rect restore",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:089b": {
+      "name": "story_buildQueue",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Builds the scene queue of a sequence: day scene, closing scene, opening scene, middle scenes within a budget",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:0b46": {
+      "name": "story_isAtSpot",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Stores the walk target and says whether Johnny already stands at a spot and heading (0 and -1 = any)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:0b87": {
+      "name": "story_advanceDays",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Moves NumDays and Introduction on when the date changed and a day scene was picked",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:0c21": {
+      "name": "story_halfHourSlot",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Maps an HHMM time to one of 16 half-hour slots of an 8-hour cycle",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:0c62": {
+      "name": "ads_loadAdsById",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Looks up an ADS id in the table at 1068:166e, unloads the previous ADS when the id changes, loads and caches the file; id -2 loads from a buffer at 1068:361c",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:0d11": {
+      "name": "ads_unloadAdsById",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Unloads the cached ADS of an ADS id (1048:067f) and forgets its slot",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:0d50": {
+      "name": "story_pickScene",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Weighted random pick from the scene table of an entry of a kind, slot, and budget",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:0e7b": {
+      "name": "story_findScene",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Finds the n-th scene table entry with an id; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:0eb5": {
+      "name": "story_fitsIsland",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Whether an entry's island place bits fit the place chosen so far",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1008": {
+      "name": "resources_diskRetryHook",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Returns its argument; called by the open retry loops, does nothing",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1019": {
+      "name": "resources_openFile",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Opens a resource: loose file first, else by name hash in the archive, then checks the stored name case-insensitively; returns a file slot",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1204": {
+      "name": "resources_closeFile",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Closes a resource handle: frees the file slot (closing a loose file) or fcloses a plain FILE",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1287": {
+      "name": "resources_readFile",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "fread-like read from an open resource file: buffer, item size, count, handle; returns items read",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1398": {
+      "name": "resources_seekFile",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "fseek-like seek on an open resource file: handle, 32-bit offset, whence",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1475": {
+      "name": "resources_tellFile",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "ftell-like position of an open resource file, returned in DX:AX",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:14cc": {
+      "name": "resources_rewindFile",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Seeks a resource handle to position 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:14e9": {
+      "name": "resources_getFileByte",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "getc-like read of one byte from an open resource file, 0xFFFF at end",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:15d2": {
+      "name": "resources_eofFile",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "feof-like: archived resource at or past its size, or the runtime end-of-file flag",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1637": {
+      "name": "resources_writeFile",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "fwrite-like: archived resources write nothing and return 0; loose files go to fwrite",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:16b7": {
+      "name": "resources_putFileByte",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "fputc-like: archived resources return -1; loose files go to fputc",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1720": {
+      "name": "resources_setFileBuffer",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "setbuf-like: no-op for archived resources; loose files go to setbuf",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1771": {
+      "name": "resources_readResourceMap",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Reads RESOURCE.MAP once: header, then per archive a 13-byte name and a list of 8-byte entries into a table at 1068:3365",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:18d2": {
+      "name": "resources_freeResourceMap",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Frees every archive entry table and marks the map as not loaded",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1947": {
+      "name": "resources_forceArchiveReopen",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Sets the flag that makes the next open reopen the archive file",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:195a": {
+      "name": "resources_hashName",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Uppercases a name in place, drops any path, and hashes 4 bytes at the map positions plus sum*xor into globals",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1a42": {
+      "name": "resources_findMapEntry",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Finds a map entry by the current name hash, current archive first, and fills a file slot with archive and offset",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1bc3": {
+      "name": "resources_selectArchive",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Makes an archive current, closing the old archive file and opening the new one in a retry loop",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1caf": {
+      "name": "resources_seekArchive",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Seeks the current archive file to an absolute position unless it is already there",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1cfc": {
+      "name": "resources_fileSlotFor",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Maps a handle to its in-use file slot, or 0; caches the last lookup",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1da8": {
+      "name": "platform_messageBoxFromResource",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Loads a string resource, formats it with the varargs, beeps, and shows a MessageBox",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1e60": {
+      "name": "story_random",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Additive lagged-Fibonacci generator over the 56-word table at 1068:1ce8 (indices 1068:1ce4 and 1068:1ce6); returns the new word",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1eb6": {
+      "name": "story_discardRandom",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Draws and drops n random numbers",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1ed4": {
+      "name": "story_seedRandom",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Seeds the random generator by dropping time() & 0xffff numbers",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1018:1ef5": {
+      "name": "story_randomPercent",
+      "subsystem": "story",
+      "status": "verified",
+      "note": "Picks 1..n from a zero-terminated list of percentages, or 0 when none hits",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:0000": {
+      "name": "audio_loadWaveResources",
+      "subsystem": "audio",
+      "status": "named",
+      "note": "If Sounds is on, finds, loads, and locks the WAVESFX1..WAVESFX25 resources into a table",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:0085": {
+      "name": "audio_closeMciDevice",
+      "subsystem": "audio",
+      "status": "named",
+      "note": "If Sounds is on and an MCI device is open, sends MCI_CLOSE and clears the device id",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:00ba": {
+      "name": "audio_playSound",
+      "subsystem": "audio",
+      "status": "verified",
+      "note": "Plays WAVESFX sample 1..25 from memory with sndPlaySound when Sounds is on",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:0106": {
+      "name": "platform_encodePassword",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Stores a password XORed with a fixed string plus 0x21",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:013f": {
+      "name": "platform_checkPassword",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Compares a typed password with the stored encoded one",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:019c": {
+      "name": "platform_requestExit",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Guarded exit: optional password dialog, then sends WM_CLOSE to the main window, or beeps on a wrong password",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:026e": {
+      "name": "platform_passwordDialog",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Exported dialog procedure that asks for the password on exit",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:0364": {
+      "name": "gfx_wipeScreen",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "With a DC copies it to A; with 0 runs the next of six black wipes (counter 1068:361a) centered on the window, then fills it black",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:0512": {
+      "name": "gfx_wipeEllipseOut",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Transition: draws growing ellipses from the rect center, pumping input after each step",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:05a0": {
+      "name": "gfx_wipeRectOut",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Transition: draws growing rectangles from the rect center, pumping input after each step",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:0637": {
+      "name": "gfx_wipeRightToLeft",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Transition: fills the rect in 1/100-width strips from right to left",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:0688": {
+      "name": "gfx_wipeLeftToRight",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Transition: fills the rect in 1/100-width strips from left to right",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:06d2": {
+      "name": "gfx_wipeTopToBottom",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Transition: fills the rect in 1/200-height strips from top to bottom",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:071c": {
+      "name": "gfx_wipeBottomToTop",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Transition: fills the rect in 1/200-height strips from bottom to top",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:081c": {
+      "name": "platform_debugLog",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Printf-style debug log; empty in this build (only returns DS)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1020:082a": {
+      "name": "platform_adsControlDialog",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Exported dialog procedure that returns 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0000": {
+      "name": "resources_storedRead",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Method 0 read: copies input bytes to the output unchanged until input or request runs out; reached only through the method table's zero entry",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0024": {
+      "name": "resources_rleRead",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Method 1 read: control byte bit 7 clear copies control&0x7f literal bytes, set repeats the next byte control&0x7f times",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0072": {
+      "name": "resources_storedWrite",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Method 0 write: sends the bytes in the I/O ring unchanged to the output",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:00b8": {
+      "name": "resources_readFileToFar",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Copies n bytes from the stream's file to a far address through a 50-byte bounce buffer; ignores the chunk length",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0125": {
+      "name": "resources_streamGetByte",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Next input byte of the current stream, 0xFFFF once the chunk length is consumed",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0185": {
+      "name": "resources_streamReadBytes",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Reads up to n input bytes into a near buffer, cut to the rest of the chunk; returns the count",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:022e": {
+      "name": "resources_rleCopyLiteral",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "RLE literal of n bytes: straight to the destination, or to the I/O buffer and pause when the request is shorter",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:02b4": {
+      "name": "resources_rleFillRun",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "RLE run of n copies of a byte: straight to the destination, or to the I/O buffer and pause when the request is shorter",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0331": {
+      "name": "resources_streamPutByte",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Hands one output byte to the caller; returns 0 and buffers it when the request is already full",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0384": {
+      "name": "resources_writeCompressedByte",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Write side: appends one compressed byte to the stream's file or memory buffer",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:03d0": {
+      "name": "resources_selectStream",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Validates a stream id and loads its record into the codec globals; 0 for a bad id",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0458": {
+      "name": "resources_isReadMode",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "1 if the mode string contains 'r'",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0478": {
+      "name": "resources_freeNear",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Null-safe near free",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:048e": {
+      "name": "resources_freeStream",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Frees a stream's I/O buffer, far codec state, and record, and clears its slot; returns 0xFFFF",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:04f8": {
+      "name": "resources_allocStreamSlot",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Takes the first free of 100 stream slots and allocates a zeroed 0x21-byte record; -1 when full",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0547": {
+      "name": "resources_initStreamMethod",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Checks the method (0..2), allocates the I/O buffer and far codec state from the method table, stores the method in the flags",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0615": {
+      "name": "resources_openStream",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Opens a decompression stream on a file at a chunk body; read mode takes the method byte and u32 size from the file; returns stream id 0..99 or 0xFFFF",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:076c": {
+      "name": "resources_openMemoryStream",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Same as resources_openStream over a far memory buffer; never called",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0875": {
+      "name": "resources_closeStream",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Closes a decompression stream and frees its buffers; write mode first flushes and patches the size",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0951": {
+      "name": "resources_drainBuffered",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Copies bytes left in the I/O buffer to the destination, up to the bytes still requested",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:09ca": {
+      "name": "resources_decodeInto",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Drains buffered bytes, runs the method's read function, drains again; returns bytes produced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0a0d": {
+      "name": "resources_readStream",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Reads up to count decompressed bytes into a far buffer; returns the count produced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0a4b": {
+      "name": "resources_writeStream",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Write side of resources_readStream: feeds bytes to the method's write function through the I/O ring; no callers",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0b0a": {
+      "name": "resources_streamSize",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Uncompressed size from the stream header in DX:AX, 0xFFFFFFFF for a bad id",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0b36": {
+      "name": "resources_seekStream",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Seeks in decompressed bytes by decoding and discarding, rewinding first for backward seeks; no callers",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0c92": {
+      "name": "resources_rewindStream",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Restarts a read-mode stream at body + 5 and reruns the method's read init",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0d44": {
+      "name": "resources_lzwInit",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "LZW read init: zeroes the state, width 9, free code 257, suffix i = i for i < 256",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0e04": {
+      "name": "resources_lzwRead",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "LZW read: decodes codes through the prefix/suffix tables and a stack, handles clear (256), pauses when the request fills",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:0fc1": {
+      "name": "resources_lzwReadCode",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "Next LZW code, LSB first, from groups of width bytes; grows the width or resets it after a clear; -1 at end of chunk",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:10cb": {
+      "name": "resources_rleReadMemory",
+      "subsystem": "resources",
+      "status": "verified",
+      "note": "RLE read for memory streams, working directly on the far source pointer",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:11be": {
+      "name": "resources_lzwWriteInit",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "LZW write init: resets the encoder counters, width 9, free code 257, clears the hash table",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:1233": {
+      "name": "resources_lzwWrite",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "LZW write: hashes prefix+byte pairs, emits codes, adds entries, checks the ratio once the table is full",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:13cf": {
+      "name": "resources_lzwWriteCode",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Packs one LZW code into the output group, grows or resets the width; negative code flushes",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:155d": {
+      "name": "resources_lzwRatioDivide",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Far wrapper around 1000:03da (Borland signed 32-bit divide) for the LZW ratio check",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:157c": {
+      "name": "resources_lzwCheckRatio",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "LZW write: emits a clear and resets the table when the compression ratio drops",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:1654": {
+      "name": "resources_lzwClearHash",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Fills n LZW hash table entries with -1",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:1698": {
+      "name": "resources_rleWrite",
+      "subsystem": "resources",
+      "status": "named",
+      "note": "Method 1 write: encodes the I/O ring into RLE runs and literals",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:17d8": {
+      "name": "gfx_callDrawSprite",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Forwards (record, x, y, flags) to gfx_drawSprite; used by the TTM sprite opcodes",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:17fa": {
+      "name": "decoders_callLoadBmp",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Thunk: passes its one argument to decoders_loadBmp (1030:124a) and returns its result; called from 1040:0db0 and the TTM interpreter (1058:07cf)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:1813": {
+      "name": "decoders_callLoadScreen",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Thunk: passes its one argument to decoders_loadScreen (1030:16d8) and returns its result; called only from the TTM interpreter (1058:06d3)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:182c": {
+      "name": "gfx_countBitmapRecordsThunk",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Forwards one word to 1030:15fb (counts the records of a bitmap list)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1028:1845": {
+      "name": "gfx_freeBitmapsThunk",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Forwards one word to 1030:00fe (frees a loaded bitmap)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:0000": {
+      "name": "gfx_noop",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Empty function; called first by 1030:00fe",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:000e": {
+      "name": "decoders_bmpPixelBytes",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Called through 1068:1e24: sums ((w + 1) / 2) * h over a bitmap record list as a u32 and zeroes its second output",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:00fe": {
+      "name": "gfx_freeBitmaps",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Deletes the image, mask, and mirrored image/mask GDI objects of every record, then frees the record list",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:0197": {
+      "name": "gfx_rectBitsSize",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Bytes of a 4-bit bitmap of w x h with rows padded to 16 pixels",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:01c4": {
+      "name": "gfx_saveRectBits",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Copies a rect of the DC at 1068:1eb6 into a caller buffer with GetBitmapBits",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:0250": {
+      "name": "gfx_restoreRectBits",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Puts a caller buffer back with SetBitmapBits, blits it to the DC at 1068:1eb8, marks the rect dirty",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:02ef": {
+      "name": "gfx_drawLine",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Draws a line in the foreground color and marks it dirty; dirty width is wrong when x2 < x1 or y2 < y1 (uses -a-b, not a-b)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:03d7": {
+      "name": "gfx_drawSpriteStretched",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Draws an image record stretched to w x h with negative source extents for flags 1/2; reached only from TTM opcodes 0xa5X6, unused by the data",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:04ce": {
+      "name": "gfx_drawTextNear",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Forwards a near string to gfx_drawText",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:04ee": {
+      "name": "gfx_drawText",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "TextOut of a far string at x, y with text/back colors 1068:1ea0/1ea1 and back mode from 1068:1ea2; dirty rect 8 x length by 15",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:0765": {
+      "name": "gfx_loadFont",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Once: adds WILLY.FON, creates the 'Willy Beamish Dialog' font (8 x 8) and selects it into the draw target",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:07c3": {
+      "name": "gfx_selectFontStub",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Empty: returns 1; the TTM font and text opcodes call it with a font handle",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:07d4": {
+      "name": "gfx_deleteFontStub",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Empty: returns DS; TTM opcodes 0x0090 and 0xf04f and 1050:080c call it with a font handle",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:082c": {
+      "name": "platform_registerCursor",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Adds a cursor of kind 0x1111, 0x2222, or 0x3333 to a growable global table; -1 and -2 mean the system arrow and wait cursors",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:09d0": {
+      "name": "platform_removeCursor",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Removes a cursor from the table; 0x4444 resets the active cursor and frees the whole table",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:0a8a": {
+      "name": "platform_setActiveCursor",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Activates a table cursor; kind 0x3333 hides the system cursor, clips it to the window, and draws a software cursor",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:1112": {
+      "name": "decoders_readBmpInfo",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Finds BMP:INF:, reads the u16 image count, every width, then every height into 14-byte near records (+6 width, +8 height) behind a zero-terminated pointer list",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:124a": {
+      "name": "decoders_loadBmp",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Loads a BMP resource: records from BMP:INF:, BMP:BIN: unpacked into one far buffer, images built by 1040:0000 through 1068:2574; BMP:VGA:/BMP:AMG: layers never run; returns the record list or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:15cc": {
+      "name": "decoders_freeBmpInfo",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Frees a bitmap record block (the list's first entry), then the pointer list",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:15fb": {
+      "name": "gfx_countBitmapRecords",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Returns the number of records before the zero terminator of a bitmap list (0 for null)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:1624": {
+      "name": "decoders_expandAmgBits",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Expands 1-bit pixels into 4-bit indices 0 or 1, from the end backward so it works in place; only reached from the dead BMP:AMG: branch",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:16d8": {
+      "name": "decoders_loadScreen",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Loads a SCR resource: size from SCR:DIM: (default 320x400), SCR:BIN: decoded in strips of 64 rows and blitted opaque; SCR:VGA:/SCR:AMG: layers never run",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:199a": {
+      "name": "platform_farAlloc",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Allocates a far block of a 32-bit size with flags; returns DX:AX",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1030:1b63": {
+      "name": "platform_farFree",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Frees a far block",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0000": {
+      "name": "decoders_chunkReaderFor",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Returns the reader record (one of 4 at 1068:414e) whose file handle equals the argument; 0 finds a free record",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:003a": {
+      "name": "decoders_resetChunkReader",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Clears a reader record except its handle and payload end, then rewinds the file",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0091": {
+      "name": "decoders_tagPathEquals",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Compares two strings for up to n characters, stopping when both reach a NUL; 1 when equal",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:00d2": {
+      "name": "decoders_saveChunkReader",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Copies the reader record of a handle into a caller buffer; returns the buffer or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0119": {
+      "name": "decoders_loadChunkReader",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Copies a saved reader record back over the live one and seeks the file to its position",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:016b": {
+      "name": "decoders_openChunkFile",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Opens a resource in mode rb on a free reader record, stores the payload end as a container; returns the handle or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:01da": {
+      "name": "decoders_restoreChunkReader",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Failure exit of the chunk search: restores the record from the backup at 1068:425a, seeks back, returns -1",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0215": {
+      "name": "decoders_findChunk",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Finds a chunk by its full tag path, forward from the current chunk; returns the body position or -1",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0517": {
+      "name": "decoders_chunkSize",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Low 16 bits of the current chunk size, or -1 for an unknown handle",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:054b": {
+      "name": "decoders_closeChunkFile",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Frees the reader record of a handle and closes the file; 1 on success",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0584": {
+      "name": "decoders_isChunkFile",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "1 when the argument is the handle of an open reader record",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0619": {
+      "name": "platform_nearMalloc",
+      "subsystem": "platform",
+      "status": "verified",
+      "note": "Far wrapper around rtl_malloc (no zeroing)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:063b": {
+      "name": "platform_nearFree",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Frees a near block through LocalFree",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:06a8": {
+      "name": "platform_nearCalloc",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "Zeroed near allocation of count times size bytes",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:06ce": {
+      "name": "gfx_copyRect",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Copies a rect widened to 8-pixel columns (always one column extra) from 1068:1eb6 to 1068:1eb8, skipped into A when 1068:429e is set; then presents it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:07e8": {
+      "name": "gfx_presentRect",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Copies a rect to the window (centered) when the target is A or a DC is given: from the target, or from the copy source / B when 1068:429e is set",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0ac2": {
+      "name": "gfx_drawSpritePlain",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "gfx_drawSprite with flags 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0ae4": {
+      "name": "gfx_drawSprite",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Draws an image record at x, y: mask AND NOT, then image OR; flags 2 uses the pre-mirrored pair, else falls back to +2/+4 with negative StretchBlt extents (1 flips, 2 mirrors)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0de1": {
+      "name": "gfx_rescaleSprite",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Doubles or halves a record's image and mask when its scale byte differs from 1068:2e75; never at runtime (all scale modes are 3)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:0e8a": {
+      "name": "gfx_checkDoubledBitmap",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Reads the bits of a bitmap, its doubled copy, and a 2x StretchBlt copy, then frees them all; nothing kept (leftover test code)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:109e": {
+      "name": "gfx_doubleBitmap",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Returns a copy of a one-plane bitmap twice as wide and tall; dead at runtime",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:1485": {
+      "name": "gfx_halveBitmap",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Returns a copy of a one-plane bitmap half as wide and tall; dead at runtime",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:1744": {
+      "name": "gfx_initDisplay",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Display setup: accepts color mode 0, 2, or 8, always sets color mode 1068:1ebd to 2, fails when a non-zero request differs, then sets screen size and DCs",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:194e": {
+      "name": "gfx_closeDisplay",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Removes the cursor and deletes the three offscreen DCs and bitmaps that exist",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:19c7": {
+      "name": "gfx_rescaleDisplay",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Doubles or halves the three offscreen bitmaps to a new scale mode; never referenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:1ade": {
+      "name": "gfx_applyClip",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Selects the clip rect (x1, y1, x2 + 1, y2 + 1) as a region into all three DCs when on, the whole screen when turned off; remembered in 1068:45a6",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:1bd8": {
+      "name": "gfx_drawRect",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Draws a rect: outline when fill is off or the rect is under 2 px, else filled (PATCOPY blit when both colors match); marks it dirty",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1038:1d31": {
+      "name": "gfx_createColorBrush",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Solid brush for colors below 16 (or in 8-color mode), otherwise an 8x8 dither pattern brush built from the two color nibbles",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0000": {
+      "name": "gfx_buildBitmaps",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "For each image record: builds the mask, a 4-bit bottom-up DIB with the active palette (entry 0 black for BMPs), flips rows; pre-mirrored image/mask only for JOHNWALK.BMP with enough memory",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0286": {
+      "name": "gfx_blitPixelRows",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Turns a buffer of pixel rows into a bitmap (via 1040:0000) and blits it to the offscreen DC, marking the rect dirty",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:034e": {
+      "name": "gfx_noopLayerStrip",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Empty function; called per strip on the SCR:VGA:/SCR:AMG: path that never runs",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:035c": {
+      "name": "gfx_buildBitmapMask",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Builds a 1-bit mask bitmap: bit set where the 4-bit index is not 0, left pixel in bit 7; width/8 bytes per row, stride ((w+8)/16)*2",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0462": {
+      "name": "gfx_flipPixelRows",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Swaps packed pixel rows top to bottom in place ((w/2) bytes per row), so a top-down buffer fits a bottom-up DIB",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:054e": {
+      "name": "gfx_mirrorPixelRows",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Mirrors each packed pixel row left to right in place (byte order and nibble order); builds the pre-mirrored JOHNWALK images",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0688": {
+      "name": "gfx_drawCircle",
+      "subsystem": "gfx",
+      "status": "named",
+      "note": "Draws Ellipse(cx - r, cy - r, cx + r, cy + r) with the foreground pen and background brush; dirty call passes right and bottom as width and height",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:076a": {
+      "name": "platform_initTimers",
+      "subsystem": "platform",
+      "status": "verified",
+      "note": "Sets the base tick 1068:45de to 1000 / (n * 18) ms, once",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:079e": {
+      "name": "platform_clearTimers",
+      "subsystem": "platform",
+      "status": "verified",
+      "note": "Empties the five timer callback slots and clears the base tick",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:07e6": {
+      "name": "platform_addTimerCallback",
+      "subsystem": "platform",
+      "status": "verified",
+      "note": "Registers a far callback in a 5-slot table with an interval in base ticks",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:085a": {
+      "name": "platform_removeTimerCallback",
+      "subsystem": "platform",
+      "status": "verified",
+      "note": "Empties one timer callback slot 1..4",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:089a": {
+      "name": "platform_runTimerCallbacks",
+      "subsystem": "platform",
+      "status": "verified",
+      "note": "Fires every due timer callback once per missed interval and advances the base tick; the first call (1068:257c set in the data segment) only resets the slot times",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:097a": {
+      "name": "gfx_paletteColor",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Returns the COLORREF of palette entry color % 16 (16-color mode) from the active palette 1068:25ae; blue in DX",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:09eb": {
+      "name": "decoders_loadPalette",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Takes a free palette slot (1..9), finds PAL:VGA:, reads 16 (color mode 2) or 256 RGB triplets byte by byte through the level table at 1068:25b0; returns the slot pointer or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0b08": {
+      "name": "gfx_selectPalette",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Makes a loaded palette slot active: allocates the active palette (slot 0, pointer at 1068:25ae) on first use and copies the slot's colors into it; 0 returns the current one",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0bc7": {
+      "name": "gfx_freePalette",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Frees a loaded palette slot (1..9) found by its pointer and clears the slot",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0c13": {
+      "name": "gfx_paletteLevelStub",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Empty: returns DS; the TTM palette fade opcodes call it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0c21": {
+      "name": "gfx_paletteCycleStub",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Empty: returns 0; TTM opcodes 0x0400 and 0x2402 reach it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0c31": {
+      "name": "gfx_paletteEmptyStub",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Empty: returns DS; nothing calls it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0d54": {
+      "name": "gfx_drawPixel",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Sets one pixel in the given color and marks it dirty",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:0db0": {
+      "name": "decoders_loadBmpMatrix",
+      "subsystem": "decoders",
+      "status": "verified",
+      "note": "Reads a BMP:MTX: grid (u16 columns, u16 rows, u16 image indices column by column), loads the same BMP's images, and composes them into one bitmap at 1068:45f8; only TTM opcode 0xF08F calls it, and no resource has BMP:MTX:",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:10ef": {
+      "name": "gfx_freeBmpMatrix",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Deletes the BMP:MTX: bitmap at 1068:45f8 and clears it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:1113": {
+      "name": "gfx_blitBmpMatrix",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Blits a rect of the composed BMP:MTX: bitmap to the offscreen DC and marks it dirty",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1040:1183": {
+      "name": "gfx_scrollBmpMatrix",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Moves the matrix view (1068:45fa/45fc) by whole tiles: 0 up, 1 down, 2 left, 3 right",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0000": {
+      "name": "ads_init",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Unloads every ADS slot and every TTM (1048:001b), sets up the dirty-rect pool, returns 1",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:001b": {
+      "name": "ads_unloadAll",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Unloads the 10 ADS slots (1048:067f), then every TTM (1050:07c6)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0044": {
+      "name": "ttm_loadTtmWithId",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Loads a TTM with 1050:0177, stores the id in record word [0], runs the page index 1050:04d6; returns the id, or 0xFFFF when the load fails",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0079": {
+      "name": "ads_loadAds",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Loads an ADS resource into one of 10 slots: ADS:RES: id/name pairs, then the ADS:SCR: script data; returns slot + 1 or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0303": {
+      "name": "ads_nextInstruction",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Returns the far pointer past one ADS instruction, sized by the 35-entry code-segment table at 1048:0383 (0 to 4 args, 0 for any other word); null past the bytecode end",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:040f": {
+      "name": "ads_sectionSceneIds",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Walks one ADS section to its 0xFFFF and returns a zero-terminated near list of the distinct tag nodes (1048:0bf4) named by its 0x2000/0x2005 instructions, or 0 when there are none",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:04fc": {
+      "name": "ads_indexSections",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "With slot n: selects it and, on first use, indexes its sections (starts after each tag word, count = number of 0xFFFF) and per-section scene lists; with 0: restores the TTM list head of the current slot",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:067f": {
+      "name": "ads_unload",
+      "subsystem": "ads",
+      "status": "named",
+      "note": "Unloads ADS slot n (0 = current): its TTMs, scene lists, bytecode and record; clears the current slot when it was this one",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0766": {
+      "name": "ads_sectionBusy",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Story busy check for a section tag: 1 while the section runs or starts, or while a node of its scene list plays without a self-goto",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0805": {
+      "name": "ads_setSectionState",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Sets a section's state, keeping the fresh bit 8, and clears its resume pointer",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0874": {
+      "name": "ads_startSection",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Story start of a section: state 3 (reset its nodes, then run) through 1048:0805",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0894": {
+      "name": "ads_resumeSection",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "State 4 (run without reset) through 1048:0805; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:08b4": {
+      "name": "ads_setSectionStateUnlessFresh",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Clears a section's resume pointer and sets its state, unless the state is exactly 8",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0920": {
+      "name": "ads_hideSection",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "State 6 (its nodes do not run) through 1048:08b4; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0940": {
+      "name": "ads_freezeSection",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "State 5 (its nodes replay without advancing) through 1048:08b4; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0960": {
+      "name": "ads_slotIndex",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Slot argument n (0 = current) to an index, or -1 when that slot is empty",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0993": {
+      "name": "ads_restartAllSections",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "State 3 through 1048:0805 for the sections whose tags are 1 to the slot's section count (numbers passed as tags); unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:09e3": {
+      "name": "ads_startAllSections",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "State 4 through 1048:0805 for the sections whose tags are 1 to the slot's section count (numbers passed as tags); unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0a33": {
+      "name": "ads_hideAllSections",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "State 6 through 1048:08b4 (current slot) for the sections whose tags are 1 to slot n's section count; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0a86": {
+      "name": "ads_freezeAllSections",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "State 5 through 1048:08b4 (current slot) for the sections whose tags are 1 to slot n's section count; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0ad9": {
+      "name": "ads_resetAllSections",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "State 8 through 1048:08b4 for the sections whose tags are 1 to the slot's section count, then resets every node of that slot; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0b3e": {
+      "name": "ads_resetThread",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Resets a thread node: palette, BMP and zone slots 0, page = tag page, no next page, colors 15, delay 0, clip on over the whole screen",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0bc5": {
+      "name": "ads_resetAllNodes",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Resets every node of the current ADS (1048:0b3e)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0bf4": {
+      "name": "ads_findNode",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "First node of the current ADS with a TTM id and tag, or 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0c30": {
+      "name": "ads_sectionResumePoint",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "The section start, or just past the first word 0x0005 met before 0xFFFF",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0c8d": {
+      "name": "ads_randomWeight",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Weight of an instruction in a random block: word +8 for 0x2000/0x2005, +2 for 0x3020, +6 otherwise",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0cda": {
+      "name": "ads_randomBlock",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Runs one weighted pick (1018:1e60) among the instructions up to 0x30FF, unless it is 0x3020; returns the pointer past 0x30FF",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0db6": {
+      "name": "ads_addScene",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "0x2005: sets a node's mode from its count argument (0 once, n > 0 n times, n < 0 until now - n) and counts the play",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0e2e": {
+      "name": "ads_restartScene",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "0x2000: page = tag page, then 1048:0db6",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0e6e": {
+      "name": "ads_holdScene",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "0x2015: node mode 5 (replays its page, never advances)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0e9b": {
+      "name": "ads_stopScene",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "0x2010: node mode 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0ec8": {
+      "name": "ads_resetScene",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "0x2020: resets the node (1048:0b3e)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0ef2": {
+      "name": "ads_drawFirst",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "0x4010: moves a node to the head of the node list",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:0f8c": {
+      "name": "ads_drawLast",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "0x4000: moves a node to the tail of the node list",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:106b": {
+      "name": "ads_skipBlock",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Skips forward to the 0x1500 or 0x1510 that ends a block, stepping over nested 0x13xx blocks; 0 at 0xFFFF or a 0 word",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:118a": {
+      "name": "ads_whileEnd",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Scans forward to the 0x1520 that ends a while block; 0 at 0xFFFF or a 0 word",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:11db": {
+      "name": "ads_skipFalseBlock",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Skips a block whose condition is false and runs its else part when it has one",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:1223": {
+      "name": "ads_evalConditions",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Evaluates a chain of conditions joined by 0x1420 (and) and 0x1430 (or) into 1068:4634; returns the pointer after the chain",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:1519": {
+      "name": "ads_runInstruction",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Runs one ADS instruction (44-entry table at 1048:1875); returns the next pointer, or 0 to end the block",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:1925": {
+      "name": "ads_runBlock",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Runs instructions until 0xFFFF, a null pointer, or an end-of-block marker; returns where it stopped",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:196e": {
+      "name": "ads_advancePage",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "When the thread's delay is due (or 0): next due time = now + delay, clears the ran flag, moves to the next page or the goto page; returns 1, else 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:19e7": {
+      "name": "ads_sectionIndex",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Index of the section of the current ADS whose tag word is the argument, or -1",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:1a4b": {
+      "name": "ads_nextSectionTag",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Section tag iterator: stores the next section's tag, returns 1 at the end; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:1aaf": {
+      "name": "ads_firstSectionTag",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Restarts the section tag iterator; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:1acb": {
+      "name": "ads_tick",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "One ADS tick: runs every active thread's current page, applies delay, goto and purge, then activates the pending palette and resets the clip",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1048:1e5a": {
+      "name": "ads_redrawThreads",
+      "subsystem": "ads",
+      "status": "verified",
+      "note": "Re-runs the last page run of every thread of the current ADS that has one, as a replay (ran flag forced to 1, restored after), then resets the clip; no call or relocation references it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0000": {
+      "name": "ttm_measureSlotImages",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Stores the widest image of the thread's BMP slot in 1068:463c and clears 1068:463e; TTM opcode 0xb000",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0061": {
+      "name": "ttm_scrollSlotImages",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Draws the BMP slot's images in a column at x = arg2, starting 1068:463e above the screen bottom and spaced by arg0, marks them dirty, adds arg1 to 463e, and raises the purge flag when none was drawn; TTM opcode 0xb013",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:013e": {
+      "name": "ttm_readWord",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Returns the word at a far pointer",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0152": {
+      "name": "ttm_initDirtyPool",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Grows the dirty-rect pool by 100 nodes; sets 1068:2641 to 2 in color mode 12",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0177": {
+      "name": "ttm_loadTtm",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Loads a TTM: PAG: page count (330 when missing), TT3: bytecode decompressed whole, appends a 0xd4-byte record with a page table of count + 1 far pointers; returns 1 or 0xFFFF",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:03e2": {
+      "name": "ttm_selectTtm",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Finds the TTM record with the given id in the list at 1068:2634 and makes it current (1068:2638); returns 1, or 0 when none matches",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:042a": {
+      "name": "ttm_addTagRecord",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Appends a zeroed 0x3d-byte near tag node (TTM id, tag id, page) at the tail of the list at 1068:263c",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:04a8": {
+      "name": "ttm_skipStringArg",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Returns the far pointer past a NUL-terminated string field, padded to an even length from the string start",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:04d6": {
+      "name": "ttm_indexPages",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Builds the page table of a TTM: pages end at 0x0FF0, 0x1111 tags are recorded with their page; returns 1 when all pages are found, 0 at the end of the bytecode, 0xFFFF on arg codes 8..14",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:074a": {
+      "name": "ttm_runPageChecked",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Runs page n of the current TTM with 1058:040c when the page exists; returns 0 otherwise",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0799": {
+      "name": "ttm_activatePendingPalette",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Makes the pending palette 1068:4646 active and clears it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:07c6": {
+      "name": "ttm_unloadAll",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Unloads every TTM (1050:080c) and frees every thread node",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:080c": {
+      "name": "ttm_unload",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Frees one TTM record: matrix, fonts, bitmaps (not the shared walk list), palettes, zone buffers, page table, bytecode",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0a6e": {
+      "name": "ttm_shutdown",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Frees the dirty-rect pool and unloads every TTM; nothing references it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0a85": {
+      "name": "ttm_markDrawn",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Marks a drawn rect dirty: B to A at ages 0 and 1, and C to B at age 0 unless 1068:27c0 is set",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0b31": {
+      "name": "ttm_screenToBackground",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Sets 1068:4640, copies all of B into C, drops the C-to-B dirty list",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1050:0b74": {
+      "name": "ttm_copyToBackground",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Copies a rect of B into C, keeping the copy source and draw target",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:0000": {
+      "name": "ttm_soundOpcode",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Dispatches 0xCxxx opcodes: 0xc051 plays a sample, the rest reach return-0 stubs or copy strings",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:0144": {
+      "name": "ttm_drawOpcode",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Dispatches 0xAxxx opcodes to the primitives, sprites, effects (1058:1510) and text",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:040c": {
+      "name": "ttm_runPage",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Runs one TTM page until 0x0FF0: frames each instruction, applies offsets, dispatches, marks drawings dirty",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:13a9": {
+      "name": "ttm_pageOfTag",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Returns the first page whose first instruction is 0x1101 or 0x1111 with the tag, or 0xFFFF; stops at the first unset page table entry",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:141f": {
+      "name": "ttm_copyStringArg",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Copies a string argument (or n bytes when n is not 0) into 1068:464a, terminates it, and returns it; copies nothing when n is at least the screen height",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:147a": {
+      "name": "ttm_fontSlotPointer",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Returns a pointer to the thread's font handle in the TTM record (+0x18)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:14a8": {
+      "name": "ttm_paletteRangeEffect",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Calls the empty 1040:0c21 for a color range stored by opcodes 0x2302..0x2322",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:14e0": {
+      "name": "ttm_surfaceByNumber",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Maps 0 to A, 1 to B, 2 to C, anything else to B",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:1510": {
+      "name": "ttm_effectOpcode",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Runs the 0xa014..0xa094 and 0xa0b5 effects with target A (B for the zone 0 restore): zone 0 save and restore, slides, strips, blinds, copies; puts the target back after",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:1920": {
+      "name": "ttm_effectPause",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Calls 1058:1949 with an empty rect 100 times (a busy wait)",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:1949": {
+      "name": "ttm_effectCopy",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "gfx_copyRect when width and height are both above 2",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:197c": {
+      "name": "ttm_emptyMirrorHook",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Empty function; TTM opcode 0x2012 calls it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:198a": {
+      "name": "ttm_dissolveEffect",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Opcode 0xa0b5: copies a rect of B to A; with 1068:1ebf set (never) dissolves it pixel by pixel in LFSR order",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:1ad0": {
+      "name": "ttm_timerExpired",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Returns 1 when a timer record (start, duration) has run out, or when 1068:45e2 is 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:1b1f": {
+      "name": "ttm_timerLerp",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Interpolates between two values by the elapsed share of a timer record",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:1be1": {
+      "name": "ttm_startTimer",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Fills a timer record with the clock 1068:2e70/2e72 and a duration",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1058:1c06": {
+      "name": "ttm_expireTimer",
+      "subsystem": "ttm",
+      "status": "verified",
+      "note": "Fills a timer record that has already run out; nothing references it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:0000": {
+      "name": "gfx_growDirtyPool",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Allocates ceil(n / 5) * 5 zeroed 26-byte dirty-rect nodes and puts them on the free list 1068:46ee; adds them to the count 1068:46ec",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:007e": {
+      "name": "gfx_addDirtyRect",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Adds a dirty rect to the list keyed (source, target, age): kind 1 is cut to the clip or screen, turned into 8-pixel columns, and merged when the union wastes at most 20 cells (16-bit); kind 4 has source -1",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:03d3": {
+      "name": "gfx_restoreDirtyRects",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Replays the source/target pairs of the table at 1068:287e with age 0 (or only 1068:2882), then with 0 ages every remaining node by -1",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:046e": {
+      "name": "gfx_clearDirtyLists",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Moves every node of the 20 dirty lists to the free list",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:04b2": {
+      "name": "gfx_dirtyOverlaps",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Returns 1 when a kind-1 node of any list with that target and age overlaps the rect in columns and rows, else 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:0556": {
+      "name": "gfx_freeDirtyPool",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Empties the lists and frees the node pool blocks; does not reset the pool count",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:0596": {
+      "name": "gfx_dirtyPoolSize",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Returns the dirty node pool count 1068:46ec; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:05a7": {
+      "name": "gfx_findDirtyList",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Returns the head slot whose first node has the given source, target, and age, else the first empty slot, else 0",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:05f9": {
+      "name": "gfx_replayDirtyList",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Sets source/target DCs from the head, replays the list head to tail (kind 1: copy 8-pixel columns, kind 4: restore saved bits), then frees it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:06ac": {
+      "name": "gfx_dropDirtyList",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Frees one dirty list without replaying it",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:06f5": {
+      "name": "gfx_copyDirtyList",
+      "subsystem": "gfx",
+      "status": "verified",
+      "note": "Meant to copy one list into another key; never advances past the head, so it loops forever on a non-empty list; unreferenced",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:0a23": {
+      "name": "platform_globalAllocLock",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "GlobalAlloc with size in DX:AX and default flags plus GMEM_MOVEABLE, then GlobalLock",
+      "signature": null,
+      "callingConvention": null
+    },
+    "1060:0a53": {
+      "name": "platform_globalUnlockFree",
+      "subsystem": "platform",
+      "status": "named",
+      "note": "GlobalHandle on a far pointer, then GlobalUnlock and GlobalFree",
+      "signature": null,
+      "callingConvention": null
+    }
+  }
+}

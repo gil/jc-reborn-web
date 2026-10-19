@@ -2394,6 +2394,8 @@ git commit -m "feat: ADS scheduler with conditionals, RANDOM blocks, multi-threa
 
 ## Task 7: Island composer
 
+Replaced in chunk 7 by a port of SCRANTIC.SCR; see docs/re/story.md and docs/re/island.md.
+
 **Files:**
 
 - Create: `src/island/island.ts`, `src/island/island-data.ts`
@@ -2421,6 +2423,8 @@ Port `~/dev/jc_reborn/island.c` and the data tables from `island.c`. The island 
 
 ## Task 8: Walking + pathfinding
 
+Replaced in chunk 8 by a port of SCRANTIC.SCR; see docs/re/walk.md.
+
 **Files:**
 
 - Create: `src/walk/walk.ts`, `src/walk/calcpath.ts`, `src/walk/walk-data.ts`, `src/walk/calcpath-data.ts`
@@ -2444,6 +2448,8 @@ The walking thread runs alongside ADS scene threads; treat as a special-cased TT
 ---
 
 ## Task 9: Story scheduler
+
+Replaced in chunk 7 by a port of SCRANTIC.SCR; see docs/re/story.md and docs/re/island.md.
 
 **Files:**
 

@@ -2,21 +2,32 @@ import { fetchData } from './io/fetch-resources.js';
 import { parseMap } from './resource/resource-map.js';
 import { indexArchive } from './resource/resource-archive.js';
 import { decodePal } from './decode/pal.js';
-import { decodeAds } from './decode/ads-loader.js';
-import { makePalette, setPaletteFromVga } from './gfx/palette.js';
-import { makeAdsState, adsTick, adsThreadLayers, adsActiveThreadCount } from './ads/scheduler.js';
-import { composite } from './gfx/compositor.js';
+import { makePalette, setPaletteColors } from './gfx/palette.js';
+import { Display } from './gfx/gdi/display.js';
+import { makeDrawState } from './gfx/gdi/surface.js';
+import { applyFade } from './gfx/fade.js';
+import { presentSurface } from './gfx/present.js';
 import { startLoop } from './engine/loop.js';
-import { pumpMs, hasEnoughMs, consumeMs, msPerTick, resetClock } from './engine/clock.js';
-import { islandInit, islandInitHoliday, randomIslandState } from './island/island.js';
+import { EngineClock } from './engine/clock.js';
+import { clockTick, makeTimers } from './engine/timers.js';
+import { DisplayIslandDevice } from './island/island-device.js';
+import { drawIntro, drawIsland, makeIsland } from './island/island.js';
 import { SCREEN_W, SCREEN_H } from './types.js';
-import type { TtmContext } from './ttm/interpreter.js';
-import { storyInit, storyTick, storyAnimateBg, type GameState } from './story/story.js';
+import { GdiDevice } from './ttm/gdi-device.js';
+import { makeTtmEnv } from './ttm/page-runner.js';
+import { loadWalk, makeWalk } from './walk/walk.js';
+import { seedRandom, StoryRandom } from './story/random.js';
+import { ADS_FILES } from './story/scene-table.js';
+import { makeStoryWorld } from './story/sequence.js';
+import { loadSettings, localSettingsStore } from './story/settings.js';
+import { currentEntry, makeStoryState, storyStep, type GameState } from './story/story.js';
 import { initSound, playSample } from './audio/sound.js';
 import { initSoundIcon } from './ui/sound-icon.js';
 import { initFullscreen } from './ui/fullscreen.js';
 import { initCrt } from './ui/crt.js';
 import { initHud, hudUpdate } from './debug/hud.js';
+
+const INTRO_HOLD_MS = 2000;
 
 const canvas = document.getElementById('stage') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -28,83 +39,59 @@ initHud();
 initSound(); // fire-and-forget: pre-fetches WAV bytes; AudioContext created on first icon click
 
 const { map: mapBuf, archive: arcBuf } = await fetchData();
-const map = parseMap(mapBuf);
-const archive = indexArchive(map, arcBuf);
+const archive = indexArchive(parseMap(mapBuf), arcBuf);
 
-const palResRaw = archive.list.find(r => r.type === '.PAL')!;
 const pal = makePalette();
-setPaletteFromVga(pal, decodePal(palResRaw.payload).vga);
+setPaletteColors(pal, decodePal(archive.list.find((r) => r.type === '.PAL')!.payload).colors);
 
-const islandState = randomIslandState();
-const islandRt = islandInit(archive, islandState);
-const holidayLayer = islandInitHoliday(archive, islandState);
+const display = new Display();
+display.screenIsB = true;
+const draw = makeDrawState();
+const random = new StoryRandom();
+seedRandom(random, Math.floor(Date.now() / 1000));
+const device = new GdiDevice(display, draw, archive, { playSound: playSample, random: () => random.next() });
 
-const adsRaw = archive.list.find(r => r.type === '.ADS')!;
-const adsInitial = decodeAds(adsRaw.payload);
-const adsState = makeAdsState(adsInitial, archive, 1);
-
-const ttmCtx: TtmContext = {
-  archive,
-  palette: pal,
-  setBackground: (indexed) => { game.background = indexed; },
-  playSample,
-  dx: 0,
-  dy: 0,
-};
-
-const game: GameState = {
-  adsState,
-  islandRt,
-  islandState,
-  holidayLayer,
-  bgAnimTimer: 8,
-  background: islandRt.bgLayer.indexed,
-  ttmCtx,
-  archive,
-  fadeState: null,
-};
+const world = makeStoryWorld(random);
+const timers = makeTimers();
+const islandDevice = new DisplayIslandDevice(display, archive);
+const island = makeIsland(islandDevice, world, timers, { background: true, clouds: true, waves: true });
+const settings = localSettingsStore();
+loadSettings(settings, world, island.settings);
 
 const params = new URLSearchParams(location.search);
-const debugAds = params.get('ads');
 const skipIntro = params.get('skipIntro') === 'true';
+if (!skipIntro) drawIntro(islandDevice);
+drawIsland(island);
+const walk = makeWalk(island);
+loadWalk(walk);
 
-const storyState = storyInit(archive, game, debugAds, skipIntro);
+const game: GameState = {
+  archive, display, ttm: makeTtmEnv(device, draw), palette: pal, random, timers, world, island, walk, settings,
+  fadeState: null,
+  clock: () => new Date(),
+};
+const story = makeStoryState(params.get('ads'));
 
 const img = ctx.createImageData(SCREEN_W, SCREEN_H);
+const engineClock = new EngineClock(performance.now());
+const firstStepAt = performance.now() + (skipIntro ? 0 : INTRO_HOLD_MS);
 
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) resetClock();
+  if (!document.hidden) engineClock.resume(performance.now());
 });
-
-let pacedMini = 4; // initial guess before first tick
 
 startLoop(
   () => {
-    pumpMs();
-
-    // Advance the engine one mini-step for every mini * 20ms of accumulated
-    // wall-clock time.  Matches the DOS game loop: adsPlay() → delay(mini*20).
-    // rAF may call us more often than the engine needs; the accumulation gates
-    // the actual tick rate so animations don't run too fast.
-    while (hasEnoughMs(pacedMini * msPerTick())) {
-      consumeMs(pacedMini * msPerTick());
-      // storyTick first: phase transitions (e.g. scene end → walk, walk done → new scene)
-      // create new walkCtx / adsState. adsTick then advances them in the SAME iteration
-      // so their layers are populated before the render callback runs.
-      storyTick(storyState, game);
-      pacedMini = adsTick(game.adsState, game.ttmCtx);
-      storyAnimateBg(storyState, game, pacedMini);
-    }
+    const now = performance.now();
+    for (let ticks = engineClock.ticksDue(now); ticks > 0; ticks--) clockTick(timers);
+    if (!engineClock.stepDue(now) || now < firstStepAt) return;
+    storyStep(story, game);
   },
   () => {
-    composite(img, {
-      background: game.background,
-      ttmThreads: adsThreadLayers(game.adsState),
-      holiday: game.holidayLayer,
-      palette: pal,
-      fade: game.fadeState,
-    });
+    presentSurface(img.data, display.window, pal);
+    if (game.fadeState) applyFade(img.data, game.fadeState);
     ctx.putImageData(img, 0, 0);
-    hudUpdate(adsActiveThreadCount(game.adsState), storyState.currentScene?.adsName ?? '-');
+    const entry = currentEntry(game);
+    hudUpdate(entry ?(ADS_FILES.get(entry.ads) ?? 'idle') : '-');
   },
 );

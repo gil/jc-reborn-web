@@ -1,4 +1,4 @@
-export interface MapEntry { name: string; length: number; offset: number; }
+export interface MapEntry { nameHash: number; offset: number; }
 
 export interface ParsedArchive {
   byName: Map<string, RawResource>;
@@ -6,7 +6,7 @@ export interface ParsedArchive {
 }
 
 export interface RawResource {
-  name: string;            // e.g. "JOHNNY.TTM"
-  type: string;            // ".TTM", ".BMP", etc.
-  payload: Uint8Array;     // raw bytes (post-13-byte name, post-uint32 size header)
+  name: string;
+  type: string;
+  payload: Uint8Array; // after the 13-byte name and the u32 size
 }

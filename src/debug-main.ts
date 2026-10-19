@@ -7,11 +7,11 @@ import { decodeBmp } from './decode/bmp.js';
 import { decodeTtm } from './decode/ttm-loader.js';
 import { decodeAds } from './decode/ads-loader.js';
 import { disasmTtm } from './decode/ttm-disasm.js';
-import { makePalette, setPaletteFromVga } from './gfx/palette.js';
-import { makeLayer } from './gfx/layer.js';
-import { drawLine, drawRect, drawCircle } from './gfx/primitives.js';
-import { drawSprite, drawSpriteFlip } from './gfx/sprite.js';
-import { composite } from './gfx/compositor.js';
+import { makePalette, setPaletteColors } from './gfx/palette.js';
+import { drawCircle, drawLine, drawRect } from './gfx/gdi/primitives.js';
+import { drawSprite, MIRROR, spriteSurface } from './gfx/gdi/sprite.js';
+import { makeDrawState, makeSurface, rawIndices } from './gfx/gdi/surface.js';
+import { presentSurface } from './gfx/present.js';
 import { SCREEN_W, SCREEN_H } from './types.js';
 
 const { map: mapBuf, archive: arcBuf } = await fetchData();
@@ -20,7 +20,7 @@ const archive = indexArchive(map, arcBuf);
 
 const palResRaw = archive.list.find(r => r.type === '.PAL')!;
 const pal = makePalette();
-setPaletteFromVga(pal, decodePal(palResRaw.payload).vga);
+setPaletteColors(pal, decodePal(palResRaw.payload).colors);
 
 const picker = document.getElementById('picker') as HTMLSelectElement;
 for (const r of archive.list) {
@@ -99,17 +99,20 @@ const demoBtn = document.createElement('button');
 demoBtn.textContent = 'Demo primitives';
 document.querySelector('div')!.appendChild(demoBtn);
 demoBtn.addEventListener('click', () => {
-  const scr = archive.list.find(r => r.type === '.SCR')!;
-  const bmp = archive.list.find(r => r.type === '.BMP')!;
-  const bg = decodeScr(scr.payload).indexed;
-  const sprites = decodeBmp(bmp.payload).sprites;
-  const layer = makeLayer();
-  drawLine(layer, 10, 10, 600, 200, 5);
-  drawRect(layer, 50, 50, 100, 80, 8);
-  drawCircle(layer, 200, 100, 80, 80, 12, 2);
-  drawSprite(layer, sprites[0]!, 300, 200);
-  drawSpriteFlip(layer, sprites[0]!, 400, 200);
+  const scr = decodeScr(archive.list.find(r => r.type === '.SCR')!.payload);
+  const sprites = decodeBmp(archive.list.find(r => r.type === '.BMP')!.payload).sprites;
+  const surface = makeSurface();
+  surface.pixels.set(rawIndices(scr.indexed).subarray(0, surface.pixels.length));
+  const draw = makeDrawState();
+  draw.foreground = 5;
+  draw.background = 12;
+  drawLine(surface, draw, 10, 10, 600, 200);
+  drawRect(surface, draw, 50, 50, 100, 80);
+  drawCircle(surface, draw, 40, 240, 140);
+  const image = spriteSurface(sprites[0]!);
+  drawSprite(surface, draw, image, 300, 200);
+  drawSprite(surface, draw, image, 400, 200, MIRROR);
   const img = ctx.createImageData(SCREEN_W, SCREEN_H);
-  composite(img, { background: bg, ttmThreads: [layer], holiday: null, palette: pal, fade: null });
+  presentSurface(img.data, surface, pal);
   ctx.putImageData(img, 0, 0);
 });

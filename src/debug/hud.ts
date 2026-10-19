@@ -24,7 +24,7 @@ export function initHud(): void {
   });
 }
 
-export function hudUpdate(threadCount: number, scene: string): void {
+export function hudUpdate(scene: string): void {
   frameCount++;
   if (!el || !enabled) return;
   const now = performance.now();
@@ -33,5 +33,5 @@ export function hudUpdate(threadCount: number, scene: string): void {
     frameCount = 0;
     fpsTimer = now;
   }
-  el.textContent = `FPS ${fps}  threads ${threadCount}\n${scene}`;
+  el.textContent = `FPS ${fps}\n${scene}`;
 }

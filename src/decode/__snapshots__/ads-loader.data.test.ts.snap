@@ -1,0 +1,39 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`every ADS resource > keeps its opcode counts 1`] = `
+{
+  "0x1070": 1,
+  "0x1330": 55,
+  "0x1350": 500,
+  "0x1360": 76,
+  "0x1370": 30,
+  "0x1420": 47,
+  "0x1430": 30,
+  "0x1510": 584,
+  "0x1520": 1,
+  "0x2005": 867,
+  "0x2010": 111,
+  "0x3010": 77,
+  "0x3020": 17,
+  "0x30ff": 77,
+  "0x4000": 4,
+  "0xf010": 67,
+  "0xf200": 12,
+  "0xffff": 66,
+}
+`;
+
+exports[`every ADS resource > keeps its sections and resources 1`] = `
+{
+  "ACTIVITY.ADS": "4de2ee67ef320d38498b48aae790e486f948b6f62277b13d9a7afcf6cb32a17e",
+  "BUILDING.ADS": "136de02cab7665cb36696d12ac69241406aa301af18afc015b492511a23216cc",
+  "FISHING.ADS": "de5c1d739ee62e4e8d1fa8067e0a80b4d4d1ec0bf52c169f16b011fb6af05c4e",
+  "JOHNNY.ADS": "0a9a2bd692f23da8431c7e43885f00a1d54eeee06454bcedd89f589471cce536",
+  "MARY.ADS": "61107300ee1d704b63bd25fe70c5a85df040ce50b82c776d404bf178127b21b8",
+  "MISCGAG.ADS": "d7eac3c801374cb98012ae26ed8cbb9188d70123a2de5ac679c22cf64f5342cc",
+  "STAND.ADS": "b8543c48e5aeb4835b70ae7a3ab73290ef1b2f3a4213d937cf6c139a8e365a4b",
+  "SUZY.ADS": "16f06307de2e18dcdf14b3952843548c6eda040ed44944183d7b68d6fa217054",
+  "VISITOR.ADS": "bc5e30586871bb68b676241bd3842d1f4c6ff7a977d7307a943a6d8d0c671869",
+  "WALKSTUF.ADS": "9b37a3f7543823b8224313d20144a7e8b53bf9577616ea9f3a02b1646975433d",
+}
+`;
