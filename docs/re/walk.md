@@ -30,8 +30,8 @@ All in one block of the data segment, `1068:02e1`..`165f`. Every check below was
 - `1068:0355`: `JOHNWALK.BMP` and a 0 byte, the name `1018:0000` loads.
 - `1068:0362`..`0aa1`: 30 route lists, one per (from, to) pair with from ≠ to, in from-major order (1, 2), (1, 3), ..., (6, 5), back to back. Each list has, for spot 1..6 in order, the marker word `-spot` and then (segment, percent) word pairs; the list ends with the word `-7`.
 - `1068:0362`: in every route the group of the target spot is the single pair (0, 0). In routes (5, 6) and (6, 5) the group of spot 2 is also (0, 0): no walk of those routes passes spot 2.
-- `1068:0362`: every other group's percents add up to exactly 100.
-- `1068:042c`: route (1, 5), group of spot 1: `(4, 16) (4, 17) (3, 34) (2, 33) (1, 25) (1, 25)`. The first four already add up to 100, so segment 1 (the direct walk from spot 1 to spot 5) is never picked. No other choice is unreachable.
+- `1068:0362`: every other group's percents add up to exactly 100, except one that adds up to 150 (below).
+- `1068:042c`: route (1, 5), group of spot 1: `(4, 16) (4, 17) (3, 34) (2, 33) (1, 25) (1, 25)`, 150 in all. The first four already add up to 100, so segment 1 (the direct walk from spot 1 to spot 5) is never picked. No other choice is unreachable.
 - `1068:0aa2`..`0ae9`: the route table, 6 × 6 words; the word for (from, to) is at `0x0a94 + 12 × from + 2 × to`. It holds the near address of the route list, 0 when from = to.
 - `1068:0aea`..`165f`: 34 frame lists in segment order, back to back (the first at `0aea`, the last ending at `1660`). Records of three words: sprite index (bit `0x8000` = mirrored), x, y. x and y are relative to the island offset `1068:30c4` / `30c2` (`docs/re/island.md`). Each list ends with a (0, 0, 0) record.
 - `1068:0aea`: each turn set has 8 records; record `h` faces heading `h`. The walking segments have 5 to 32 records.

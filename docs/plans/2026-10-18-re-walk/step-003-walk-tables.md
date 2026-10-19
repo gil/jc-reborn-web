@@ -44,7 +44,7 @@ export const ROUTES: readonly (readonly (Route | null)[])[]; // ROUTES[from - 1]
 
 Where `docs/re/walk.md` (step 1) says the layout differs from this, follow `walk.md` and say so in the commit message.
 
-- [ ] **Action 1: Write the generator**
+- [x] **Action 1: Write the generator**
 
 Create `scripts/re/walk-data.mjs`:
 
@@ -160,7 +160,7 @@ writeFileSync(new URL('../../src/walk/walk-tables.ts', import.meta.url), out.joi
 
 The header comment stays: a reader would otherwise edit the generated file by hand.
 
-- [ ] **Action 2: Generate the tables**
+- [x] **Action 2: Generate the tables**
 
 Run: `node scripts/re/walk-data.mjs`
 Expected: exits 0 and writes `src/walk/walk-tables.ts`.
@@ -170,7 +170,7 @@ Expected: no errors.
 
 Open `src/walk/walk-tables.ts` and check by eye: `SEGMENTS[1]` is `{ startHeading: 5, endHeading: 5, spot: 5, ... }` with 16 frames, the first `[0x8013, 306, 238]`; `STANDING_TURNS` is `[0, 6, 10, 17, 22, 28, 34]`; `ROUTES[0][0]` is `null`.
 
-- [ ] **Action 3: Write the byte-for-byte data test**
+- [x] **Action 3: Write the byte-for-byte data test**
 
 Create `src/walk/walk-tables.data.test.ts`:
 
@@ -258,7 +258,7 @@ The route lists end exactly where the first used table word (1, 1) lies (`0x0a94
 Run: `pnpm test src/walk/walk-tables.data.test.ts`
 Expected: 2 passed (both describe blocks run when `public/data/` and the fixture exist).
 
-- [ ] **Action 4: Write the table rule tests**
+- [x] **Action 4: Write the table rule tests**
 
 Create `src/walk/walk-tables.test.ts`:
 
@@ -321,7 +321,7 @@ describe('walk tables', () => {
 Run: `pnpm test src/walk/walk-tables.test.ts`
 Expected: 5 passed. A failure is a data fact: if `docs/re/walk.md` already says so (step 1, Action 6), the test is wrong: fix the test to state what `walk.md` says. If `walk.md` does not say so, add the fact to `walk.md` (`Tables`) and fix the test the same way. In both cases say so in the commit message.
 
-- [ ] **Action 5: Run everything and commit**
+- [x] **Action 5: Run everything and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -336,7 +336,7 @@ git commit -m "feat(walk): generate the original walk tables and pin them byte f
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
