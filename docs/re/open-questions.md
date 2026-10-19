@@ -77,7 +77,7 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 | `85c05ad` | copyZoneToBg skips transparent pixels (colorkey) | 4 (reviewed, see docs/re/graphics.md) |
 | `d670686` | SET_DELAY missing timer | 5 (reviewed, see docs/re/ttm.md) |
 | `5f4e3a0` | DRAW_RECT/DRAW_CIRCLE no longer add ctx.dx/dy to args 3&4 (width/height) | 5 (reviewed, see docs/re/ttm.md) |
-| `0e7cd64` | getUint16/getInt16 mistake | 3 |
+| `0e7cd64` | getUint16/getInt16 mistake | 3 (reviewed, see docs/re/decoders.md) |
 | `eb46290` | force-stop orphan TTM threads after ADS END | 6 (reviewed, see docs/re/ads.md) |
 | `6b0be68` | audio playback | out of scope |
 | `b631319` | animation sprites sometimes get cut | 4 (reviewed, see docs/re/graphics.md) |
@@ -105,10 +105,10 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 | `27684eb` | problem with threads rendering on top of each other | 6 (reviewed, see docs/re/ads.md) |
 | `c126833` | problem where nothing would start after certain scenes | 6 (reviewed, see docs/re/ads.md) |
 | `d808ee0` | correct file | out of scope |
-| `43ef25b` | better color and transparency handling | 3, 4 (4 reviewed, see docs/re/graphics.md) |
+| `43ef25b` | better color and transparency handling | 3, 4 (reviewed, see docs/re/graphics.md and docs/re/decoders.md) |
 | `e6287e1` | correct original repo | out of scope |
 | `db6d598` | flickering animation sprites | 6 (reviewed, see docs/re/ads.md) |
-| `d0bc6b6` | transparency | 3 |
+| `d0bc6b6` | transparency | 3 (reviewed, see docs/re/decoders.md) |
 
 ## Not reviewed on purpose
 

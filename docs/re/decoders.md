@@ -274,6 +274,14 @@ Ours (`adsArgCount`, `src/decode/ads-bytecode.ts:12`) and the original agree on 
 - `1028:1afc`, `1028:1b0d`: return 1. No reference.
 - `1058`: the TTM interpreter `1058:040c` keeps the current opcode at `1068:46da` and dispatches through jump tables in its code segment, as does `1058:0144`. Ghidra does not follow those tables, so the callers at `1058:0054`..`1058:00e5`, `1058:02ce`, `1058:02ec`, `1058:079a`..`1058:0aa4`, and `1058:1725` sit outside any function. Which opcode reaches which stub is chunk 5's job.
 
+## Past fixes reviewed
+
+Reviewed after chunk 8; the chunk 3 rows of the "Past fixes to re-check" table in `docs/re/open-questions.md`.
+
+- `0e7cd64` (getUint16/getInt16 mistake): made `src/decode/ttm-disasm.ts` print TTM arguments as signed words. Original: `1058:040c` reads the arguments as plain words and each opcode reads them its own way (`docs/re/ttm.md`); our runner frames them the same way with `readTtmInstruction` (`src/decode/ttm-bytecode.ts`). Verdict: only the debug page's disassembler uses that file, which is out of scope; the engine never reads arguments through it.
+- `d0bc6b6` (transparency): made the bitmap decoder turn index 0 into `TRANSPARENT`. Original: bitmaps get a mask with a bit for every pixel that is not 0 and color 0 forced to black (`1040:035c`, `1040:0000`, `Pixels`), so index 0 is see-through in a bitmap. Verdict: matches; the rule now lives in `src/decode/nibbles.ts` (`unpackNibbles`).
+- `43ef25b` (better color and transparency handling), decoder part: the screen decoder's index 0 and the palette levels. Reviewed in `docs/re/graphics.md`, `Past fixes reviewed`: the levels are fixed (`Palette`), and screens draw index 0 opaque through the graphics model (OQ-9, resolved).
+
 ## Side-by-side checklist
 
 | Original | Name | Ours | Status |
