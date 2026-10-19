@@ -90,6 +90,7 @@ All in one block of the data segment, `1068:02e1`..`165f`. Every check below was
 - `1008:16c2`: counts `30d4` down by 1 per clock tick (16 ms) while it is not 0.
 - `1018:0094`: sets `30d4 = 4` after every draw, also on calls where the delay had not run out. So the delay only reaches 0 when at least 4 clock ticks pass between two walk calls; the walk does not advance one frame per 4 ticks.
 - With one story step per 50 ms and an even 16 ms clock (ours, OQ-36), a step sees 3 ticks seven times out of eight and 4 ticks once, so Johnny takes one walk or turn step about every 400 ms. On Windows 3.x, with the clock ticks in bursts of 3 or 4 per 55 ms (OQ-36), about 7 steps in 16 saw 4 ticks: a walk step about every 125 ms (an estimate from OQ-36, not measured). How fast Johnny walks depends on that tick pattern.
+- Browser check (2026-10-19): with even ticks Johnny walks visibly slower than the scenes animate, as the rule above predicts (OQ-36). Turns, segments, the palm trunk, and the dirty rects looked right: no jumps, no blinking, no trails.
 - There is no rest on arrival: the story asks `1018:0b46` on the next step, and an entry starts as soon as Johnny is on its spot and heading.
 
 ## Story interface

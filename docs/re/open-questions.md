@@ -202,7 +202,8 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **Original:** `1040:089a` compares slot times with `GetCurrentTime`, which on Windows 3.x moves in 55 ms jumps, so the 16 ms callback fired three or four times in a burst; `WM_TIMER` came at the same 55 ms granularity. The average rates match ours.
 - **Where it shows:** the walk delay (`1068:30d4`) is set to 4 after every walk call, so Johnny only moves on a step that saw 4 ticks: one step in 8 with even ticks (about every 400 ms), about 7 in 16 with 55 ms bursts (about every 125 ms) (`docs/re/walk.md`, `Timing`).
 - **Why not reviewed:** the bursts depend on the PC's timer chip, not on `SCRANTIC.SCR`.
-- **Status:** open, by choice
+- **Browser check (2026-10-19):** Johnny walks visibly slower than the scenes animate. The user chose to model the Windows 3.x tick bursts in `src/engine/clock.ts` after chunk 8, so the walk runs at about its original speed with `1018:0094` unchanged.
+- **Status:** open, to do after chunk 8 (user, 2026-10-19)
 
 ### OQ-37: Walk guards where the original reads through a bad pointer
 

@@ -167,7 +167,7 @@ Rows touched but already verified in chunk 7: `1008:16c2` (the walk delay), `101
 - [x] `step-001-walk-findings.md`: the walk functions named, the export rebuilt, the tables checked, and `docs/re/walk.md` written.
 - [x] `step-002-original-walk-trace.md`: Unicorn runs the original walk step and writes `re/fixtures/walk/` (the table block and the traces).
 - [x] `step-003-walk-tables.md`: `src/walk/walk-tables.ts` generated from the dump and pinned byte for byte.
-- [ ] `step-004-walk-port.md`: `src/walk/walk.ts` rewritten as a port, wired into the story and the startup, equal to the original trace; the jc_reborn walk deleted; OQ-25 resolved; browser check.
+- [x] `step-004-walk-port.md`: `src/walk/walk.ts` rewritten as a port, wired into the story and the startup, equal to the original trace; the jc_reborn walk deleted; OQ-25 resolved; browser check.
 - [ ] `step-005-chunk-wrap-up.md`: every in-scope function `verified`, past fixes reviewed, comment audit, full rebuild and test run, spec checkbox ticked.
 
 Order: run the steps one at a time, in number order. Step 2 needs step 1's findings (what to trace). Step 3 needs step 2's `walk-data.bin`. Step 4 needs steps 2 (`traces.tsv`) and 3 (`walk-tables.ts`). Step 5 needs all of them.

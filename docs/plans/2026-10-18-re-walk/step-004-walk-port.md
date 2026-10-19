@@ -58,7 +58,7 @@ Johnny's spot and heading stay in `world.sequence.spot` / `heading` (`1068:30e2`
 
 ## Part A: The clock counts the walk delay down
 
-- [ ] **Action 1: Write the failing test**
+- [x] **Action 1: Write the failing test**
 
 In `src/engine/timers.test.ts`, replace the first test:
 
@@ -74,7 +74,7 @@ In `src/engine/timers.test.ts`, replace the first test:
 Run: `pnpm test src/engine/timers.test.ts`
 Expected: FAIL (`walk` stays 4).
 
-- [ ] **Action 2: Add the timer**
+- [x] **Action 2: Add the timer**
 
 `src/engine/timers.ts`:
 
@@ -105,7 +105,7 @@ Expected: PASS.
 
 ## Part B: The walk
 
-- [ ] **Action 3: Write the failing unit tests**
+- [x] **Action 3: Write the failing unit tests**
 
 Replace `src/walk/walk.test.ts`:
 
@@ -338,7 +338,7 @@ describe('walk loading', () => {
 Run: `pnpm test src/walk/walk.test.ts`
 Expected: FAIL (the old `walk.ts` has none of these exports).
 
-- [ ] **Action 4: Write the walk**
+- [x] **Action 4: Write the walk**
 
 Replace `src/walk/walk.ts`:
 
@@ -516,7 +516,7 @@ Expected: PASS (14 tests). `tsc` still fails in `src/story/story.ts`; Part C fix
 
 ## Part C: The story drives the walk
 
-- [ ] **Action 5: Point the story tests at the new walk**
+- [x] **Action 5: Point the story tests at the new walk**
 
 In `src/story/story.test.ts`, replace the first test (`stores the walk target ...`) and add the imports it needs (`makeTimers` from `../engine/timers.js`, `makeIsland` from `../island/island.js`, `RecordingIslandDevice` from `../testing/island-recorder.js`, `makeWalk` from `../walk/walk.js`, `type ParsedArchive` from `../resource/types.js`):
 
@@ -539,7 +539,7 @@ In `src/story/story.test.ts`, replace the first test (`stores the walk target ..
 
 In `src/story/story.data.test.ts`, `makeGame()`: after `drawIsland(island);` add `const walk = makeWalk(island);` and `loadWalk(walk);`, put `walk` into the returned object after `island`, and import `loadWalk`, `makeWalk` from `../walk/walk.js`. In `step()`, call `storyStep(story, game);`.
 
-- [ ] **Action 6: Wire the walk into the story**
+- [x] **Action 6: Wire the walk into the story**
 
 In `src/story/story.ts`:
 
@@ -599,7 +599,7 @@ function idleStep(state: StoryState, game: GameState, entry: SceneEntry): void {
 
 `1018:06bf` resets nothing of the walk when a sequence starts or an ADS entry ends (`docs/re/walk.md`, `Story interface`); do not add a reset.
 
-- [ ] **Action 7: Load the walk at startup**
+- [x] **Action 7: Load the walk at startup**
 
 In `src/main.ts`:
 
@@ -625,7 +625,7 @@ and delete `let ticksSinceStep = 0;`.
 
 `1008:143c` calls `1010:0136` (the first call only loads the island sheets) and then `1018:0000`; keep that order.
 
-- [ ] **Action 8: Run the build and the tests**
+- [x] **Action 8: Run the build and the tests**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors. Fix any leftover reference to `state.target`, `state.walk`, `WalkContext`, `calcPath`, or `storyStep(..., elapsed)`: `rg -n "state\.target|state\.walk|WalkContext|calcPath|walkData|ticksSinceStep" src`.
@@ -633,7 +633,7 @@ Expected: no errors. Fix any leftover reference to `state.target`, `state.walk`,
 Run: `pnpm test src/walk src/story src/engine`
 Expected: all pass. `src/story/story.data.test.ts` plays every scene table entry to its end with the new walk; if an entry no longer ends, compare its walk with `docs/re/walk.md` before changing anything.
 
-- [ ] **Action 9: Commit**
+- [x] **Action 9: Commit**
 
 ```bash
 git add src/walk src/engine/timers.ts src/engine/timers.test.ts src/story/story.ts src/story/story.test.ts src/story/story.data.test.ts src/main.ts
@@ -642,7 +642,7 @@ git commit -m "feat(walk): port the original walk step and route tables; delete 
 
 ## Part D: Equal to the original
 
-- [ ] **Action 10: Write the walk recorder**
+- [x] **Action 10: Write the walk recorder**
 
 Create `src/testing/walk-recorder.ts`:
 
@@ -751,7 +751,7 @@ export function traceWalkCase(archive: ParsedArchive, k: number): string[] {
 
 `device.restart()` before the second `drawIsland` matches the Python harness resetting `overlap_calls` to 0 there.
 
-- [ ] **Action 11: Write the data tests**
+- [x] **Action 11: Write the data tests**
 
 Replace `src/walk/walk.data.test.ts`:
 
@@ -814,7 +814,7 @@ describe.skipIf(!hasCorpus)('walk on the display', () => {
 Run: `pnpm test src/walk/walk.data.test.ts`
 Expected: 2 passed. If the trace test fails, read the first wrong row of each case: find the rule in `docs/re/walk.md` (or in `re/out/functions/1018_0094_walk_step.asm`) that the port gets wrong and fix the port, not the trace. Fix one rule at a time and rerun.
 
-- [ ] **Action 12: Run everything and commit**
+- [x] **Action 12: Run everything and commit**
 
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
@@ -829,7 +829,7 @@ git commit -m "test(walk): the walk port matches the original walk trace"
 
 ## Part E: Docs and the browser
 
-- [ ] **Action 13: Update the checklists**
+- [x] **Action 13: Update the checklists**
 
 Run: `rg -n "^export function|^function" src/walk/walk.ts src/story/story.ts src/engine/timers.ts`
 
@@ -848,7 +848,7 @@ with the real line numbers. Keep the `Name` column.
 
 In `docs/re/story.md`, `Side-by-side checklist`: the `1008:16c2` row drops "`30d4` is chunk 8's" and says the walk delay is `Timers.walk`; the `1018:06bf` and `1018:0b46` rows get their new `file:line` (`storyStep`, `isAtSpot`), `1018:0b46` noting that the target lives in `Walk`.
 
-- [ ] **Action 14: Resolve OQ-25 and log OQ-37**
+- [x] **Action 14: Resolve OQ-25 and log OQ-37**
 
 In `docs/re/open-questions.md`, move `### OQ-25: Walk drawing bridge` from `Workarounds without a known root cause` to `Resolved` (after the last resolved entry), replace its `Resolve in` line with:
 
@@ -869,14 +869,14 @@ Add to `Not reviewed on purpose`, after OQ-36:
 - **Status:** open, by choice
 ```
 
-- [ ] **Action 15: Commit**
+- [x] **Action 15: Commit**
 
 ```bash
 git add docs/re/walk.md docs/re/story.md docs/re/open-questions.md
 git commit -m "docs(re): walk ported; OQ-25 resolved, OQ-37 logged"
 ```
 
-- [ ] **Action 16: Browser check**
+- [x] **Action 16: Browser check**
 
 Run in the background: `pnpm dev --port 5173 --strictPort`
 
@@ -904,7 +904,7 @@ git commit -m "docs(re): walk browser check"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
