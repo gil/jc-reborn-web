@@ -29,7 +29,7 @@ This step writes no TypeScript. Where `walk.md` and the overview's first reading
 
 ## Part A: Names and export
 
-- [ ] **Action 1: Add the names**
+- [x] **Action 1: Add the names**
 
 Insert these entries into `scripts/re/names.json` under `"functions"`, each at its address-sorted position (all between `1018:0000` and `1018:0540`). Each has `"subsystem": "walk"`, `"status": "named"`, `"signature": null`, `"callingConvention": null`. Same shape as the existing `1018:0000` entry:
 
@@ -54,12 +54,12 @@ Insert these entries into `scripts/re/names.json` under `"functions"`, each at i
 
 Keep `1018:0000` (`walk_loadJohnWalkBmp`); rewrite its note after Part B if it is wrong.
 
-- [ ] **Action 2: Regenerate the function map**
+- [x] **Action 2: Regenerate the function map**
 
 Run: `node scripts/re/function-map.mjs`
 Expected: exits 0 and rewrites `docs/re/function-map.md`. An "unsorted" error means an entry is out of address order; move it.
 
-- [ ] **Action 3: Rebuild the export**
+- [x] **Action 3: Rebuild the export**
 
 Run: `scripts/re/ghidra-import.sh`
 Expected: ends with `export written to .../re/out`.
@@ -67,7 +67,7 @@ Expected: ends with `export written to .../re/out`.
 Run: `ls re/out/functions/1018_0094_walk_step.c re/out/functions/1018_03ea_walk_segmentFrames.asm`
 Expected: both exist.
 
-- [ ] **Action 4: Commit**
+- [x] **Action 4: Commit**
 
 ```bash
 git add scripts/re/names.json docs/re/function-map.md
@@ -78,7 +78,7 @@ git commit -m "docs(re): name the walk functions"
 
 Read the `.c` and `.asm` of the six functions, and the parts of `1018:06bf_story_step.asm`, `1008:143c`, `1008:157b`, `1008:16c2`, `1018:0b46`, `1018:0540` that touch the walk globals. For each bullet of the overview's `Binary facts`, decide: confirmed, or corrected. Keep a list of corrections; they go in the commit message and into `walk.md`.
 
-- [ ] **Action 5: Confirm the details most likely to be wrong**
+- [x] **Action 5: Confirm the details most likely to be wrong**
 
 Check each in the assembly of `1018:0094` (or the named function) and note the answer:
 
@@ -97,7 +97,7 @@ Check each in the assembly of `1018:0094` (or the named function) and note the a
 9. Every caller of the six functions: `rg -n "1018:00(00|4d|74|94)|1018:03(ac|ea)" re/out/functions --glob '*.asm'` (near calls show as `CALL 0x1018:....`). Expected: `1008:143c` → `0000`; `1008:157b` → `004d`; `1018:06bf` → `0094` (twice) and `0074`; `1018:0094` → `03ac`, `03ea`.
 10. That `1018:0540` and `1018:06bf` write `30e2`/`30de` but never `30d0`, `30ce`, `30c6`, `30c8`: a new sequence or an ended ADS entry moves Johnny without resetting the walk.
 
-- [ ] **Action 6: Check the tables against the data**
+- [x] **Action 6: Check the tables against the data**
 
 Write `re/scratch/walk/check.py` (gitignored scratch):
 
@@ -170,7 +170,7 @@ Expected: no assertion error; "frame lists end at 0x1660"; every target group is
 
 ## Part C: Write the findings
 
-- [ ] **Action 7: Write `docs/re/walk.md`**
+- [x] **Action 7: Write `docs/re/walk.md`**
 
 Create the file with this header, then the sections below in this order. One claim per bullet, each starting with its address, in our own words. Follow `docs/re/island.md` for tone and density.
 
@@ -210,11 +210,11 @@ Sections (the overview's `Binary facts` has the first reading of each):
 
 Every `open` row is covered by OQ-25 (it names `src/walk/walk.ts` and the bridge); step 4 replaces the rows. Leave `Emulated` and `Past fixes reviewed` out; steps 2 and 5 add them.
 
-- [ ] **Action 8: Update the segment overview**
+- [x] **Action 8: Update the segment overview**
 
 In `docs/re/segments.md`: in the `1018` row, name `1018:0000`..`1018:03ea` as the walk. Under "Tables found", add one line each for `1068:02de` (walk segments), `1068:0347` / `034e` (turn sets), `1068:0362`..`0aa1` (route lists), `1068:0a94` (route table, used from `0aa2`), `1068:0aea`..`165f` (walk frames), `1068:30c6`..`30d4` (walk state).
 
-- [ ] **Action 9: Commit**
+- [x] **Action 9: Commit**
 
 ```bash
 git add docs/re/walk.md docs/re/segments.md scripts/re/names.json docs/re/function-map.md
@@ -225,7 +225,7 @@ If Action 5 or 6 corrected a fact of the overview, list each correction in the c
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

@@ -164,7 +164,7 @@ Rows touched but already verified in chunk 7: `1008:16c2` (the walk delay), `101
 
 ## Steps
 
-- [ ] `step-001-walk-findings.md`: the walk functions named, the export rebuilt, the tables checked, and `docs/re/walk.md` written.
+- [x] `step-001-walk-findings.md`: the walk functions named, the export rebuilt, the tables checked, and `docs/re/walk.md` written.
 - [ ] `step-002-original-walk-trace.md`: Unicorn runs the original walk step and writes `re/fixtures/walk/` (the table block and the traces).
 - [ ] `step-003-walk-tables.md`: `src/walk/walk-tables.ts` generated from the dump and pinned byte for byte.
 - [ ] `step-004-walk-port.md`: `src/walk/walk.ts` rewritten as a port, wired into the story and the startup, equal to the original trace; the jc_reborn walk deleted; OQ-25 resolved; browser check.
