@@ -2,7 +2,7 @@
 
 How the original picks and plays scenes: the timer-driven step, the clock, sequences built from the scene table, day counters, holidays, time slots, settings, and the random generator. Trust order and conventions: `docs/re/README.md`.
 
-Findings for chunk 7. One claim per address. Our own words; no decompiled code. The island drawing is in `docs/re/island.md`; walking is chunk 8.
+Findings for chunk 7. One claim per address. Our own words; no decompiled code. The island drawing is in `docs/re/island.md`; walking is in `docs/re/walk.md`.
 
 ## Startup and shutdown
 
@@ -28,7 +28,7 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 - `1040:089a`: then the base time moves on by the base tick until it is `>=` now, counting `1068:45e0` down once per step when it is not 0. Nothing else reads or writes `45e0`.
 - `1040:079e`: when the base tick is set: empties the five slots, clears `45de` and `45e2`, returns 1. Only `1030:017f` (shutdown) calls it.
 - `1040:085a(n)`: empties slot `n - 1` for `n` in 1..4. Unreferenced.
-- `1008:16c2` (the clock, no direct caller, registered by `1008:143c`): adds 1 to the 32-bit clock `1068:2e70` (low) / `2e72` (high), then counts down by 1 each of these words when it is not 0: `1068:30d4` (walk frame delay, set to 4 by `1018:0094`; chunk 8), `334c` (idle-entry wait, `1018:06bf`), `0288` (surf timer, `1010:0e74`), `028a` (ocean-wave timer, `1010:04a2`), `3f2c`. No other instruction names `3f2c`, so it is dead.
+- `1008:16c2` (the clock, no direct caller, registered by `1008:143c`): adds 1 to the 32-bit clock `1068:2e70` (low) / `2e72` (high), then counts down by 1 each of these words when it is not 0: `1068:30d4` (the walk frame delay, set to 4 by `1018:0094` after every draw, `docs/re/walk.md`, `Timing`; ours is `Timers.walk`), `334c` (idle-entry wait, `1018:06bf`), `0288` (surf timer, `1010:0e74`), `028a` (ocean-wave timer, `1010:04a2`), `3f2c`. No other instruction names `3f2c`, so it is dead.
 - `1008:16c2`: the clock rate is 62.5 Hz (one tick per 16 ms), as long as `GetCurrentTime` moves smoothly. Every delay the ADS and TTM side keeps is in these ticks.
 - `1008:15c8`: runs the story step `1018:06bf`, then reads `GetCurrentTime`. The first time it stores it in `1068:2e18`; later calls set `1068:30bc = (1068:2e14 × 100000 / (now - 2e18)) / 10` (32-bit; `2e18` is moved back by 1 when it equals now, so the division never sees 0), and never move `2e18` again.
 - `1008:15c8`: no instruction writes `1068:2e14` (a byte scan of every code segment finds only this read), and the data segment holds 0 there, so `30bc` is always 0. `1010:04a2` reads `30bc` (`docs/re/island.md`).
@@ -112,8 +112,8 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 - `1018:06bf`: the entry's pending bit is set again when it ends, so an entry queued twice in a row (a repeat) starts fresh each time, and the whole queue is pending again for the next sequence that queues the same entries.
 - `1018:06bf`, last: `1010:1e50(0)` (holiday sprite); when `1068:30ea` is this step's entry, sound 25 (`1020:00ba(0x19)`) and `30ea = 0`, so the day scene plays sound 25 on its first step, or the first step on which Johnny is still walking to it; then `1060:03d3(0)` (the dirty-rect restore pass).
 - `1018:0b46(spot, heading)`: stores the walk target: `1068:30e0 = spot` unless 0, `1068:30dc = heading` unless -1. Returns 1 when (spot is 0 or equals Johnny's spot `30e2`) and (heading is -1 or equals Johnny's heading `30de`). The story passes the start heading, which is never -1, so heading 0 must match too.
-- `1018:0074` (chunk 8): clears the walk path state `1068:30d0`/`30ce` and sets the wanted heading `30c8` to Johnny's heading.
-- `1018:0094` (chunk 8): when the frame delay `30d4` is 0, takes one walk or turn step toward `30e0`/`30dc` (with random path choices); every call draws the current Johnny frame, redraws the island in front of it (`1010:1551`), adds its dirty rects, and sets `30d4 = 4` (a new frame at most every 4 clock ticks).
+- `1018:0074`: clears the walk route `1068:30d0` and segment `30ce` and sets the wanted heading `30c8` to Johnny's heading (`docs/re/walk.md`).
+- `1018:0094`: when the frame delay `30d4` is 0, takes one walk or turn step toward `30e0`/`30dc` (with random route choices); every call with a frame draws it, redraws the palm trunk over it (`1010:1551`), adds its dirty rects, and sets `30d4 = 4`, so a new frame needs 4 clock ticks between two calls (`docs/re/walk.md`).
 
 ## ADS by id
 

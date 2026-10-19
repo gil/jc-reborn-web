@@ -122,6 +122,13 @@ All in one block of the data segment, `1068:02e1`..`165f`. Every check below was
 - Observed: 202 legs ended, the longest after 648 beats (case 5, leg 4). Johnny's frame changed 6138 times: 830 turn frames and 5308 segment frames.
 - Observed: cases 4, 11, 18, 19, 25, 26 end in a `bad` row, all the same way. The leg before the idle stretch had target spot 0, which `1018:0b46` does not store, so it ended at once with Johnny away from the stored target. The idle stretch then picked a route toward that older target, the next leg set a new target, and Johnny walked the old route on to its end spot, whose (0, 0) group he then read past. In the game the same happens when an idle entry ends before Johnny is back on the last ADS entry's start spot. The other 30 cases never pick outside a group.
 
+## Past fixes reviewed
+
+No row of the "Past fixes to re-check" table in `docs/re/open-questions.md` belongs to chunk 8.
+
+- `052884d` (walking + pathfinding): ported jc_reborn's walk: a depth-first path search over a spot connection matrix with a path picked by `Math.random`, frame "bookmarks", a 6-tick frame delay, an 80-tick rest on arrival, and the palm leaves drawn over Johnny. Original: no search; a route table of per-spot segment choices by percent with the story's random generator (`1018:03ac`, `1018:0094`), a 4-tick delay set again after every draw, no rest, and only the palm trunk redrawn over him (`1010:1551` mode 0). Verdict: replaced by `src/walk/walk.ts`.
+- `27692e6`, `850e1f3`, `1717846` (chunks 5 to 7): moved the old walk onto the display model, the ADS tick, and the story bridge (OQ-25). Verdict: the bridge is gone with the old walk; OQ-25 is resolved.
+
 ## Side-by-side checklist
 
 | Original | Name | Ours | Status |

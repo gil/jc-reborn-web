@@ -75,7 +75,7 @@ Which NE segment holds which subsystem, based on the functions named so far. Upd
 - `1068:00b6`..`1068:00be`: the settings Background, Clouds, Waves, Sounds, StartTime (1, 1, 1, 1, 900). Read and written by `platform_loadSettings` / `platform_saveSettings`.
 - `1068:2d94`..`1068:2d9b`: the day counters: stored day, month, year (words), Introduction and NumDays (bytes). Moved by `story_advanceDays` (`1018:0b87`) and `story_pickScene`.
 - `1068:45ac`: 5 timer callback slots of 10 bytes (far callback, period, 32-bit next time); base tick `1068:45de`, base time `1068:45a8`. Filled by `platform_addTimerCallback` (`1040:07e6`).
-- `1068:30e2` / `1068:30de` / `1068:30e0` / `1068:30dc`: Johnny's spot and heading, and the walk target spot and heading. Set by `story_step` and `story_isAtSpot` (`1018:0b46`).
+- `1068:30e2` / `1068:30de` / `1068:30e0` / `1068:30dc`: Johnny's spot and heading, and the walk target spot and heading. Set by `story_step`, `story_newSequence`, `story_isAtSpot` (`1018:0b46`), `walk_loadJohnWalkBmp`, and `walk_step`; see `walk.md`, `Globals`.
 - `1068:02de`: walk segments, 3 signed bytes each (start heading, end heading, end spot) for segments 0..34. Read by `walk_step` (`1018:0094`). See `walk.md`, `Tables`.
 - `1068:0347` / `1068:034e`: the standing and walking turn set (a segment id) of each spot 0..6. Read by `walk_step`.
 - `1068:0362`..`1068:0aa1`: the 30 walk route lists, one per (from, to) spot pair. Read by `walk_step`.

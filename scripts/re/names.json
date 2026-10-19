@@ -467,15 +467,15 @@
     "1018:0000": {
       "name": "walk_loadJohnWalkBmp",
       "subsystem": "walk",
-      "status": "named",
-      "note": "Loads JOHNWALK.BMP once and resets three walk-state globals",
+      "status": "verified",
+      "note": "Loads JOHNWALK.BMP once with mirrored copies; on that load puts Johnny and the walk target on spot 1, heading 0",
       "signature": null,
       "callingConvention": null
     },
     "1018:004d": {
       "name": "walk_freeJohnWalkBmp",
       "subsystem": "walk",
-      "status": "named",
+      "status": "verified",
       "note": "Frees the JOHNWALK.BMP bitmap list and clears its pointer",
       "signature": null,
       "callingConvention": null
@@ -483,7 +483,7 @@
     "1018:0074": {
       "name": "walk_resetPath",
       "subsystem": "walk",
-      "status": "named",
+      "status": "verified",
       "note": "Drops the route and segment being walked and wants Johnny's current heading",
       "signature": null,
       "callingConvention": null
@@ -491,7 +491,7 @@
     "1018:0094": {
       "name": "walk_step",
       "subsystem": "walk",
-      "status": "named",
+      "status": "verified",
       "note": "One walk call: when the frame delay ran out, picks a segment, turns, or moves one frame; then draws Johnny, redraws the palm trunk over him, and adds his dirty rects",
       "signature": null,
       "callingConvention": null
@@ -499,7 +499,7 @@
     "1018:03ac": {
       "name": "walk_routeOf",
       "subsystem": "walk",
-      "status": "named",
+      "status": "verified",
       "note": "Route list of a (from, to) spot pair from the table at 1068:0a94, or 0",
       "signature": null,
       "callingConvention": null
@@ -507,7 +507,7 @@
     "1018:03ea": {
       "name": "walk_segmentFrames",
       "subsystem": "walk",
-      "status": "named",
+      "status": "verified",
       "note": "Frame list address of walk segment 1..34, or 0",
       "signature": null,
       "callingConvention": null
