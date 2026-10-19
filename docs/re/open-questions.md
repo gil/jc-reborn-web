@@ -68,15 +68,6 @@ Behavior we haven't settled against the original, and workarounds kept without a
 - **Resolution:** the scheduler, island, walk, story, and main loop draw through src/gfx/gdi/ (buffers B and C, dirty rects, restore pass, window). The layer pipeline (src/gfx/layer.ts, primitives.ts, sprite.ts, clip.ts, zone.ts, compositor.ts, src/ttm/interpreter.ts, thread.ts, bmp-slots.ts) and its workarounds (lingeringLayers, clearSavedZones, the zone layer) are deleted. The connections that are not checked yet are OQ-22, OQ-24, OQ-25, OQ-26, and OQ-28.
 - **Status:** resolved (chunk 5)
 
-### OQ-25: Walk drawing bridge
-
-- **Where:** `src/walk/walk.ts` (`startWalk`, `walkTick`, `walkHold`, `walkDraw`), called by the story bridge in `src/story/story.ts` (`walkStep`, `holdJohnny`) once per story step
-- **What it does:** the current walk frame is drawn on B every tick with the TTM sprite rects (`(x, y, w, h + 2)` into `(B → A, 0)`, `(B → A, 1)`, `(C → B, 0)`), and the palm is drawn over Johnny when he is behind it. The last frame is drawn again on the tick the walk ends, so he stays on screen through the 80-tick arrival rest. Browser check (2026-10-18): without that, Johnny vanished for the rest (1.6 s) before the next scene; pinned in `src/walk/walk.data.test.ts`.
-- **Original:** walking is driven from `1048` (chunk 8); its draw calls and rects are not checked.
-- **Story bridge (chunk 7):** the story calls the walk through `src/story/story.ts` (`walkStep`, `holdJohnny`, `newWalk`), all made up: spots 1..6 become 0..5; a target spot or heading of "any" means the current one; with Johnny at spot 0 he is moved without walking; idle entries draw his standing frame each step (`walkHold`); the walk offset is the island offset plus one (`1018:0094` draws at the island offset plus the frame's x, and `walkDraw` subtracts one); the walk timers (6, 80) now count 16 ms clock ticks; the 80-tick arrival rest is jc_reborn's and has no counterpart in `1018:06bf`.
-- **Resolve in:** chunk 8 (walking)
-- **Status:** open
-
 ## Past fixes to re-check against the original
 
 Each fix below was made without the decompile. Treat it as a guess until a chunk confirms or replaces it. "Out of scope" rows touch docs, build paths, or sound playback, which have no counterpart in the original.
@@ -209,8 +200,16 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **Where:** `src/engine/clock.ts`
 - **What it does:** one clock tick per 16 ms of real time, one story step per 50 ms.
 - **Original:** `1040:089a` compares slot times with `GetCurrentTime`, which on Windows 3.x moves in 55 ms jumps, so the 16 ms callback fired three or four times in a burst; `WM_TIMER` came at the same 55 ms granularity. The average rates match ours.
+- **Where it shows:** the walk delay (`1068:30d4`) is set to 4 after every walk call, so Johnny only moves on a step that saw 4 ticks: one step in 8 with even ticks (about every 400 ms), about 7 in 16 with 55 ms bursts (about every 125 ms) (`docs/re/walk.md`, `Timing`).
 - **Why not reviewed:** the bursts depend on the PC's timer chip, not on `SCRANTIC.SCR`.
 - **Status:** open, by choice
+
+### OQ-37: Walk guards where the original reads through a bad pointer
+
+- **Where:** `src/walk/walk.ts` (`pickSegment`, `loseRoute`, `drawFrame`, `showTurn`)
+- **What it does:** a percent pick that runs past its group's last choice, or lands on the (0, 0) choice, picks no segment: the walk drops the route and segment (`Walk.lostRoutes` counts it) and routes again from Johnny's spot on its next frame. It draws nothing when there is no frame, no JOHNWALK sheet, or the sprite index is past the sheet's end, and a turn at a spot with no turn set leaves no frame.
+- **Original:** `1018:0094` reads on into the next group's words (markers as segments, segment ids as percents), and from there on reads segments, spots, and frames out of the wrong place: Johnny jumps, lands on a spot like 46, or stops being drawn (`docs/re/walk.md`, `Route choice`). This happens with the shipped data: a route left over from an older target (an idle entry that ends before Johnny is back on the last ADS entry's start, or a target of spot 0 that `1018:0b46` does not store) reaches its own end spot, whose group is (0, 0). 6 of the 36 traced cases get there; `re/fixtures/walk/traces.tsv` ends them with a `bad` row, and `src/walk/walk.data.test.ts` checks the port drops the route at that same beat. The other guards never fire: `1018:0094` never runs with Johnny at spot 0 unless a bad pick put him there, every frame's sprite exists (`src/walk/walk-tables.data.test.ts`), and `1008:143c` stops when JOHNWALK.BMP does not load.
+- **Status:** open, by choice (user, 2026-10-19)
 
 ## Resolved
 
@@ -370,3 +369,13 @@ Settled by chunk 5: 1030:03d7 is reached only from 1058:025b for opcodes 0xa506,
 - **Resolve in:** chunk 7 (story and main loop)
 - **Resolution:** `loadAdsById` (`src/story/story.ts`) keeps the ADS state while consecutive entries use the same id, and every new sequence drops it (`1018:0c62`, `1018:0673`).
 - **Status:** resolved (chunk 7)
+
+### OQ-25: Walk drawing bridge
+
+- **Where:** `src/walk/walk.ts` (`startWalk`, `walkTick`, `walkHold`, `walkDraw`), called by the story bridge in `src/story/story.ts` (`walkStep`, `holdJohnny`) once per story step
+- **What it does:** the current walk frame is drawn on B every tick with the TTM sprite rects (`(x, y, w, h + 2)` into `(B → A, 0)`, `(B → A, 1)`, `(C → B, 0)`), and the palm is drawn over Johnny when he is behind it. The last frame is drawn again on the tick the walk ends, so he stays on screen through the 80-tick arrival rest. Browser check (2026-10-18): without that, Johnny vanished for the rest (1.6 s) before the next scene; pinned in `src/walk/walk.data.test.ts`.
+- **Original:** walking is driven from `1048` (chunk 8); its draw calls and rects are not checked.
+- **Story bridge (chunk 7):** the story calls the walk through `src/story/story.ts` (`walkStep`, `holdJohnny`, `newWalk`), all made up: spots 1..6 become 0..5; a target spot or heading of "any" means the current one; with Johnny at spot 0 he is moved without walking; idle entries draw his standing frame each step (`walkHold`); the walk offset is the island offset plus one (`1018:0094` draws at the island offset plus the frame's x, and `walkDraw` subtracts one); the walk timers (6, 80) now count 16 ms clock ticks; the 80-tick arrival rest is jc_reborn's and has no counterpart in `1018:06bf`.
+- **Resolve in:** chunk 8 (walking)
+- **Resolution:** `src/walk/walk.ts` ports `1018:0000`, `1018:0074`, `1018:0094`, `1018:03ac`, and `1018:03ea` with the original tables (`src/walk/walk-tables.ts`, generated from `1068:02e1`..`165f`). The story calls `walkStep` and `walkReset` where `1018:06bf` calls `1018:0094` and `1018:0074`, and `isAtSpot` stores the target in the walk (`1018:0b46`). Spots are 1..6; a segment is picked from the route by percent with the story's random generator; Johnny turns one heading per frame; the frame delay is 4 clock ticks (`Timers.walk`, `1068:30d4`), set again after every draw; there is no rest on arrival; the frame is drawn on every story step at the island offset plus the frame's x and y, only the palm trunk is redrawn over it (`1010:1551` mode 0), and the three dirty rects have the image's size. `src/walk/walk.data.test.ts` matches the original walk trace (`re/fixtures/walk/traces.tsv`). The jc_reborn walk (`calcpath.ts`, `calcpath-data.ts`, `walk-data.ts`, `walkHold`, the 6 and 80 tick timers, the palm sprites 12 and 13) is deleted.
+- **Status:** resolved (chunk 8)

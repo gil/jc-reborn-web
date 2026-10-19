@@ -178,16 +178,16 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 | `1008:143c` | `platform_initSaver` | `src/main.ts` startup, `src/island/island.ts:96` `drawIntro` (intro held 2 s, OQ-32) | fixed |
 | `1008:157b` | `platform_shutdownSaver` | none (nothing to free in JavaScript) | match |
 | `1008:15c8` | `story_idleTick` | `src/main.ts` loop (one `storyStep` per step); `1068:30bc` is never set, `Island.speed` stays 0 | fixed |
-| `1008:16c2` | `platform_clockTick` | `src/engine/timers.ts:12` `clockTick` (`30d4` is chunk 8's, `3f2c` is dead) | fixed |
-| `1018:0540` | `story_newSequence` | `src/story/story.ts:111` `startSequence` + `src/story/sequence.ts` `newSequence` | fixed |
-| `1018:0673` | `story_endSequence` | `src/story/story.ts:100` `wipeDone` + `startSequence` (`state.ads = null`) | fixed |
-| `1018:06bf` | `story_step` | `src/story/story.ts:59` `storyStep` (no pause or forced-sequence test: nothing writes `1068:334a` or `1068:1dbc`) | fixed |
+| `1008:16c2` | `platform_clockTick` | `src/engine/timers.ts:13` `clockTick` (the walk delay `30d4` is `Timers.walk`; `3f2c` is dead) | fixed |
+| `1018:0540` | `story_newSequence` | `src/story/story.ts:109` `startSequence` + `src/story/sequence.ts` `newSequence` | fixed |
+| `1018:0673` | `story_endSequence` | `src/story/story.ts:98` `wipeDone` + `startSequence` (`state.ads = null`) | fixed |
+| `1018:06bf` | `story_step` | `src/story/story.ts:57` `storyStep` (no pause or forced-sequence test: nothing writes `1068:334a` or `1068:1dbc`) | fixed |
 | `1018:089b` | `story_buildQueue` | `src/story/sequence.ts:161` `buildQueue` | fixed |
-| `1018:0b46` | `story_isAtSpot` | `src/story/story.ts:82` `isAtSpot` | fixed |
+| `1018:0b46` | `story_isAtSpot` | `src/story/story.ts:80` `isAtSpot` (the target lives in `Walk`, `src/walk/walk.ts`) | fixed |
 | `1018:0b87` | `story_advanceDays` | `src/story/sequence.ts:116` `advanceDays` | fixed |
 | `1018:0c21` | `story_halfHourSlot` | `src/story/calendar.ts:25` `halfHourSlot` | fixed |
-| `1018:0c62` | `ads_loadAdsById` | `src/story/story.ts:146` `loadAdsById` | fixed |
-| `1018:0d11` | `ads_unloadAdsById` | `src/story/story.ts:146` `loadAdsById` / `startSequence` (drop the cached state) | fixed |
+| `1018:0c62` | `ads_loadAdsById` | `src/story/story.ts:143` `loadAdsById` | fixed |
+| `1018:0d11` | `ads_unloadAdsById` | `src/story/story.ts:143` `loadAdsById` / `startSequence` (drop the cached state) | fixed |
 | `1018:0d50` | `story_pickScene` | `src/story/sequence.ts:133` `pickScene` | fixed |
 | `1018:0e7b` | `story_findScene` | none (unreferenced) | match |
 | `1018:0eb5` | `story_fitsIsland` | `src/story/sequence.ts:93` `fitsIsland` | fixed |
@@ -197,7 +197,7 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 | `1018:1ef5` | `story_randomPercent` | `src/story/random.ts:22` `percentPick` | fixed |
 | `1020:0000` | `audio_loadWaveResources` | none (out of scope, OQ-35) | match |
 | `1020:0085` | `audio_closeMciDevice` | none (out of scope, OQ-35) | match |
-| `1020:00ba` | `audio_playSound` | `src/story/story.ts:59` `storyStep` (`playSound(25)`); playback out of scope | match |
+| `1020:00ba` | `audio_playSound` | `src/story/story.ts:57` `storyStep` (`playSound(25)`); playback out of scope | match |
 | `1020:0106` | `platform_encodePassword` | none (out of scope, OQ-35) | match |
 | `1020:013f` | `platform_checkPassword` | none (out of scope, OQ-35) | match |
 | `1020:019c` | `platform_requestExit` | none (out of scope, OQ-35) | match |

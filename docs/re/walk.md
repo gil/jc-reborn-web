@@ -125,9 +125,9 @@ All in one block of the data segment, `1068:02e1`..`165f`. Every check below was
 
 | Original | Name | Ours | Status |
 | --- | --- | --- | --- |
-| `1018:0000` | `walk_loadJohnWalkBmp` | `src/walk/walk.ts` `startWalk` (loads per walk) | open |
+| `1018:0000` | `walk_loadJohnWalkBmp` | `src/walk/walk.ts:43` `loadWalk` (called from `src/main.ts` after the first `drawIsland`) | fixed |
 | `1018:004d` | `walk_freeJohnWalkBmp` | none (nothing to free in JavaScript) | match |
-| `1018:0074` | `walk_resetPath` | `src/story/story.ts` (`state.walk = null`) | open |
-| `1018:0094` | `walk_step` | `src/walk/walk.ts` `walkTick`, `walkAnimate`, `walkDraw`, `walkHold` | open |
-| `1018:03ac` | `walk_routeOf` | `src/walk/calcpath.ts` `calcPath` (a search, not a table) | open |
-| `1018:03ea` | `walk_segmentFrames` | `src/walk/walk-data.ts` (jc_reborn bookmarks) | open |
+| `1018:0074` | `walk_resetPath` | `src/walk/walk.ts:70` `walkReset` | fixed |
+| `1018:0094` | `walk_step` | `src/walk/walk.ts:77` `walkStep` (`advance`, `drawFrame`; a pick outside the group drops the route, OQ-37) | fixed |
+| `1018:03ac` | `walk_routeOf` | `src/walk/walk.ts:54` `routeOf` (`src/walk/walk-tables.ts` `ROUTES`) | fixed |
+| `1018:03ea` | `walk_segmentFrames` | `src/walk/walk.ts:59` `segmentFrames` (`src/walk/walk-tables.ts` `SEGMENTS`) | fixed |
