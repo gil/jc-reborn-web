@@ -82,3 +82,9 @@ Runs the original random generator (`1018:1e60`, `1018:1eb6`, `1018:1ef5`) and t
     re/.venv/bin/python -I scripts/re/unicorn/dump_island.py
 
 Runs the original island code (`1010:0136`, then 60 steps of `1008:16c2` ticks, `1010:040e(0)`, and `1010:1e50(0)`) for 24 cases of island flags, settings, holiday, slot, and day count, with the original random generator. Loading, drawing, copying, and dirty-list calls are replaced by recorders (`original_island.py`, `IslandTracer` extends `TtmTracer`); `1060:04b2` answers 1 on every third call. Writes `re/fixtures/island/traces.tsv` (gitignored), which `src/island/island.data.test.ts` compares with the TypeScript port. Format: `docs/plans/2026-10-18-re-story/step-000-overview.md`, `Trace formats`, and `docs/re/island.md`, `Emulated`.
+
+## Original walk
+
+    re/.venv/bin/python -I scripts/re/unicorn/dump_walk.py
+
+Runs the original walk step (`1018:0094`) with the original route choice, turns, and random generator for 36 cases (every start and target spot pair), each with six legs toward targets set through `1018:0b46`, idle stretches (`1018:0074`), and Johnny moved between legs as an ADS entry would. The island is drawn first with the original code so the island offset and the palm trunk redraw (`1010:1551`) are real. Drawing and dirty-list calls use the recorders of `original_island.py` (`WalkTracer` extends `IslandTracer`). A code hook at `1018:011d` stops a case with a `bad` row when the walk picks a pair outside Johnny's group (the original reads on into garbage from there). Writes `re/fixtures/walk/` (gitignored): `walk-data.bin` (the walk tables, `1068:02e1`..`165f`) and `traces.tsv`, which `src/walk/walk-tables.data.test.ts` and `src/walk/walk.data.test.ts` compare with the TypeScript port. Format: `docs/plans/2026-10-18-re-walk/step-000-overview.md`, `Trace format`, and `docs/re/walk.md`, `Emulated`.

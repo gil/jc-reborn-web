@@ -29,7 +29,7 @@
 
 Everything runs as original code except the recorders `IslandTracer` already installs (`1030:124a`, `1030:16d8`, `1038:1bd8`, `1038:0ae4`, `1038:0ac2`, `1030:02ef`, `1038:06ce`, `1060:007e`, `1060:04b2`, `1020:081c`). The random generator (`1018:1e60`) is the original: `IslandTracer` does not hook it.
 
-- [ ] **Action 1: Write the tracer**
+- [x] **Action 1: Write the tracer**
 
 Create `scripts/re/unicorn/original_walk.py`:
 
@@ -227,7 +227,7 @@ class WalkTracer(IslandTracer):
 Run: `re/.venv/bin/python -I -m py_compile scripts/re/unicorn/original_walk.py`
 Expected: no output.
 
-- [ ] **Action 2: Write the failing tests**
+- [x] **Action 2: Write the failing tests**
 
 Create `scripts/re/unicorn/test_original_walk.py`:
 
@@ -332,7 +332,7 @@ class WalkTracerTest(unittest.TestCase):
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_original_walk.py' -v`
 Expected: all pass. Read every failure before changing anything: a failure is either a harness bug (fix the harness) or a finding (the original does something the overview or `walk.md` did not say: fix `walk.md` and note it for the commit). Do not weaken a test to make it pass. A `stuck` leg is a finding too: look at its rows, say in `walk.md` why it does not end, and keep it in the trace (the port must match it); then change only the stuck assertion to check that the stuck legs are the ones `walk.md` names.
 
-- [ ] **Action 3: Write the dump script**
+- [x] **Action 3: Write the dump script**
 
 Create `scripts/re/unicorn/dump_walk.py`:
 
@@ -378,7 +378,7 @@ Expected: no output.
 Run: `re/.venv/bin/python -I scripts/re/unicorn/dump_walk.py`
 Expected: exits 0, one line per case; `re/fixtures/walk/walk-data.bin` is 4991 bytes; `re/fixtures/walk/traces.tsv` exists.
 
-- [ ] **Action 4: Count the trace**
+- [x] **Action 4: Count the trace**
 
 Run: `cut -f3 re/fixtures/walk/traces.tsv | sort | uniq -c`
 Note the row count of each event and the total (for `walk.md`). `stuck` should not appear (see Action 2).
@@ -386,7 +386,7 @@ Note the row count of each event and the total (for `walk.md`). `stuck` should n
 Run: `rg -c "BACKGRND.BMP 13 " re/fixtures/walk/traces.tsv`
 Note the count: the palm trunk redrawn over Johnny (`1010:1551` mode 0). It should be above 0, on routes that pass behind the palm.
 
-- [ ] **Action 5: Document the harness**
+- [x] **Action 5: Document the harness**
 
 Add to `scripts/re/unicorn/README.md`, after the `Original island` section:
 
@@ -400,7 +400,7 @@ Runs the original walk step (`1018:0094`) with the original route choice, turns,
 
 Add a section `Emulated` to `docs/re/walk.md`, before `Side-by-side checklist`, in the style of `docs/re/island.md`, `Emulated`: what runs as original code, what is recorded and replaced, the case and leg rules (copy them from the overview's `Trace format`, in our words), the `state` row, what `test_original_walk.py` pins, the row counts from Action 4, and anything observed (for example: how many beats the longest leg took, whether the trunk redraw shows up, how often a segment is picked versus a turn).
 
-- [ ] **Action 6: Run every Unicorn test and commit**
+- [x] **Action 6: Run every Unicorn test and commit**
 
 Run: `re/.venv/bin/python -I -m unittest discover -s scripts/re/unicorn -p 'test_*.py' -v`
 Expected: all pass.
@@ -412,7 +412,7 @@ git commit -m "test(re): trace the original walk step in Unicorn"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)

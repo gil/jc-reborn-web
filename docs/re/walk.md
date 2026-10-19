@@ -56,6 +56,7 @@ All in one block of the data segment, `1068:02e1`..`165f`. Every check below was
 - `1018:0094`, part 2: the segment is the chosen pair's first word. `30ce = 1018:03ea(segment)`; the wanted heading `30c8`, end heading `30cc`, and end spot `30ca` come from the segment table.
 - `1018:0094`, part 2: when `30ce` is 0 (segment 0), Johnny is put at once at the end spot and heading, and the route is cleared when that spot is the target. Segment 0 is (0, 0, 0), so that puts Johnny at spot 0, heading 0.
 - `1018:0094`, part 2, reading past a group: the scan for `-spot` and the percent loop do not stop at the next marker. A (0, 0) group subtracts 0 and goes on into the next group's words (markers count as segments, segment ids as percents), and with spot 0 the scan matches the first 0 word. Only a route left over from an earlier target gets there (`Story interface`); the result is a segment read out of the wrong place, or a frame list address of 0 with headings and an end spot read from below the segment table.
+- `1018:0094`, after such a pick, in the emulator: Johnny's spot became 46 with a heading out of range, later picks found no marker `-46` and returned at once, and the turn frame `heading × 6` made the draw read an image pointer out of the data segment. The original has no way back from it: Johnny stops being drawn or is drawn from garbage.
 
 ## Turning
 
@@ -102,6 +103,23 @@ All in one block of the data segment, `1068:02e1`..`165f`. Every check below was
 - So a route, a segment, and a wanted heading can outlive the move: an idle entry that ends mid-walk leaves its route set, and the next ADS entry walks on along that old route toward the new target. When that route reaches its own target spot, the (0, 0) group is read past (`Route choice`).
 - Spot 0: only scene table entries 1, 13, 37, 69, 71, 72, 73 (`docs/re/story.md`, `Scene table`; entry 0 is the empty row) start at spot 0, all with heading 0. All have flag `0x01` and none `0x02`, so each is either the first entry of a sequence or the whole sequence. `1018:0540` sets Johnny's heading to 0, so `1018:0b46(0, 0)` answers 1 at once and `1018:0094` is never called with Johnny at spot 0. The entry ends with a random spot 1..6.
 - `1018:0b46`: the start headings in the scene table are all 0..7, so every pending entry sets a target heading.
+
+## Emulated
+
+`scripts/re/unicorn/original_walk.py` (`WalkTracer`, extends `IslandTracer`), `dump_walk.py`, `test_original_walk.py`. Writes `re/fixtures/walk/walk-data.bin` (`1068:02e1`..`165f`, 4991 bytes) and `re/fixtures/walk/traces.tsv`.
+
+- Runs as original code: `1018:0000`, `1018:0074`, `1018:0094`, `1018:03ac`, `1018:03ea`, `1018:0b46`, `1010:0136` and `1010:1551` with everything they call in `1010`, the clock `1008:16c2`, and the random generator (`1018:1e60`, `1018:1eb6`).
+- Recorded and replaced, as in the island harness (`docs/re/island.md`, `Emulated`): `1030:124a`, `1030:16d8`, `1038:1bd8`, `1038:0ae4`, `1038:0ac2`, `1030:02ef`, `1038:06ce`, `1060:007e` (`dirty`), `1060:04b2` (1 on every third call), `1020:081c`.
+- Each case `k` (0..35) is a fresh emulator: `1010:0136` once with nothing set (loads BACKGRND and MRAFT); the island globals (mode 0, nothing placed, low tide `k % 2`, holiday shown, every setting on, NumDays 1, the clip off over `(0, 0, 639, 479)`); `1018:1eb6(1009k)`; `1010:0136` again; `30d2 = 0` and `1018:0000`; Johnny on spot `1 + k / 6` (integer), heading `k % 8`. Then one `state` row at beat -1.
+- Beat `b` (numbered across the case) starts with `floor(50(b + 1) / 16) - floor(50b / 16)` clock calls (3 or 4: 16 ms ticks, 50 ms steps) and ends with a `state` row.
+- Legs 0..5. The target spot is `1 + k % 6` for leg 0, else `(k + 3 × leg) % 7` (0 = any); the target heading `(3k + 5 × leg + 1) % 8`. Before an odd leg Johnny is moved to spot `1 + (k + leg) % 6`, heading `(2k + leg) % 8` (an ADS entry ended). Before an even leg above 0, 8 idle beats: `1018:0074` in the first (a `reset` row), `1018:0094` in each.
+- A leg beat calls `1018:0b46(spot, heading)`, writes an `at` row, and calls `1018:0094` when the answer is 0. The leg ends on an answer of 1; after 1500 beats it would write a `stuck` row.
+- A code hook at `1018:011d` checks each pick: the chosen pair must lie in Johnny's group and name a segment above 0. Otherwise it writes the beat's rows so far and a `bad` row (the leg), and the case ends there. This is the one row kind the overview's `Trace format` did not list.
+- The `state` row: spot, heading, target spot, target heading, wanted heading, end heading, end spot (all signed), the route as `from,to`, the next record and the frame as `segment:record` (a turn frame is `turn set:heading`), the delay, and the random write index `1068:1ce6`.
+- `test_original_walk.py` pins: the table block and its name string; the frame lists back to back from `0aea` to `1660` and `1018:03ea` giving 0 for 0 and 35; the route lists back to back from `0362` to `0aa2` and `1018:03ac` giving 0 for spot 0 and from = to; every leg of cases 0, 7, 23, 35 ending with Johnny on the target spot and heading; one JOHNWALK sprite per drawing beat with its three rects (B → A 0, B → A 1, C → B 0) at the sprite's place and size, and the delay 4 after it; case 4 ending in a `bad` row in leg 2, on the end spot of a left-over route.
+- Rows: 48257 `at`, 48831 `state`, 51867 `sprite` (48599 Johnny, 3268 palm trunk redraws, BACKGRND sprite 13), 145797 `dirty` (3 per Johnny), 68 `reset`, 6 `bad`, no `stuck`.
+- Observed: 202 legs ended, the longest after 648 beats (case 5, leg 4). Johnny's frame changed 6138 times: 830 turn frames and 5308 segment frames.
+- Observed: cases 4, 11, 18, 19, 25, 26 end in a `bad` row, all the same way. The leg before the idle stretch had target spot 0, which `1018:0b46` does not store, so it ended at once with Johnny away from the stored target. The idle stretch then picked a route toward that older target, the next leg set a new target, and Johnny walked the old route on to its end spot, whose (0, 0) group he then read past. In the game the same happens when an idle entry ends before Johnny is back on the last ADS entry's start spot. The other 30 cases never pick outside a group.
 
 ## Side-by-side checklist
 
