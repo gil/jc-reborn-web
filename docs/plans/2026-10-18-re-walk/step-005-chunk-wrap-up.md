@@ -33,7 +33,7 @@ The spec's done rule for a chunk:
 
 ## Part A: Status
 
-- [ ] **Action 1: Verify the in-scope functions**
+- [x] **Action 1: Verify the in-scope functions**
 
 Run:
 
@@ -53,7 +53,7 @@ For each function: when its row in `docs/re/walk.md`, `Side-by-side checklist`, 
 Run: `node scripts/re/function-map.mjs`
 Expected: exits 0; the `walk` section of `docs/re/function-map.md` shows six `verified` rows.
 
-- [ ] **Action 2: Check the checklist and the carry-over notes**
+- [x] **Action 2: Check the checklist and the carry-over notes**
 
 Every function of the overview's `Function scope` has exactly one row in `docs/re/walk.md`, and no row is `open`. Check that the `file:line` references still match:
 
@@ -67,7 +67,7 @@ Expected: matches only in resolved entries, past-fix notes, or text that says th
 
 ## Part B: Past fixes
 
-- [ ] **Action 3: Review the walk history**
+- [x] **Action 3: Review the walk history**
 
 Run: `rg -n "\| 8" docs/re/open-questions.md`
 Expected: no row of "Past fixes to re-check against the original" names chunk 8.
@@ -89,7 +89,7 @@ Adjust the bullet if `git show` says something different. Add one bullet for any
 
 ## Part C: Comments and docs
 
-- [ ] **Action 4: Audit the comments**
+- [x] **Action 4: Audit the comments**
 
 Run: `rg -n "//|/\*" src/walk src/story/story.ts src/engine/timers.ts src/testing/walk-recorder.ts src/main.ts`
 
@@ -98,13 +98,13 @@ For each comment, apply the overview's rule: keep it only if a competent enginee
 Run: `pnpm exec tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Action 5: Update `docs/Plan.md`**
+- [x] **Action 5: Update `docs/Plan.md`**
 
 Run: `rg -n "walk|calcpath|pathfinding" docs/Plan.md`
 
 `docs/Plan.md` is guidance only. Where it describes walking as a port of `~/dev/jc_reborn` (`walk.c`, `calcpath.c`), add one line under that heading: `Replaced in chunk 8 by a port of SCRANTIC.SCR; see docs/re/walk.md.` Change nothing else in it.
 
-- [ ] **Action 6: Commit**
+- [x] **Action 6: Commit**
 
 ```bash
 git add scripts/re/names.json docs/re/function-map.md docs/re/walk.md docs/re/story.md docs/re/island.md docs/re/open-questions.md docs/re/segments.md docs/Plan.md src
@@ -113,7 +113,7 @@ git commit -m "docs(re): chunk 8 functions verified, past fixes reviewed, commen
 
 ## Part D: Full verification
 
-- [ ] **Action 7: Rebuild everything from scratch and run every test**
+- [x] **Action 7: Rebuild everything from scratch and run every test**
 
 Run: `scripts/re/ghidra-import.sh`
 Expected: ends with `export written to .../re/out`; `re/out/functions/1018_0094_walk_step.c` exists.
@@ -133,7 +133,7 @@ Expected: no errors.
 Run: `pnpm test`
 Expected: all pass, and none of these is reported as skipped: `src/walk/walk.data.test.ts`, `src/walk/walk-tables.data.test.ts`, `src/story/story.data.test.ts`, `src/island/island.data.test.ts`, `src/story/sequence.data.test.ts`. If one is skipped, its input is missing; fix that before going on.
 
-- [ ] **Action 8: Check that the pages load**
+- [x] **Action 8: Check that the pages load**
 
 Run in the background: `pnpm dev --port 5173 --strictPort`
 
@@ -144,11 +144,11 @@ The user checked the walk in the browser at the end of step 4. If Parts A to C c
 
 Stop the dev server: `lsof -ti :5173 -sTCP:LISTEN | xargs kill -9`
 
-- [ ] **Action 9: Tick the spec**
+- [x] **Action 9: Tick the spec**
 
 In `docs/specs/2026-10-17-reverse-engineering-validation-design.md`, tick `- [ ] **8. Walk.**` to `- [x]`. Change nothing else in that file.
 
-- [ ] **Action 10: Commit**
+- [x] **Action 10: Commit**
 
 ```bash
 git add docs/specs/2026-10-17-reverse-engineering-validation-design.md
@@ -157,7 +157,7 @@ git commit -m "docs: chunk 8 (walk) done"
 
 ## Wrap-Up
 
-- [ ] Check this step off in the Steps list of `step-000-overview.md`
+- [x] Check this step off in the Steps list of `step-000-overview.md`
 - [ ] Only if something could not be finished: record it in
       `step-999-leftovers.md` per the overview's Leftovers Protocol
-- [ ] Commit the check-off (and any leftovers entry)
+- [x] Commit the check-off (and any leftovers entry)
