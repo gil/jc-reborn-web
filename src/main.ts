@@ -16,6 +16,7 @@ import { drawIntro, drawIsland, makeIsland } from './island/island.js';
 import { SCREEN_W, SCREEN_H } from './types.js';
 import { GdiDevice } from './ttm/gdi-device.js';
 import { makeTtmEnv } from './ttm/page-runner.js';
+import { loadWalk, makeWalk } from './walk/walk.js';
 import { seedRandom, StoryRandom } from './story/random.js';
 import { ADS_FILES } from './story/scene-table.js';
 import { makeStoryWorld } from './story/sequence.js';
@@ -62,9 +63,11 @@ const params = new URLSearchParams(location.search);
 const skipIntro = params.get('skipIntro') === 'true';
 if (!skipIntro) drawIntro(islandDevice);
 drawIsland(island);
+const walk = makeWalk(island);
+loadWalk(walk);
 
 const game: GameState = {
-  archive, display, ttm: makeTtmEnv(device, draw), palette: pal, random, timers, world, island, settings,
+  archive, display, ttm: makeTtmEnv(device, draw), palette: pal, random, timers, world, island, walk, settings,
   fadeState: null,
   clock: () => new Date(),
 };
@@ -73,7 +76,6 @@ const story = makeStoryState(params.get('ads'));
 const img = ctx.createImageData(SCREEN_W, SCREEN_H);
 const engineClock = new EngineClock(performance.now());
 const firstStepAt = performance.now() + (skipIntro ? 0 : INTRO_HOLD_MS);
-let ticksSinceStep = 0;
 
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) engineClock.resume(performance.now());
@@ -82,13 +84,9 @@ document.addEventListener('visibilitychange', () => {
 startLoop(
   () => {
     const now = performance.now();
-    for (let ticks = engineClock.ticksDue(now); ticks > 0; ticks--) {
-      clockTick(timers);
-      ticksSinceStep++;
-    }
+    for (let ticks = engineClock.ticksDue(now); ticks > 0; ticks--) clockTick(timers);
     if (!engineClock.stepDue(now) || now < firstStepAt) return;
-    storyStep(story, game, ticksSinceStep);
-    ticksSinceStep = 0;
+    storyStep(story, game);
   },
   () => {
     presentSurface(img.data, display.window, pal);

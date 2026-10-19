@@ -8,7 +8,7 @@ import { animateIsland, drawHoliday, drawIsland, ttmOffset, type Island } from '
 import type { ParsedArchive } from '../resource/types.js';
 import type { TtmEnv } from '../ttm/page-runner.js';
 import type { Palette } from '../types.js';
-import { startWalk, walkHold, walkTick, type WalkContext } from '../walk/walk.js';
+import { NO_HEADING, walkReset, walkStep, type Walk } from '../walk/walk.js';
 import { holidayOf, timeSlot, wallClockOf, type WallClock } from './calendar.js';
 import type { StoryRandom } from './random.js';
 import { ADS_FILES, IDLE_ENTRY, SCENE_TTM_LEFT, SCENES, type SceneEntry } from './scene-table.js';
@@ -16,7 +16,6 @@ import { applySceneFlags, newSequence, resetIslandFlags, type StoryWorld } from 
 import { saveSettings, type SettingsStore } from './settings.js';
 
 const ANY_SPOT = 0;
-const ANY_HEADING = -1;
 const SPOTS = 6;
 const HEADINGS = 8;
 const IDLE_WAIT_BASE = 180;
@@ -32,6 +31,7 @@ export interface GameState {
   timers: Timers;
   world: StoryWorld;
   island: Island;
+  walk: Walk;
   settings: SettingsStore;
   fadeState: FadeState | null;
   clock: () => Date;
@@ -39,16 +39,14 @@ export interface GameState {
 
 export interface StoryState {
   started: boolean;
-  target: { spot: number; heading: number };
   adsId: number;
   ads: AdsState | null;
-  walk: WalkContext | null;
   debugAds: string | null;
   debugNext: number;
 }
 
 export function makeStoryState(debugAds: string | null = null): StoryState {
-  return { started: false, target: { spot: ANY_SPOT, heading: ANY_HEADING }, adsId: 0, ads: null, walk: null, debugAds, debugNext: 0 };
+  return { started: false, adsId: 0, ads: null, debugAds, debugNext: 0 };
 }
 
 export function currentEntry(game: GameState): SceneEntry | null {
@@ -56,7 +54,7 @@ export function currentEntry(game: GameState): SceneEntry | null {
   return sequence.queue[sequence.position] ?? null;
 }
 
-export function storyStep(state: StoryState, game: GameState, elapsed: number): void {
+export function storyStep(state: StoryState, game: GameState): void {
   let entry = currentEntry(game);
   if (!entry) {
     if (!wipeDone(game)) return;
@@ -65,11 +63,11 @@ export function storyStep(state: StoryState, game: GameState, elapsed: number): 
     if (!entry) return;
   }
   animateIsland(game.island, false);
-  if (state.started || isAtSpot(state, game.world, entry.spotStart, entry.hdgStart)) {
+  if (state.started || isAtSpot(game.walk, entry.spotStart, entry.hdgStart)) {
     if (entry.ads === IDLE_ENTRY) idleStep(state, game, entry);
     else playStep(state, game, entry);
   } else {
-    walkStep(state, game, elapsed);
+    walkStep(game.walk);
   }
   drawHoliday(game.island, false);
   if (game.world.memory.dayScene === entry) {
@@ -79,11 +77,11 @@ export function storyStep(state: StoryState, game: GameState, elapsed: number): 
   game.display.restorePass(0);
 }
 
-export function isAtSpot(state: StoryState, world: StoryWorld, spot: number, heading: number): boolean {
-  if (spot !== ANY_SPOT) state.target.spot = spot;
-  if (heading !== ANY_HEADING) state.target.heading = heading;
-  const { sequence } = world;
-  return (spot === ANY_SPOT || sequence.spot === spot) && (heading === ANY_HEADING || sequence.heading === heading);
+export function isAtSpot(walk: Walk, spot: number, heading: number): boolean {
+  if (spot !== ANY_SPOT) walk.targetSpot = spot;
+  if (heading !== NO_HEADING) walk.targetHeading = heading;
+  const { sequence } = walk.island.world;
+  return (spot === ANY_SPOT || sequence.spot === spot) && (heading === NO_HEADING || sequence.heading === heading);
 }
 
 export function finishEntry(state: StoryState, world: StoryWorld, entry: SceneEntry, scene: boolean): void {
@@ -111,7 +109,6 @@ function wipeDone(game: GameState): boolean {
 function startSequence(state: StoryState, game: GameState): void {
   const { world } = game;
   state.ads = null;
-  state.walk = null;
   state.started = false;
   const clock = wallClockOf(game.clock());
   world.memory.newSequence = true;
@@ -159,7 +156,6 @@ function loadAdsById(state: StoryState, game: GameState, id: number): AdsState |
 function playStep(state: StoryState, game: GameState, entry: SceneEntry): void {
   if (!state.started) {
     state.started = true;
-    state.walk = null;
     const ads = loadAdsById(state, game, entry.ads);
     if (ads) adsStartSection(ads, entry.tag);
     setTtmOffset(game, (entry.flags & SCENE_TTM_LEFT) !== 0);
@@ -172,33 +168,8 @@ function idleStep(state: StoryState, game: GameState, entry: SceneEntry): void {
   if (!state.started) {
     state.started = true;
     game.timers.idleWait = (game.random.next() % IDLE_WAIT_SPREAD) + IDLE_WAIT_BASE;
-    state.walk = null;
+    walkReset(game.walk);
   }
-  holdJohnny(state, game);
+  walkStep(game.walk);
   if (game.timers.idleWait === 0) finishEntry(state, game.world, entry, false);
-}
-
-function newWalk(game: GameState, toSpot: number, toHeading: number): WalkContext | null {
-  const { sequence } = game.world;
-  const { island } = game;
-  return startWalk(game.archive, island.background?.images ?? [], sequence.spot - 1, sequence.heading, toSpot - 1, toHeading, island.x + 1, island.y);
-}
-
-function walkStep(state: StoryState, game: GameState, elapsed: number): void {
-  const { sequence } = game.world;
-  const toSpot = state.target.spot === ANY_SPOT ? sequence.spot : state.target.spot;
-  const toHeading = state.target.heading === ANY_HEADING ? sequence.heading : state.target.heading;
-  if (sequence.spot !== ANY_SPOT) state.walk ??= newWalk(game, toSpot, toHeading);
-  if (state.walk) walkTick(state.walk, game.display, elapsed);
-  if (state.walk && !state.walk.done) return;
-  sequence.spot = toSpot;
-  sequence.heading = toHeading;
-  state.walk = null;
-}
-
-function holdJohnny(state: StoryState, game: GameState): void {
-  const { sequence } = game.world;
-  if (sequence.spot === ANY_SPOT) return;
-  state.walk ??= newWalk(game, sequence.spot, sequence.heading);
-  if (state.walk) walkHold(state.walk, game.display);
 }
