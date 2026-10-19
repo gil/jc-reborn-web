@@ -21,6 +21,7 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 
 - `1008:0fcd`: `WM_TIMER` (`0x113`) does nothing while `1068:2d86` is set (`1008:13cd` sets it while it dispatches one input message during wipes and file reads). Otherwise it runs the timer callbacks (`1040:089a`), calls the idle callback `1068:2d90` (`1008:15c8`) once, then loops on `PeekMessage` without removing, running `1040:089a` on every pass, until any message is waiting.
 - `1008:0fcd`: so the story step runs once per `WM_TIMER`, at most once per 50 ms. Windows posts at most one `WM_TIMER` at a time, so a slow step never causes a burst of steps. Between steps the window procedure spins on the timer callbacks, so the clock keeps running at its own rate, independent of steps.
+- `1008:0fcd`, `1040:089a`: on Windows 3.x `GetCurrentTime` and `WM_TIMER` move in 55 ms jumps, so a step comes every 55 ms with the 3 or 4 clock ticks of that jump just before it. Ours models that (OQ-36).
 - `1040:076a(n)`: when the base tick `1068:45de` is 0, sets it to `1000 / (n × 18)` ms (32-bit signed division) and `1068:45e2 = 1`; returns 1. With `n = 13` the base tick is 4 ms. A second call returns 0 and changes nothing.
 - `1040:07e6(callback, interval)`: fills the first empty slot of 5 at `1068:45ac` (10 bytes each: far callback, period, 32-bit next time) with the callback, the period `base × interval` ms, and the next time = `GetCurrentTime` now. Returns 0 when the base tick is 0, the callback is null, the interval is 0, or all slots are taken. The clock gets `4 × 4 = 16` ms.
 - `1040:089a`: on the first call (`1068:257c` is 1 in the data segment and nothing sets it again) it only sets every used slot's next time and the base time `1068:45a8` to now, clears the flag, and returns.
@@ -172,7 +173,7 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 | `1008:0a2d` | `platform_changePasswordDialog` | none (out of scope, OQ-35) | match |
 | `1008:0c5c` | `platform_loadSettings` | `src/story/settings.ts:58` `loadSettings` | fixed |
 | `1008:0dc8` | `platform_saveSettings` | `src/story/settings.ts:73` `saveSettings` (after each new sequence, OQ-33) | fixed |
-| `1008:0fcd` | `platform_screenSaverProc` | `src/main.ts` loop and `src/engine/clock.ts:19` `EngineClock.stepDue` | fixed |
+| `1008:0fcd` | `platform_screenSaverProc` | `src/main.ts` loop and `src/engine/clock.ts:24` `EngineClock.stepDue` (one step per 55 ms jump, OQ-36) | fixed |
 | `1008:12eb` | `platform_setDialogStartTime` | none (out of scope, OQ-35) | match |
 | `1008:13cd` | `platform_pumpInputMessage` | none (out of scope, OQ-35) | match |
 | `1008:143c` | `platform_initSaver` | `src/main.ts` startup, `src/island/island.ts:96` `drawIntro` (intro held 2 s, OQ-32) | fixed |
@@ -204,8 +205,8 @@ Findings for chunk 7. One claim per address. Our own words; no decompiled code. 
 | `1020:026e` | `platform_passwordDialog` | none (out of scope, OQ-35) | match |
 | `1020:081c` | `platform_debugLog` | none (out of scope, OQ-35) | match |
 | `1020:082a` | `platform_adsControlDialog` | none (out of scope, OQ-35) | match |
-| `1040:076a` | `platform_initTimers` | `src/engine/clock.ts:4` `EngineClock` (16 ms, catch-up, resume; even ticks, OQ-36) | fixed |
+| `1040:076a` | `platform_initTimers` | `src/engine/clock.ts:6` `EngineClock` (16 ms, catch-up, resume; 55 ms time jumps, OQ-36) | fixed |
 | `1040:079e` | `platform_clearTimers` | none (no timer is ever removed while running) | match |
-| `1040:07e6` | `platform_addTimerCallback` | `src/engine/clock.ts:4` `EngineClock` (16 ms, catch-up, resume; even ticks, OQ-36) | fixed |
+| `1040:07e6` | `platform_addTimerCallback` | `src/engine/clock.ts:6` `EngineClock` (16 ms, catch-up, resume; 55 ms time jumps, OQ-36) | fixed |
 | `1040:085a` | `platform_removeTimerCallback` | none (no timer is ever removed while running) | match |
-| `1040:089a` | `platform_runTimerCallbacks` | `src/engine/clock.ts:13` `EngineClock.ticksDue` (16 ms, catch-up, resume; even ticks, OQ-36) | fixed |
+| `1040:089a` | `platform_runTimerCallbacks` | `src/engine/clock.ts:17` `EngineClock.ticksDue` (16 ms, catch-up, resume; 55 ms time jumps, OQ-36) | fixed |

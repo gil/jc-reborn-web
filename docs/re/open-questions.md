@@ -134,7 +134,7 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **Original:** `1020:0512`..`1020:071c` draw every shape in one go, pumping window messages between shapes (`1008:13cd`), with no timer: the speed is whatever the machine manages. The story waits for the call to return.
 - **Old guess behind it:** a visible wipe needs a fixed duration in a browser frame loop.
 - **Resolve in:** chunk 7 (story and main loop): decide a duration from the original's timing model, if any, when the story's call to `1020:0364` (`1018:0673`) is read
-- **Resolution:** kept by choice (user, 2026-10-18): a wipe takes `WIPE_TICKS = 16` story steps, 0.8 s at the original's 50 ms step; the story does nothing else meanwhile, as `1020:0364` blocks `1018:0540`.
+- **Resolution:** kept by choice (user, 2026-10-18): a wipe takes `WIPE_TICKS = 16` story steps, 0.88 s at one step per 55 ms (OQ-36); the story does nothing else meanwhile, as `1020:0364` blocks `1018:0540`.
 - **Status:** resolved (chunk 7), by choice
 
 ### OQ-23: Page-runner guards where the original misbehaves
@@ -195,16 +195,6 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **Why not reviewed:** a browser tab can close without warning; the values only change in `1018:0b87`, which runs at the start of a sequence, so saving there loses nothing.
 - **Status:** open, by choice
 
-### OQ-36: The clock ticks evenly every 16 ms
-
-- **Where:** `src/engine/clock.ts`
-- **What it does:** one clock tick per 16 ms of real time, one story step per 50 ms.
-- **Original:** `1040:089a` compares slot times with `GetCurrentTime`, which on Windows 3.x moves in 55 ms jumps, so the 16 ms callback fired three or four times in a burst; `WM_TIMER` came at the same 55 ms granularity. The average rates match ours.
-- **Where it shows:** the walk delay (`1068:30d4`) is set to 4 after every walk call, so Johnny only moves on a step that saw 4 ticks: one step in 8 with even ticks (about every 400 ms), about 7 in 16 with 55 ms bursts (about every 125 ms) (`docs/re/walk.md`, `Timing`).
-- **Why not reviewed:** the bursts depend on the PC's timer chip, not on `SCRANTIC.SCR`.
-- **Browser check (2026-10-19):** Johnny walks visibly slower than the scenes animate. The user chose to model the Windows 3.x tick bursts in `src/engine/clock.ts` after chunk 8, so the walk runs at about its original speed with `1018:0094` unchanged.
-- **Status:** open, to do after chunk 8 (user, 2026-10-19)
-
 ### OQ-37: Walk guards where the original reads through a bad pointer
 
 - **Where:** `src/walk/walk.ts` (`pickSegment`, `loseRoute`, `drawFrame`, `showTurn`)
@@ -220,7 +210,7 @@ Each fix below was made without the decompile. Treat it as a guess until a chunk
 - **What it does:** ends the current scene through `endScene` once `playingTicks > 8000`, without touching ADS state. It counts engine ticks (20 ms each, OQ-29).
 - **Old guess behind it:** some scenes cycle forever without reaching an end.
 - **Resolve in:** chunk 7 (story and main loop)
-- **Resolution:** `1018:06bf` has no time limit; an entry ends when `1048:0766` says its section is idle, or when an idle entry's wait (`1068:334c`) runs out. The watchdog is deleted. `src/story/story.data.test.ts` plays every scene table entry of every ADS file to its end with the ported random generator: all 65 ADS entries end, from 42 to 2490 story steps (2.1 s to 2 min 4 s at 50 ms, walk to the start spot included; median 500); `ACTIVITY.ADS` tag 6 ends after 313 steps, the longest is `STAND.ADS` tag 5.
+- **Resolution:** `1018:06bf` has no time limit; an entry ends when `1048:0766` says its section is idle, or when an idle entry's wait (`1068:334c`) runs out. The watchdog is deleted. `src/story/story.data.test.ts` plays every scene table entry of every ADS file to its end with the ported random generator: all 65 ADS entries end, from 42 to 2490 story steps (2.1 s to 2 min 4 s at 50 ms, walk to the start spot included; median 500; measured in chunk 7 with the old walk); `ACTIVITY.ADS` tag 6 ends after 313 steps, the longest is `STAND.ADS` tag 5.
 - **Status:** resolved (chunk 7)
 
 ### OQ-2: ADS pre-tick sweep frees threads with a nil TTM slot
@@ -380,3 +370,13 @@ Settled by chunk 5: 1030:03d7 is reached only from 1058:025b for opcodes 0xa506,
 - **Resolve in:** chunk 8 (walking)
 - **Resolution:** `src/walk/walk.ts` ports `1018:0000`, `1018:0074`, `1018:0094`, `1018:03ac`, and `1018:03ea` with the original tables (`src/walk/walk-tables.ts`, generated from `1068:02e1`..`165f`). The story calls `walkStep` and `walkReset` where `1018:06bf` calls `1018:0094` and `1018:0074`, and `isAtSpot` stores the target in the walk (`1018:0b46`). Spots are 1..6; a segment is picked from the route by percent with the story's random generator; Johnny turns one heading per frame; the frame delay is 4 clock ticks (`Timers.walk`, `1068:30d4`), set again after every draw; there is no rest on arrival; the frame is drawn on every story step at the island offset plus the frame's x and y, only the palm trunk is redrawn over it (`1010:1551` mode 0), and the three dirty rects have the image's size. `src/walk/walk.data.test.ts` matches the original walk trace (`re/fixtures/walk/traces.tsv`). The jc_reborn walk (`calcpath.ts`, `calcpath-data.ts`, `walk-data.ts`, `walkHold`, the 6 and 80 tick timers, the palm sprites 12 and 13) is deleted.
 - **Status:** resolved (chunk 8)
+
+### OQ-36: The clock ticks evenly every 16 ms
+
+- **Where:** `src/engine/clock.ts`
+- **What it did:** one clock tick per 16 ms of real time, one story step per 50 ms.
+- **Original:** `1040:089a` compares slot times with `GetCurrentTime`, which on Windows 3.x moves in 55 ms jumps (one timer interrupt), so the 16 ms callback fired three or four times in a burst; `WM_TIMER` came at the same 55 ms granularity. The average tick rate matches ours.
+- **Where it shows:** the walk delay (`1068:30d4`) is set to 4 after every walk call, so Johnny only moves on a step that saw 4 ticks: one step in 8 with even ticks (about every 400 ms), 7 in 16 with 55 ms bursts (about every 125 ms) (`docs/re/walk.md`, `Timing`). Browser check (2026-10-19): with even ticks Johnny walked visibly slower than the scenes animate.
+- **Resolve in:** after chunk 8 (user, 2026-10-19)
+- **Resolution:** `EngineClock` reads real time in 55 ms jumps, like Windows 3.x `GetCurrentTime`. Ticks stay 16 ms apart in that time and are caught up at each jump (3 or 4, 4 in 7 jumps of 16); the story steps on the first jump at least 50 ms after the last step, so once per 55 ms, at most once per call. Assumes a PC fast enough to finish a step within one jump; a slower one saw more ticks per step and walked Johnny faster still.
+- **Status:** resolved (after chunk 8)
